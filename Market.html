@@ -7,7 +7,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    .back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.4);
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
     body {
+      <a href="index.html" class="back-btn">⬅ Discount & Sale Price</a>
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(135deg, #1f1c2c, #928dab);
