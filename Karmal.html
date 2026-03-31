@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Excel Processor</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg1:#0f172a;
+      --bg2:#111827;
+      --card:rgba(255,255,255,.1);
+      --line:rgba(255,255,255,.12);
+      --text:#e5eefc;
+      --muted:#9fb0d1;
+      --accent:#60a5fa;
+      --accent2:#22c55e;
+      --warn:#f59e0b;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      font-family: Arial, Tahoma, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,.22), transparent 25%),
+        radial-gradient(circle at top right, rgba(34,197,94,.16), transparent 22%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding:28px;
+    }
+    .wrap {
+      max-width:1400px;
+      margin:auto;
+    }
+    .hero {
+      padding:26px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      backdrop-filter: blur(14px);
+      border-radius:26px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      margin-bottom:20px;
+    }
+    h1 {
+      margin:0 0 8px;
+      font-size:32px;
+    }
+    .sub {
+      color:var(--muted);
+      line-height:1.8;
+      font-size:14px;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:18px;
+      margin-bottom:20px;
+    }
+    .card {
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      backdrop-filter: blur(14px);
+      border-radius:22px;
+      padding:20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.18);
+    }
+    .label {
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .small {
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.8;
+      margin-bottom:12px;
+    }
+    input[type="file"] {
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.22);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+    }
+    .btns {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:8px;
+    }
+    button {
+      border:none;
+      border-radius:14px;
+      padding:13px 18px;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      color:white;
+      background:linear-gradient(135deg, #2563eb, #3b82f6);
+      box-shadow: 0 10px 25px rgba(37,99,235,.35);
+    }
+    button.secondary {
+      background:linear-gradient(135deg, #059669, #22c55e);
+      box-shadow: 0 10px 25px rgba(34,197,94,.28);
+    }
+    button:disabled {
+      opacity:.55;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .status {
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+    .status.ok { color:#86efac; }
+    .status.warn { color:#fcd34d; }
+    .section {
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      backdrop-filter: blur(14px);
+      border-radius:22px;
+      padding:18px;
+      margin-top:18px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.18);
+    }
+    .section h2 {
+      margin:0 0 12px;
+      font-size:21px;
+    }
+    .chips {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:8px 0 14px;
+    }
+    .chip {
+      background:rgba(96,165,250,.12);
+      border:1px solid rgba(96,165,250,.3);
+      color:#dbeafe;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+    }
+    .table-wrap {
+      overflow:auto;
+      max-height:65vh;
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+    th, td {
+      padding:11px 12px;
+      text-align:center;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      color:var(--text);
+      white-space:nowrap;
+    }
+    th {
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#15213b;
+    }
+    tr:hover td {
+      background:rgba(255,255,255,.05);
+    }
+    .rtl { direction: rtl; }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns:1fr; }
+      body { padding:16px; }
+      h1 { font-size:26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Karmal</h1>
+      
+   
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Veg Excel</div>
+        <div class="small">
+          id-Name Arabic-Active Or not <strong></strong><br>
+                  </div>
+        <input type="file" id="file1" accept=".xlsx,.xls,.csv" />
+      </div>
+
+      <div class="card">
+        <div class="label">All Sku Excel</div>
+        <div class="small">
+                 </div>
+        <input type="file" id="file2" accept=".xlsx,.xls,.csv" />
+      </div>
+
+      <div class="card">
+        <div class="label">Final excel</div>
+        <div class="small">
+                 </div>
+        <div class="btns">
+          <button id="processBtn">Process Data</button>
+          <button id="downloadBtn" class="secondary" disabled>Export Excel</button>
+        </div>
+        <div id="status" class="status">Waiting for both files...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Final Export Preview</h2>
+      <div class="chips">
+        <div class="chip">Only non-zero prices are kept</div>
+        <div class="chip">Export columns only: ID, PRICE, active or not</div>
+        <div class="chip">Second row is blank in exported Excel</div>
+      </div>
+      <div class="table-wrap">
+        <table id="previewTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>PRICE</th>
+              <th>active or not</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section rtl">
+      <h2>Full Processing Preview</h2>
+      <div class="table-wrap">
+        <table id="fullTable">
+          <thead>
+            <tr>
+              <th>العمود 1</th>
+              <th>العمود 2</th>
+              <th>العمود 4</th>
+              <th>العمود 5</th>
+              <th>العمود 7</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const productLookup = {
+  "13": "بقلة (ربطة)",
+  "27": "علبة شيري شوكولاتة",
+  "29": "علبة فراولة كبيرة",
+  "33": "خبيزة (ربطة)",
+  "42": "رشاد (ربطة)",
+  "44": "شبت (ربطة)",
+  "58": "سبانخ مفروم",
+  "59": "عصير جوافة طبيعي",
+  "60": "عصير كيوي (250مل)",
+  "66": "ورق عنب غسان فاكيوم",
+  "67": "خس ايسبيرغ",
+  "68": "خس بلدي",
+  "87": "فجل (ربطة)",
+  "155": "شومر (حبة)",
+  "170": "بندورة شيري",
+  "171": "بلوبيري",
+  "271": "رازبيري",
+  "603": "خس ايسبرغ مغلف",
+  "604": "خس بلدي مغلف",
+  "799": "سبانخ (ربطة)",
+  "800": "عصير برتقال طبيعي (250 مل)",
+  "801": "عصير مانجا طبيعي (1 لتر)",
+  "802": "عصير برتقال طبيعي (1 لتر)",
+  "803": "عصير رمان طبيعي (250 مل)",
+  "804": "عصير جريب فروت طبيعي (1 لتر)",
+  "806": "عصير كيوي (1 لتر)",
+  "808": "عصير جريب فروت (250 مل)",
+  "809": "عصير افوكادو (1 لتر)",
+  "811": "عصير رمان طبيعي (1 لتر)",
+  "818": "عصير تفاح",
+  "819": "عصير فراولة طبيعي (1 لتر)",
+  "995": "ثوم (ربطة)",
+  "80001": "بندورة 500 غم",
+  "80002": "بطاطا 500 غم",
+  "80003": "خيار 500 غم",
+  "80004": "كوسا 500 غم",
+  "80005": "اسود كلاسيك 500 غم",
+  "80006": "اسود رفيع 500 غم",
+  "80007": "زهرة 500 غم",
+  "80008": "بصل بلدي ابيض 500 غم",
+  "80009": "بصل اخضر 500 غم",
+  "80010": "فلفل حار 500 غم",
+  "80011": "فلفل غزال 500 غم",
+  "80012": "فليفلة خضرا 500 غم",
+  "80013": "فليفة ملونة 500 غم",
+  "80014": "ليمون اصفر بلدي 500 غم",
+  "80015": "ليمون اخضر 500 غم",
+  "80016": "جزر بلدي 500 غم",
+  "80017": "بامية 500 غم",
+  "80018": "بروكلي 500 غم",
+  "80019": "ذرة 500 غم",
+  "80020": "زعتر اخضر 500 غم",
+  "80021": "زنجبيل 500 غم",
+  "80022": "سبانخ 500 غم",
+  "80023": "شمندر 500 غم",
+  "80024": "فاصولياء بلدية 500 غم",
+  "80025": "فاصوليا مبرومة 500 غم",
+  "80026": "باذنجان مقدوس 500 غم",
+  "80027": "كرفس 500 غم",
+  "80028": "لفت 500 غم",
+  "80029": "ملفوف اخضر",
+  "80030": "ملفوف احمر مغلف 1 كيلو",
+  "80031": "كلمنتينا بلدية 500 غم",
+  "80032": "افوكادو لبناني 500 غم",
+  "80033": "قرع 500 غم",
+  "80034": "سفرجل 500 غم",
+  "80035": "برتقال ابو صرة بلدي 500 غم",
+  "80036": "موز بلدي 500 غم",
+  "80037": "موز اكوادوري 500 غم",
+  "80038": "كلمنتينا عسل 500 غم",
+  "80039": "تفاح مستورد 500 غم",
+  "80040": "تفاح ايطالي 500 غم",
+  "80041": "كيل 500 غم",
+  "80042": "تفاح سميث مستورد 500 غم",
+  "80043": "مانجا عويس 500 غم",
+  "80044": "جوافة 500 غم",
+  "80045": "برتقال عصير 500 غم",
+  "80046": "سمسمية 500 غم",
+  "80047": "ثوم بلدي 500 غم",
+  "80048": "بطاطا حلوة 500 غم",
+  "80049": "كمكواة 500 غم",
+  "80050": "عنب ابيض بدون بذور 500 غم",
+  "80051": "زيتون نبالي شوالات 500 غم",
+  "80052": "فراولة مغلفة كيلو 500 غم",
+  "80053": "فول مالطي 500 غم",
+  "80054": "افوكادو بيبي 500 غم",
+  "80055": "اجاص سكري 500 غم",
+  "80056": "اسكدنيا فرط 500 غم",
+  "80057": "زهرة ملونة 500 غم",
+  "80058": "جريب فروت احمر 500 غم",
+  "80059": "قشطة لبنانية 500 غم",
+  "80060": "تين زراقي 500 غم",
+  "80061": "خوخ اسود 500 غم",
+  "80062": "ملح خشن 500 غم",
+  "80063": "بوملي 500 غم",
+  "80064": "ثوم اسباني 500 غم",
+  "80065": "فقوس 500 غم",
+  "80066": "ليمون بنزهير 500 غم",
+  "80067": "ليمون اصفر بلدي 500 غم",
+  "80068": "بطيخ",
+  "80069": "كيوي 500 غم",
+  "80070": "شمام كنتلوب 500 غم",
+  "80071": "ميرامية 500 غم",
+  "80072": "خيار بيبي 500 غم",
+  "80073": "كيوي جولد مستورد 500 غم",
+  "80074": "باذنجان اسود عجمي 500 غم",
+  "80075": "شمام",
+  "80076": "ليتشي مستورد 500 غم",
+  "80077": "تفاح سوري 500 غم",
+  "80078": "بصل احمر 500 غم",
+  "80079": "بصل ابيض 500 غم",
+  "80080": "جوز قلب 500 غم",
+  "80081": "خوخ بنجارية 500 غم",
+  "80082": "مشمش فرط 500 غم",
+  "80083": "بوملي 500 غم",
+  "80084": "دراق كعكة أصفر 500 غم",
+  "80085": "كوسا بلدي 500 غم",
+  "80086": "خس انديف احمر 500 غم",
+  "80087": "خوخ بلحية 500 غم",
+  "80088": "مانجوستين 500 غم",
+  "80089": "جريب فروت اصفر 500 غم",
+  "80090": "قلقاس 500 غم",
+  "80091": "قشطة 500 غم",
+  "80092": "مشمش عجمي 500 غم",
+  "80093": "دراغون فروت 500 غم",
+  "80094": "بازيلاء 500 غم",
+  "80095": "كاكا اسباني 500 غم",
+  "80096": "لوبيا 500 غم",
+  "80097": "ملوخية 500 غم",
+  "80098": "مانجا كيت 500 غم",
+  "80099": "رمان شرابي 500 غم",
+  "80100": "عنب اسود نخب ثاني 500 غم",
+  "80101": "رمان مليسي 500 غم",
+  "80102": "كرز اخضر سوبر 500 غم",
+  "80103": "رمان احمر سوبر 500 غم",
+  "80104": "برتقال شموطي 500 غم",
+  "80105": "ليتشي 500 غم",
+  "80106": "برتقال فرنسي 500 غم",
+  "80107": "كرز اخضر 500 غم",
+  "80108": "مانجا عويس بيبي 500 غم",
+  "80109": "بلح 500 غم",
+  "80110": "حصرم 500 غم",
+  "80111": "بابونج 500 غم",
+  "80112": "ريحان 500 غم",
+  "80113": "اجاص كوشي 500 غم",
+  "80114": "ذرة سكرية 500 غم",
+  "80115": "فلفل مكسيكي 500 غم",
+  "80116": "بندورة عناقيد 500 غم",
+  "80117": "فلفل غزال ملون 500 غم",
+  "80118": "بامية حمرا 500 غم",
+  "80119": "كاكا بلدية 500 غم",
+  "80120": "تفاح احمر 500 غم",
+  "80121": "لخنة 500 غم",
+  "80122": "عنب بلدي 500 غم",
+  "80123": "عنب حلواني 500 غم",
+  "80124": "عنب اسود 500 غم",
+  "80125": "بطيخ اسود 500 غم",
+  "80126": "ثوم بلدي بالعروق 500 غم",
+  "80127": "بلح مغلف صحن",
+  "80128": "بومليت 500 غم",
+  "80129": "كاكا اسبانية 500 غم",
+  "80130": "باذنجان اسود عجمي 500 غم",
+  "80131": "يقطين 500 غم",
+  "80132": "باذنجان بتيري 500 غم",
+  "80134": "فول اخضر 500 غم",
+  "80135": "افوكادو هاس 500 غم",
+  "80136": "رطب مصري 500 غم",
+  "80137": "خوخ اسود معطرة 500 غم",
+  "80138": "نكترين 500 غم",
+  "80139": "فراولة كيلو 500 غم",
+  "80140": "باشن فروت مستورد 500 غم",
+  "80141": "خوخ احمر 500 غم",
+  "80142": "بابايا 500 غم",
+  "80143": "دراق عرض 500 غم",
+  "80159": "نوجا 500 غم",
+  "80160": "ارضي شوكي 500 غم",
+  "80161": "كينج فروت 500 غم",
+  "80168": "تين مغلف 1 كيلو",
+  "80177": "سمسمية وراحة 500 غم",
+  "80181": "موز عصير 500 غم",
+  "80182": "زيتون جلط حبة وسط 500 غم",
+  "80189": "مدافع الجنة 500 غم",
+  "80199": "مانجا كيتي 500 غم",
+  "80200": "مانجا عسل 500 غم",
+  "80201": "دراغون  اصفر مستورد 500 غم",
+  "80202": "دوم 500 غم",
+  "80210": "خس انديف اصفر و ابيض 500 غم",
+  "80213": "صحن بلح مغلف",
+  "80214": "سناك فروت 500 غم",
+  "80218": "كستنا صيني 500 غم",
+  "1000006": "نعنع (ربطة)",
+  "1000007": "بقدونس (ربطة)",
+  "1000008": "جرجير (ربطة)",
+  "1000009": "كزبرة (ربطة)"
+};
+
+    let exportRows = [];
+    let fullRows = [];
+
+    function readFileAsWorkbook(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            resolve(wb);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function getFirstSheetRows(workbook) {
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    }
+
+    function normalizeId(v) {
+      return String(v ?? "").trim();
+    }
+
+    function normalizeText(v) {
+      return String(v ?? "").trim();
+    }
+
+    function normalizePrice(v) {
+      if (typeof v === "number") return v;
+      const cleaned = String(v ?? "").replace(/,/g, "").replace(/[^\d.\-]/g, "");
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderTables() {
+      const previewBody = document.querySelector("#previewTable tbody");
+      const fullBody = document.querySelector("#fullTable tbody");
+
+      previewBody.innerHTML = exportRows.map(r => `
+        <tr>
+          <td>${escapeHtml(r["ID"])}</td>
+          <td>${escapeHtml(r["PRICE"])}</td>
+          <td>${escapeHtml(r["active or not"])}</td>
+        </tr>
+      `).join("");
+
+      fullBody.innerHTML = fullRows.map(r => `
+        <tr>
+          <td>${escapeHtml(r["العمود 1"])}</td>
+          <td>${escapeHtml(r["العمود 2"])}</td>
+          <td>${escapeHtml(r["العمود 4"])}</td>
+          <td>${escapeHtml(r["العمود 5"])}</td>
+          <td>${escapeHtml(r["العمود 7"])}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("processBtn").addEventListener("click", async () => {
+      const file1 = document.getElementById("file1").files[0];
+      const file2 = document.getElementById("file2").files[0];
+      const status = document.getElementById("status");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      if (!file1 || !file2) {
+        status.className = "status warn";
+        status.textContent = "Please upload both files first.";
+        return;
+      }
+
+      try {
+        status.className = "status";
+        status.textContent = "Reading files and processing data...";
+        downloadBtn.disabled = true;
+
+        const [wb1, wb2] = await Promise.all([
+          readFileAsWorkbook(file1),
+          readFileAsWorkbook(file2)
+        ]);
+
+        const rows1 = getFirstSheetRows(wb1);
+        const rows2 = getFirstSheetRows(wb2);
+
+        const priceMap = new Map();
+        for (let i = 0; i < rows2.length; i++) {
+          const row = rows2[i] || [];
+          const id = normalizeId(row[0]);
+          if (!id) continue;
+          priceMap.set(id, normalizePrice(row[1]));
+        }
+
+        exportRows = [];
+        fullRows = [];
+
+        // Start from first row in first Excel file
+        for (let i = 0; i < rows1.length; i++) {
+          const row = rows1[i] || [];
+          const originalId = normalizeId(row[0]);
+          const statusText = normalizeText(row[2]).toLowerCase();
+
+          if (!originalId) continue;
+
+          const price = priceMap.has(originalId) ? priceMap.get(originalId) : 0;
+          const matchedName = productLookup[originalId] || "";
+          const finalPrice = matchedName.includes("500 غم") ? price / 2 : price;
+
+          let column2 = "";
+          if (statusText === "off") {
+            column2 = 0;
+          } else if (statusText === "ok") {
+            column2 = "";
+          }
+
+          // Remove any row with zero final price
+          if (!finalPrice || finalPrice === 0) continue;
+
+          fullRows.push({
+            "العمود 1": originalId,
+            "العمود 2": column2,
+            "العمود 4": price,
+            "العمود 5": matchedName,
+            "العمود 7": finalPrice
+          });
+
+          exportRows.push({
+            "ID": originalId + "KR",
+            "PRICE": finalPrice,
+            "active or not": column2
+          });
+        }
+
+        renderTables();
+        downloadBtn.disabled = exportRows.length === 0;
+        status.className = "status ok";
+        status.textContent = `Done successfully. Kept ${exportRows.length} rows after removing zero-price items.`;
+      } catch (err) {
+        console.error(err);
+        status.className = "status warn";
+        status.textContent = `Error: ${err.message}`;
+      }
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      if (!exportRows.length) return;
+
+      // Row 1: headers
+      // Row 2: blank
+      // Row 3+: actual data
+      const data = [
+        ["ID", "PRICE", "active or not"],
+        ["", "", ""],
+        ...exportRows.map(r => [r["ID"], r["PRICE"], r["active or not"]])
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Result");
+      XLSX.writeFile(wb, "result.xlsx");
+    });
+  </script>
+</body>
+</html>
