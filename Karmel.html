@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel File Transformer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container {
+      width: min(1150px, 92%);
+      margin: 32px auto;
+    }
+    .hero {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      backdrop-filter: blur(12px);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 4vw, 40px);
+    }
+    .subtitle {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      align-items: center;
+    }
+    .upload-label, button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    .upload-label {
+      background: #38bdf8;
+      color: #082f49;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .upload-label:hover { transform: translateY(-1px); }
+    button {
+      background: #22c55e;
+      color: white;
+      font-weight: 700;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      transform: none;
+    }
+    input[type="file"] { display: none; }
+    .status {
+      margin-top: 18px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #e2e8f0;
+      min-height: 52px;
+      line-height: 1.8;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #f8fafc;
+    }
+    .small {
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .files-grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .file-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 18px;
+      padding: 18px;
+    }
+    .preview-card {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 18px;
+      padding: 18px;
+      overflow: hidden;
+    }
+    .preview-title {
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+    .name {
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+    .table-wrap {
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 420px;
+      background: rgba(255,255,255,0.02);
+    }
+    th, td {
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th {
+      background: rgba(56, 189, 248, 0.12);
+      color: #e0f2fe;
+      font-weight: 700;
+    }
+    .row-label {
+      background: rgba(148, 163, 184, 0.08);
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+    .preview-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin: 4px 4px 0 0;
+    }
+    .note {
+      margin-top: 24px;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+    .success { color: #86efac; }
+    .warning { color: #fcd34d; }
+    .error { color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>Excel File Transformer</h1>
+      <p class="subtitle">
+        Upload a single Excel file, and the page will automatically apply these changes:<br>
+        1) Leave row 2 empty and push the existing rows below it down<br>
+        2) In column 1, keep the value exactly as it appears<br>
+        3) If the value in column 2 is 0, delete the entire row so the rows below move up<br>
+        4) In column 3, if the value is exactly 1, only that cell will be cleared and the rest of the row stays unchanged<br>
+        Then the processed Excel file will be downloaded.
+      </p>
+
+      <div class="actions">
+        <label class="upload-label" for="zipInput">📄 Choose Excel File</label>
+        <input id="zipInput" type="file" accept=".xlsx,.xls,.csv" />
+        <button id="processBtn" disabled>⚙️ Process & Download File</button>
+      </div>
+
+      <div id="status" class="status">Waiting for an Excel file...</div>
+
+      <div class="summary">
+        <div class="card">
+          <h3>Selected File</h3>
+          <div id="excelCount" class="small">No file selected</div>
+        </div>
+        <div class="card">
+          <h3>File Type</h3>
+          <div id="otherCount" class="small">—</div>
+        </div>
+        <div class="card">
+          <h3>Applied Changes</h3>
+          <div class="small">Blank row 2 + keep full values in column 1 + delete rows with 0 in column 2 + clear only the cell if column 3 = 1</div>
+        </div>
+      </div>
+
+      <div id="filesGrid" class="files-grid"></div>
+      <div id="previewSection" class="files-grid"></div>
+
+      <div class="note">
+        Note: if the workbook contains multiple sheets, the same transformation will be applied to every sheet.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const zipInput = document.getElementById('zipInput');
+    const processBtn = document.getElementById('processBtn');
+    const statusEl = document.getElementById('status');
+    const excelCountEl = document.getElementById('excelCount');
+    const otherCountEl = document.getElementById('otherCount');
+    const filesGrid = document.getElementById('filesGrid');
+    const previewSection = document.getElementById('previewSection');
+
+    let selectedExcelFile = null;
+    let workbookFileName = '';
+
+    function setStatus(message, className = '') {
+      statusEl.className = 'status ' + className;
+      statusEl.innerHTML = message;
+    }
+
+    function isExcelFile(name) {
+      return /\.(xlsx|xls|csv)$/i.test(name);
+    }
+
+    function renderFiles() {
+      filesGrid.innerHTML = '';
+
+      if (!selectedExcelFile) return;
+
+      const div = document.createElement('div');
+      div.className = 'file-card';
+      div.innerHTML = `
+        <div class="name">${selectedExcelFile.name}</div>
+        <div class="small">Ready for processing</div>
+        <span class="badge">Excel</span>
+      `;
+      filesGrid.appendChild(div);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getPreviewRows(sheet, maxRows = 5, maxCols = 6) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: true,
+        defval: ''
+      });
+
+      return data.slice(0, maxRows).map(row => {
+        const trimmed = Array.isArray(row) ? row.slice(0, maxCols) : [];
+        while (trimmed.length < maxCols) trimmed.push('');
+        return trimmed;
+      });
+    }
+
+    function renderPreviewCard(fileName, sheetName, beforeRows, afterRows) {
+      const maxCols = Math.max(
+        1,
+        ...beforeRows.map(r => r.length),
+        ...afterRows.map(r => r.length)
+      );
+
+      const headers = Array.from({ length: maxCols }, (_, i) => `<th>Column ${i + 1}</th>`).join('');
+
+      const makeRows = (rows) => rows.map((row, index) => {
+        const cols = Array.from({ length: maxCols }, (_, i) => `<td>${escapeHtml(row[i] ?? '')}</td>`).join('');
+        return `<tr><td class="row-label">Row ${index + 1}</td>${cols}</tr>`;
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'preview-card';
+      card.innerHTML = `
+        <div class="preview-title">${escapeHtml(fileName)} — ${escapeHtml(sheetName)}</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                ${headers}
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="row-label" colspan="${maxCols + 1}">Before Processing</td></tr>
+              ${makeRows(beforeRows)}
+              <tr><td class="row-label" colspan="${maxCols + 1}">After Processing</td></tr>
+              ${makeRows(afterRows)}
+            </tbody>
+          </table>
+        </div>
+        <div class="preview-note">Quick preview of about the first 5 rows from each sheet after inserting a blank row 2, deleting rows where column 2 = 0, and clearing only the column 3 cell when its value is 1.</div>
+      `;
+      previewSection.appendChild(card);
+    }
+
+    async function buildQuickPreviews() {
+      previewSection.innerHTML = '';
+
+      if (!selectedExcelFile) return;
+
+      try {
+        const fileData = await selectedExcelFile.arrayBuffer();
+        const isCsv = /\.csv$/i.test(selectedExcelFile.name);
+        const workbook = isCsv
+          ? XLSX.read(new TextDecoder().decode(fileData), { type: 'string' })
+          : XLSX.read(fileData, { type: 'array' });
+
+        for (const sheetName of workbook.SheetNames) {
+          const originalSheet = workbook.Sheets[sheetName];
+          const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
+          const beforeRows = getPreviewRows(originalSheet);
+          const afterRows = getPreviewRows(updatedSheet);
+          renderPreviewCard(selectedExcelFile.name, sheetName, beforeRows, afterRows);
+        }
+      } catch (err) {
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+        card.innerHTML = `
+          <div class="preview-title">${escapeHtml(selectedExcelFile.name)}</div>
+          <div class="small error">Could not generate a preview for this file.</div>
+        `;
+        previewSection.appendChild(card);
+      }
+    }
+
+    function swapSecondAndThirdColumnsAndInsertBlankSecondRow(sheet) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: false,
+        defval: ''
+      });
+
+      const filteredData = [];
+
+      for (let r = 0; r < data.length; r++) {
+        const row = data[r] || [];
+
+        if (row[0] !== undefined && row[0] !== null && row[0] !== '') {
+          row[0] = String(row[0]);
+        }
+
+        const col2Text = String(row[1] ?? '').trim();
+        const col2Num = Number(col2Text);
+        if (col2Text !== '' && !Number.isNaN(col2Num) && col2Num === 0) {
+          continue;
+        }
+
+        const col3Text = String(row[2] ?? '').trim();
+        const col3Num = Number(col3Text);
+        if (col3Text !== '' && !Number.isNaN(col3Num) && col3Num === 1) {
+          row[2] = '';
+        }
+
+        filteredData.push(row);
+      }
+
+      const maxCols = Math.max(
+        3,
+        ...filteredData.map(row => Array.isArray(row) ? row.length : 0)
+      );
+
+      const blankRow = new Array(maxCols).fill('');
+      if (filteredData.length === 0) {
+        filteredData.push([]);
+      }
+
+      filteredData.splice(1, 0, blankRow);
+
+      const newSheet = XLSX.utils.aoa_to_sheet(filteredData);
+
+      if (sheet['!cols']) {
+        newSheet['!cols'] = Array.isArray(sheet['!cols']) ? [...sheet['!cols']] : sheet['!cols'];
+      } else {
+        newSheet['!cols'] = [];
+      }
+
+      if (!newSheet['!cols'][0]) newSheet['!cols'][0] = {};
+      newSheet['!cols'][0].z = '@';
+      newSheet['!cols'][0].wch = Math.max(newSheet['!cols'][0].wch || 0, 16);
+
+      const newRange = XLSX.utils.decode_range(newSheet['!ref'] || 'A1:A1');
+      for (let rowIndex = 0; rowIndex <= newRange.e.r; rowIndex++) {
+        const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: 0 });
+        if (newSheet[cellRef] && newSheet[cellRef].v !== undefined && newSheet[cellRef].v !== '') {
+          newSheet[cellRef].t = 's';
+          newSheet[cellRef].v = String(newSheet[cellRef].v);
+          newSheet[cellRef].w = String(newSheet[cellRef].v);
+          newSheet[cellRef].z = '@';
+        }
+      }
+
+      if (sheet['!rows']) newSheet['!rows'] = sheet['!rows'];
+      if (sheet['!merges']) newSheet['!merges'] = sheet['!merges'];
+
+      return newSheet;
+    }
+
+    zipInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      selectedExcelFile = file || null;
+      workbookFileName = file ? file.name.replace(/\.[^.]+$/, '') : '';
+      filesGrid.innerHTML = '';
+      previewSection.innerHTML = '';
+      processBtn.disabled = true;
+
+      if (!file) {
+        setStatus('No file selected.');
+        excelCountEl.textContent = 'No file selected';
+        otherCountEl.textContent = '—';
+        return;
+      }
+
+      if (!isExcelFile(file.name)) {
+        setStatus('Please choose a valid Excel or CSV file.', 'warning');
+        excelCountEl.textContent = 'Invalid file';
+        otherCountEl.textContent = file.name.split('.').pop() || 'Unknown';
+        return;
+      }
+
+      try {
+        setStatus('Reading Excel file...');
+        excelCountEl.textContent = file.name;
+        otherCountEl.textContent = (file.name.split('.').pop() || '').toUpperCase();
+        renderFiles();
+        await buildQuickPreviews();
+        setStatus('File loaded successfully. You can now process and download it.', 'success');
+        processBtn.disabled = false;
+      } catch (error) {
+        console.error(error);
+        setStatus('An error occurred while reading the file.', 'error');
+      }
+    });
+
+    processBtn.addEventListener('click', async () => {
+      if (!selectedExcelFile) return;
+
+      try {
+        processBtn.disabled = true;
+        setStatus('Processing file, please wait...');
+
+        const fileData = await selectedExcelFile.arrayBuffer();
+        const inputIsCsv = /\.csv$/i.test(selectedExcelFile.name);
+        const workbook = inputIsCsv
+          ? XLSX.read(new TextDecoder().decode(fileData), { type: 'string' })
+          : XLSX.read(fileData, { type: 'array' });
+
+        const newWorkbook = XLSX.utils.book_new();
+
+        workbook.SheetNames.forEach(sheetName => {
+          const originalSheet = workbook.Sheets[sheetName];
+          const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
+          XLSX.utils.book_append_sheet(newWorkbook, updatedSheet, sheetName);
+        });
+
+        const outputType = inputIsCsv ? 'xlsx' : (selectedExcelFile.name.toLowerCase().endsWith('.xls') ? 'xls' : 'xlsx');
+        const outArray = XLSX.write(newWorkbook, {
+          bookType: outputType,
+          type: 'array'
+        });
+
+        const blob = new Blob([outArray], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${workbookFileName || 'processed_file'}_processed.${outputType}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        setStatus('✅ Done successfully. The processed Excel file has been downloaded.', 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus('An error occurred while processing the file.', 'error');
+      } finally {
+        processBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
