@@ -7,6 +7,26 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
+    .top-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.4);
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 999;
+}
+
+.top-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -192,17 +212,11 @@
   </style>
 </head>
 <body>
+    <a href="Market.html" class="top-btn">⬅ Market</a>
   <div class="container">
     <div class="hero">
       <h1>Excel File Transformer</h1>
-      <p class="subtitle">
-        Upload a single Excel file, and the page will automatically apply these changes:<br>
-        1) Leave row 2 empty and push the existing rows below it down<br>
-        2) In column 1, keep the value exactly as it appears<br>
-        3) If the value in column 2 is 0, delete the entire row so the rows below move up<br>
-        4) In column 3, if the value is exactly 1, only that cell will be cleared and the rest of the row stays unchanged<br>
-        Then the processed Excel file will be downloaded.
-      </p>
+   
 
       <div class="actions">
         <label class="upload-label" for="zipInput">📄 Choose Excel File</label>
@@ -231,7 +245,7 @@
       <div id="previewSection" class="files-grid"></div>
 
       <div class="note">
-        Note: if the workbook contains multiple sheets, the same transformation will be applied to every sheet.
+      
       </div>
     </div>
   </div>
