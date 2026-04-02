@@ -3,10 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Excel ZIP Transformer</title>
+  <title>Shoneez</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
+    .top-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.4);
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 999;
+}
+
+.top-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -192,15 +212,10 @@
   </style>
 </head>
 <body>
+    <a href="Market.html" class="top-btn">⬅ Market</a>
   <div class="container">
     <div class="hero">
-      <h1>Excel ZIP Transformer</h1>
-      <p class="subtitle">
-        Upload a ZIP file that contains 9 or 10 Excel files, and the page will automatically apply these changes to every file:<br>
-        1) Swap column 2 with column 3<br>
-        2) Insert an empty second row so the old second row moves down and becomes row 3<br>
-        Then a new ZIP file will be downloaded with all processed files.
-      </p>
+      <h1>Shoneez</h1>
 
       <div class="actions">
         <label class="upload-label" for="zipInput">📦 Choose ZIP File</label>
@@ -229,7 +244,7 @@
       <div id="previewSection" class="files-grid"></div>
 
       <div class="note">
-        Note: the page shows the Excel files found inside the ZIP. If any workbook contains multiple sheets, the same transformation will be applied to every sheet.
+       
       </div>
     </div>
   </div>
