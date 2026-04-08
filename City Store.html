@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>City Store</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding-top: 60px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    .upload {
+      background: #38bdf8;
+    }
+
+    .export {
+      background: #22c55e;
+    }
+
+    .export:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    .top-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #111;
+      padding: 10px 15px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<a href="Market.html" class="top-btn">⬅ Market</a>
+
+<h1>City Store</h1>
+
+<input type="file" id="file" hidden />
+<button class="btn upload" onclick="document.getElementById('file').click()">Upload Excel</button>
+<button class="btn export" id="exportBtn" disabled>Export</button>
+
+<p id="status"></p>
+
+<script>
+let fileData = null;
+let fileName = "output.xlsx";
+
+document.getElementById('file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  fileData = await file.arrayBuffer();
+  fileName = file.name.replace(".xlsx", "") + "_done.xlsx";
+
+  document.getElementById('status').innerText = "Loaded: " + file.name;
+  document.getElementById('exportBtn').disabled = false;
+});
+
+function processSheet(sheet) {
+  const data = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    raw: true,
+    defval: ''
+  });
+
+  const result = data.map((row, i) => {
+    const r = Array.isArray(row) ? row : [];
+
+    // L J B
+    const newRow = [
+      r[11] ?? '',
+      r[9] ?? '',
+      r[1] ?? ''
+    ];
+
+    // من الصف الثاني فما فوق (ما نلمس الهيدر)
+    if (i !== 0) {
+      const val = String(newRow[2]).trim();
+
+      if (val !== '' && Number(val) === 1) {
+        newRow[2] = '';
+      }
+    }
+
+    return newRow;
+  });
+
+  // صف ثاني فاضي
+  result.splice(1, 0, ['', '', '']);
+
+  return XLSX.utils.aoa_to_sheet(result);
+}
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if (!fileData) return;
+
+  const wb = XLSX.read(fileData, { type: 'array' });
+  const newWb = XLSX.utils.book_new();
+
+  wb.SheetNames.forEach(name => {
+    const newSheet = processSheet(wb.Sheets[name]);
+    XLSX.utils.book_append_sheet(newWb, newSheet, name);
+  });
+
+  const out = XLSX.write(newWb, { type: 'array', bookType: 'xlsx' });
+
+  const blob = new Blob([out], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  document.getElementById('status').innerText = "Done ✅";
+});
+</script>
+
+</body>
+</html>
