@@ -72,7 +72,7 @@
 
   <textarea id="links" placeholder="https://example.com/image1.png"></textarea><br><br>
 
-  <label>Start From 😎</label>
+  <label>Start From</label>
   <input type="number" id="startNum" value="1"><br><br>
 
   <button onclick="downloadAndZip()">Download</button>
@@ -88,11 +88,11 @@
       let startNum = parseInt(startNumInput.value) || 1;
 
       if (urls.length === 0) {
-        status.textContent = '🔥 حط روابط أول 🔥';
+        status.textContent = '';
         return;
       }
 
-      status.textContent = '🔥 جاري التحميل... 🔥';
+      status.textContent = 'Downloading';
 
       const zip = new JSZip();
 
@@ -121,11 +121,11 @@
 
         } catch (error) {
           console.error(`Error: ${url}`, error);
-          status.textContent = `❌ خطأ في ${i + 1}`;
+          status.textContent = `❌ Error in ${i + 1}`;
         }
       }
 
-      status.textContent = '🔥 تجهيز الملف... 🔥';
+      status.textContent = '🔥Preparing the file... 🔥';
 
       const zipFile = await zip.generateAsync({ type: "blob" });
       const link = document.createElement("a");
@@ -133,7 +133,7 @@
       link.download = "fire_images.zip";
       link.click();
 
-      status.textContent = '✅ تم بنجاح 🔥';
+      status.textContent = '✅ Done 🔥';
     }
   </script>
 
