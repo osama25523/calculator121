@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Product Options</title>
+<style>
+
+    body {
+      background-color: #E0D9E9;
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      color: white;
+      margin: 0;
+      padding: 0; /* Changed to 0 to make nav bar fit top */
+      position: relative;
+    }
+
+    /* --- New Navigation Bar Styles --- */
+    .nav-bar {
+        background-color: #111;
+        padding: 5px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        margin-bottom: 30px;
+    }
+
+    .nav-link {
+        text-decoration: none;
+        color: white;
+        background-color: #333;
+        padding: 5px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: 1px solid #444;
+        font-size: 14px;
+    }
+
+    .nav-link:hover {
+        background-color: #00aaff; /* Blue glow on hover */
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 170, 255, 0.4);
+        border-color: #00aaff;
+    }
+    /* ---------------------------------- */
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 0 10px 10px 0;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[readonly] {
+      background-color: #333;
+      color: white;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .yellow { background-color: yellow; color: black; border-radius: 10px 0 0 10px; padding: 10px; }
+    .red { background-color: red; color: white; border-radius: 10px 0 0 10px; padding: 10px; }
+    .blue { background-color: #00aaff; color: white; border-radius: 10px 0 0 10px; padding: 10px; }
+    .green { background-color: green; color: white; border-radius: 10px 0 0 10px; padding: 10px; }
+
+    .top-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      padding: 0 20px; /* Added padding here since body padding was removed */
+    }
+
+    .top-container, .container {
+      background-color: #111;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      width: 350px;
+      font-size: 14px;
+    }
+
+    .percent-display {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .product-options {
+      background-color: black;
+      color: black;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 40px 20px; /* Adjusted margin */
+      direction: ltr;
+    }
+
+    .product-options select {
+      padding: 6px;
+      font-size: 12pt;
+    }
+
+    .product-options table {
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    .product-options td {
+      border: 1px solid #AAAAAA;
+      background-color: #FFFFFF;
+      padding: 4px 10px;
+      font-size: 11pt;
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .product-options .bold {
+      font-weight: bold;
+    }
+
+    .option-content {
+      display: none;
+    }
+
+    .padded { padding: 10px 20px; }
+
+    .proper-tools-row {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      position: relative;
+      padding: 0 20px;
+    }
+
+    .proper-case-tool {
+      background-color: #111;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+      font-size: 10px;
+      min-width: 300px;
+    }
+
+    .proper-case-tool h2 {
+      color: white !important;
+      font-size: 12px;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    #inputText {
+      color: white;
+      background-color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      resize: vertical;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+   
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 60px;
+    }
+    .form-group label {
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 3px;
+      font-size: 12px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+    }
+
+
+/* === TOP YELLOW BAR === */
+.top-yellow-bar{
+  width:100%;
+  height:60px;
+  background:#FFC107;
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:999;
+  box-shadow:0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* prevent overlap */
+body{
+  padding-top:60px;
+}
+
+/* make icons yellow (generic) */
+img{
+  filter: brightness(0) saturate(100%) invert(78%) sepia(83%) saturate(600%) hue-rotate(2deg);
+}
+
+
+/* === ADJUST YELLOW HEADER LOWER === */
+.top-yellow-bar{
+  height: 78px !important;
+}
+
+body{
+  padding-top: 78px !important;
+}
+
+/* === NAV TEXT COLOR LIKE SECOND IMAGE === */
+.nav-link{
+  color: #4a4f5d !important;
+  font-weight: 800;
+  text-shadow: none !important;
+}
+
+
+/* REMOVE TOP BAR SPACE */
+body{
+  padding-top: 0 !important;
+}
+
+/* YELLOW BACKGROUND FOR NAV ONLY */
+.nav-bar{
+  background: #FFC107 !important;
+}
+
+/* TEXT STYLE LIKE IMAGE */
+.nav-link{
+  color: #4a4f5d !important;
+  font-weight: bold;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+/* === BUTTON STYLE NAV === */
+.nav-bar{
+  background: #FFC107 !important;
+  padding:10px;
+}
+
+.nav-link{
+  background:#fff3cd !important;
+  color:#4a4f5d !important;
+  border-radius:20px !important;
+  padding:8px 18px !important;
+  border:1px solid #e0b000 !important;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  transition:0.2s;
+}
+
+.nav-link:hover{
+  background:#ffe082 !important;
+  transform:translateY(-2px);
+}
+
+
+/* === PREMIUM NAV EFFECTS === */
+.nav-bar {
+  background: rgba(255, 193, 7, 0.9) !important;
+  backdrop-filter: blur(10px);
+}
+
+.nav-link {
+  background:#fff3cd !important;
+  color:#4a4f5d !important;
+  border-radius:20px !important;
+  padding:8px 18px !important;
+  border:1px solid #e0b000 !important;
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.1),
+    0 0 10px rgba(255,193,7,0.3);
+  transition: all 0.25s ease;
+  animation: softGlow 3s infinite;
+}
+
+.nav-link:hover {
+  background:#ffe082 !important;
+  transform:translateY(-3px) scale(1.05);
+  box-shadow:
+    0 5px 15px rgba(0,0,0,0.2),
+    0 0 20px rgba(255,193,7,0.6);
+}
+
+@keyframes softGlow {
+  0% { box-shadow: 0 0 5px rgba(255,193,7,0.2); }
+  50% { box-shadow: 0 0 15px rgba(255,193,7,0.5); }
+  100% { box-shadow: 0 0 5px rgba(255,193,7,0.2); }
+}
+
+
+/* === FULL NEON YELLOW BOTTOM SECTION === */
+.proper-case-tool {
+  border: 1px solid #fff200 !important;
+  box-shadow:
+    0 0 10px #fff200,
+    0 0 20px #fff200,
+    0 0 40px rgba(255,242,0,0.6),
+    inset 0 0 20px rgba(255,242,0,0.2);
+}
+
+.proper-case-tool h2 {
+  color: #fff200 !important;
+  text-shadow:
+    0 0 5px #fff200,
+    0 0 10px #fff200,
+    0 0 20px #ffd000;
+}
+
+/* inputs glow */
+#discountNumber, #inputText {
+  border: 1px solid #fff200 !important;
+  box-shadow:
+    0 0 10px #fff200,
+    inset 0 0 10px rgba(255,242,0,0.3);
+}
+
+/* container glow effect */
+.proper-tools-row {
+  box-shadow:
+    0 0 30px rgba(255,242,0,0.2);
+}
+
+
+/* === ICON SPACING === */
+.nav-link {
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+
+/* === PREMIUM LIGHT YELLOW BACKGROUND === */
+body{
+  background: linear-gradient(135deg, #FFFDE7, #FFF8DC, #FFF3CD) !important;
+  min-height:100vh;
+}
+
+/* soft glow to match theme */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,150,0.2), transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(255,220,120,0.2), transparent 40%);
+  pointer-events:none;
+  z-index:-1;
+}
+
+
+/* REMOVE NEON FROM BOTTOM TEXT */
+.proper-case-tool h2{
+  text-shadow: none !important;
+  color:#ffffff !important;
+}
+
+/* GREEN NEON BOXES */
+.proper-case-tool{
+  border:1px solid #00ff88 !important;
+  box-shadow:
+    0 0 10px #00ff88,
+    0 0 20px #00ff88,
+    inset 0 0 15px rgba(0,255,136,0.2);
+}
+
+/* FONT AWESOME */
+
+
+
+/* page tweaks for standalone product options */
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 90px 20px 20px;
+  box-sizing: border-box;
+}
+
+.product-options {
+  width: min(1400px, 100%);
+  margin: 0 !important;
+}
+
+/* BACK BUTTON */
+.back-btn{
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+}
+.back-btn:hover{
+  background: #00ff88;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+</style>
+</head>
+<body>
+<button onclick="goBack()" class="back-btn">⬅ Back</button>
+<div class="product-options">
+<label class="red padded" for="optionSelector"><b>Choose Product Option:</b></label>
+<select id="optionSelector" onchange="showOptionContent()">
+<option value="">-- Select --</option>
+<option value="choice1Option">1st Choice for Pizza</option>
+<option value="choice2Option">2nd Choice for Pizza</option>
+<option value="choice3Option">3rd Choice for Pizza</option>
+<option value="sizeOption">Your Choice Of Size</option>
+<option value="drinkOption">Your Choice Of Drink</option>
+<option value="weightOption">Your Choice Of Weight</option>
+<option value="sauceOption1">Your Choice Of Sauce</option>
+<option value="cookingMethodOption">Cooking Method</option>
+<option value="saladOption">Your Choice Of Salad</option>
+<option value="breadOption1">Bread Type</option>
+<option value="sauceOption2">Your Choice Of Sauce</option>
+<option value="friesOption">Your Choice of Fries</option>
+<option value="weightOption2">Your Choice of Weight</option>
+<option value="mojitoOption">Your Choice of mojito</option>
+<option value="scoop1Option">Choice of 1st Scoop</option>
+<option value="scoop2Option">Choice of 2nd Scoop</option>
+<option value="breadOption2">Bread Type</option>
+<option value="chickenSizeOption">Chicken Size</option>
+<option value="milkOption">Milk Type</option>
+<option value="extraOption">Extra</option>
+<option value="addOnsOption1">Add On's falafel Sandwich</option>
+<option value="addScoopOption">Add Scoop</option>
+<option value="addOnsOption2">Add On's Flavours</option>
+<option value="fishOption">Choose Your Fish</option>
+</select>
+<div class="option-content" id="sizeOption">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>Your Choice Of Size</td><td> </td><td>1</td><td>Y</td>
+<td>Small</td><td>0</td><td class="bold">Medium</td><td>0</td><td>Large</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button></div>
+<div class="option-content" id="drinkOption">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>Your Choice Of Drink</td><td> </td><td>1</td><td>Y</td>
+<td>Matrix Cola</td><td>0</td><td>Matrix Orange</td><td>0</td><td>Matrix Up</td><td>0</td>
+<td>Matrix Cola Zero</td><td>0</td><td>Matrix Up Zero</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button></div>
+<div class="option-content" id="weightOption">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>Your Choice Of Weight</td><td> </td><td>1</td><td>Y</td>
+<td>250g</td><td>0</td><td>500g</td><td>0</td><td>750g</td><td>0</td><td>1kg</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button></div>
+<div class="option-content" id="choice1Option">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>1st Choice</td><td> </td><td>1</td><td>Y</td>
+<td>BBQ Pizza</td><td>0</td><td>Alfredo Pizza</td><td>0</td>
+<td>Vegetables Pizza</td><td>0</td><td>Pepperoni Pizza</td><td>0</td><td>Hotdog Pizza</td><td>0</td>
+<td>Mushroom Pizza</td><td>0</td><td>Turkey Pizza</td><td>0</td><td>Margherita Pizza</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="choice2Option">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>2nd Choice</td><td> </td><td>1</td><td>Y</td>
+<td>BBQ Pizza</td><td>0</td><td>Alfredo Pizza</td><td>0</td>
+<td>Vegetables Pizza</td><td>0</td><td>Pepperoni Pizza</td><td>0</td><td>Hotdog Pizza</td><td>0</td>
+<td>Mushroom Pizza</td><td>0</td><td>Turkey Pizza</td><td>0</td><td>Margherita Pizza</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="choice3Option">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>3rd Choice</td><td> </td><td>1</td><td>Y</td>
+<td>BBQ Pizza</td><td>0</td><td>Alfredo Pizza</td><td>0</td>
+<td>Vegetables Pizza</td><td>0</td><td>Pepperoni Pizza</td><td>0</td><td>Hotdog Pizza</td><td>0</td>
+<td>Mushroom Pizza</td><td>0</td><td>Turkey Pizza</td><td>0</td><td>Margherita Pizza</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="fishOption">
+<table>
+<tr>
+<td>1</td><td>ShortCode</td><td>Choose Your Fish</td><td> </td><td>1</td><td>Y</td>
+<td>Dennis Fish</td><td>0</td><td>Hamour Fish</td><td>0</td><td>Shaour Fish</td><td>0</td><td>Lot Fish</td><td>0</td>
+</tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="sauceOption1">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice Of Sauce</td><td> </td><td>1</td><td>Y</td><td>BBQ</td><td>0</td><td>Ranch Sauce</td><td>0</td><td>Jalapeno</td><td>0</td><td>Hot Sauce</td><td>0</td><td>Smokey Sauce</td><td>0</td><td>Cheddar Sauce</td><td>0</td><td>Garlic</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="cookingMethodOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Cooking Method</td><td> </td><td>1</td><td>Y</td><td>Boiled</td><td>0</td><td>Grilled</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="saladOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice Of Salad</td><td> </td><td>1</td><td>Y</td><td>Arabic Salad</td><td>0</td><td>Tahini Salad</td><td>0</td><td>Without Salad</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="breadOption1">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Bread Type</td><td> </td><td>1</td><td>Y</td><td>Regular bread</td><td>0</td><td>Ka'ak bread</td><td>0</td><td>Shrak Bread</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="sauceOption2">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice Of Sauce</td><td> </td><td>1</td><td>Y</td><td>Cocktail Sauce</td><td>0</td><td>Honey Mustard</td><td>0</td><td>Dynamite Sauce</td><td>0</td><td>(Buffalo + Ranch)</td><td>0</td><td>Sweet Chili</td><td>0</td><td>BBQ</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="friesOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice of Fries</td><td> </td><td>1</td><td>Y</td><td>French Fries</td><td>0</td><td>Wedges Fries</td><td>0</td><td>Curly Fries</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="weightOption2">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice of Weight</td><td> </td><td>1</td><td>Y</td><td>90g</td><td>0</td><td>180g</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="mojitoOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Your Choice of mojito</td><td> </td><td>1</td><td>Y</td><td>Xl</td><td>0</td><td>Boom Boom</td><td>0</td><td>Code Red</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="scoop1Option">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Choice of 1st Scoop</td><td> </td><td>1</td><td>Y</td><td>Cream</td><td>0</td><td>Chocolate</td><td>0</td><td>Custard</td><td>0</td><td>Peanut Butter</td><td>0</td><td>Latte</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="scoop2Option">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Choice of 2nd Scoop</td><td> </td><td>1</td><td>Y</td><td>Cream</td><td>0</td><td>Chocolate</td><td>0</td><td>Custard</td><td>0</td><td>Peanut Butter</td><td>0</td><td>Latte</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="breadOption2">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Bread Type</td><td> </td><td>1</td><td>Y</td><td>Regular bread</td><td>0</td><td>Tortilla Bread</td><td>0</td><td>Turkish bread</td><td>0</td><td>Hamam bread</td><td>0</td><td>French bread</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="chickenSizeOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Chicken Size</td><td> </td><td>1</td><td>Y</td><td>Half Chicken</td><td>0</td><td>Whole Chicken</td><td>0</td><td>One and a half Chicken</td><td>0</td><td>2 Chickens</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="milkOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Milk Type</td><td> </td><td>1</td><td>Y</td><td>Regular Milk</td><td>0</td><td>Lactose Free Milk</td><td>0</td><td>Soy Milk</td><td>0</td><td>Almond Milk</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="extraOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Extra</td><td> </td><td>1</td><td>Y</td><td>Espresso Shot</td><td>0</td><td>Decaf</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="addOnsOption1">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Add On's</td><td> </td><td>1</td><td>Y</td><td>Sour Sauce (Tatabila)</td><td>0</td><td>Hot Sauce (Shatta)</td><td>0</td><td>French fries</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="addScoopOption">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Add Scoop</td><td> </td><td>1</td><td>Y</td><td>Vanilla</td><td>0</td><td>Chocolate</td><td>0</td><td>Double Chocolate</td><td>0</td><td>Strawberry</td><td>0</td><td>BlueBerry</td><td>0</td><td>Lemon</td><td>0</td><td>Mango</td><td>0</td><td>Kiwi</td><td>0</td><td>Croquant</td><td>0</td><td>Watermelon</td><td>0</td><td>Raspberry</td><td>0</td><td>Banana</td><td>0</td><td>Pinacolada</td><td>0</td><td>Red Velvet</td><td>0</td><td>Hami Melon</td><td>0</td><td>Lychee</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+<div class="option-content" id="addOnsOption2">
+<table>
+<tr><td>1</td><td>ShortCode</td><td>Add On's</td><td> </td><td>1</td><td>Y</td><td>Pistachio</td><td>0</td><td>Lotus</td><td>0</td><td>Chocolate Chips</td><td>0</td><td>Coconut</td><td>0</td><td>Almonds</td><td>0</td><td>Walnut</td><td>0</td><td>Chocolate Ball</td><td>0</td><td>Rainbow</td><td>0</td></tr>
+</table>
+<button onclick="copyTableContent(this)" style="margin-top:10px; padding:5px 10px; font-size:12px; border-radius:6px; cursor:pointer;">📋 Copy</button>
+</div>
+
+<script>
+function goBack() {
+  window.location.href = "index.html";
+}
+
+function showOptionContent() {
+  let selector = document.getElementById('optionSelector');
+  let value = selector.value;
+  document.querySelectorAll('.option-content').forEach(el => el.style.display = 'none');
+  if (value) {
+    document.getElementById(value).style.display = 'block';
+  }
+}
+
+function copyTableContent(button) {
+  const table = button.previousElementSibling;
+  let text = '';
+  for (let row of table.rows) {
+    let rowText = [];
+    for (let cell of row.cells) {
+      rowText.push(cell.textContent.trim());
+    }
+    text += rowText.join('\t') + '\n';
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    button.textContent = "✅ Copied!";
+    setTimeout(() => {
+      button.textContent = "📋 Copy";
+    }, 1500);
+  });
+}
+</script>
+</body>
+</html>
