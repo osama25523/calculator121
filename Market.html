@@ -2,120 +2,230 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>Storats</title>
-  
+  <title>Stores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    .back-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0,0,0,0.4);
-  padding: 10px 18px;
-  border-radius: 12px;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  backdrop-filter: blur(8px);
-  transition: 0.3s;
-  border: 1px solid rgba(255,255,255,0.2);
-}
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-.back-btn:hover {
-  background: rgba(255,255,255,0.2);
-  transform: scale(1.05);
-}
+  <style>
     body {
-      <a href="index.html" class="back-btn">⬅ Discount & Sale Price</a>
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      background: #fff1c4; /* ✅ الخلفية الجديدة */
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
+      color: #111;
     }
 
     .container {
       text-align: center;
       width: 90%;
-      max-width: 900px;
+      max-width: 1000px;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
-      font-size: 40px;
+      font-size: 45px;
       margin-bottom: 30px;
-      letter-spacing: 2px;
+      text-shadow: 0 0 10px #fff, 0 0 25px #ffcc00;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #111;
+      padding: 10px 20px;
+      border-radius: 12px;
+      color: #ffcc00;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 0 10px #ffcc00;
+      z-index: 2;
+    }
+
+    .back-btn:hover {
+      background: #ffcc00;
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    .left-buttons {
+      position: fixed;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 2;
+    }
+
+    .sale-btn {
+      background: #111;
+      color: #ffcc00;
+      padding: 16px 26px;
+      border-radius: 18px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 0 15px #ffcc00;
+      transition: 0.3s;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px #ffcc00; }
+      50% { box-shadow: 0 0 25px #ffcc00, 0 0 50px #ff9900; }
+      100% { box-shadow: 0 0 10px #ffcc00; }
+    }
+
+    .sale-btn:hover {
+      background: #ffcc00;
+      color: #000;
+      transform: scale(1.1);
+      animation: none;
+    }
+
+    .excel-btn {
+      background: #111;
+      color: #00ff88;
+      padding: 14px 22px;
+      border-radius: 15px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 0 12px #00ff88;
+      transition: 0.3s;
+    }
+
+    .excel-btn:hover {
+      background: #00ff88;
+      color: #000;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #00ff88, 0 0 40px #00cc66;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 20px;
     }
 
     .card {
       height: 120px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
+      background: #fff;
       border-radius: 20px;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       text-decoration: none;
-      color: white;
-      font-size: 20px;
+      color: #111;
+      font-size: 16px;
       font-weight: bold;
       transition: 0.3s;
-      border: 2px solid transparent;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card i {
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #ffcc00, #ff9900);
+      left: 0;
+      top: 0;
+      transition: 0.4s;
+      z-index: 0;
+    }
+
+    .card:hover::before {
+      width: 100%;
     }
 
     .card:hover {
-      transform: translateY(-8px) scale(1.05);
-      background: rgba(255, 255, 255, 0.2);
+      color: #000;
+      transform: translateY(-10px) scale(1.08);
+      box-shadow: 0 0 20px #ffcc00, 0 0 40px #ff9900;
     }
 
-    /* تمييز كرمل */
-    .karmal {
-      border-color: #ffb347;
+    .card span, .card i {
+      position: relative;
+      z-index: 1;
     }
 
-    /* باقي الستورز */
-    .store {
-      border-color: #00c6ff;
+    .karmel {
+      background: #111;
+      color: #ffcc00;
+    }
+
+    .karmel:hover {
+      background: #ffcc00;
+      color: #000;
     }
 
   </style>
 </head>
 
 <body>
-<a href="index.html" class="back-btn">⬅ Discount & Sale Price</a>
-  <div class="container">
-    <h1>Stores</h1>
 
-    <div class="grid">
-      <a href="Karmel Veg.html" class="card karmel">Karmel Veg</a>
+<a href="index.html" class="back-btn">
+  <i class="fa fa-arrow-right"></i> Back
+</a>
 
-      <a href="Karmel.html" class="card store">Karmel Sku</a>
-      <a href="Shoneez.html" class="card store">Shoneez</a>
-      <a href="Shoneez 6 Sku.html" class="card store">Shoneez 6 Sku</a>
-      <a href="City Store.html" class="card store">City Store</a>
-      <a href="Al Mutasaweq.html" class="card store">Al Mutasaweq</a>
-      <a href="Useful Excel.html" class="card store">Useful Excel</a>
-      <a href="store7.html" class="card store">Store 7</a>
-      <a href="Sale Price.html" class="card store">Sale Price</a>
-      <a href="store9.html" class="card store">Store 9</a>
-      <a href="store10.html" class="card store">Store 10</a>
-      <a href="store11.html" class="card store">Store 11</a>
-      <a href="store12.html" class="card store">Store 12</a>
-      <a href="store13.html" class="card store">Store 13</a>
-      <a href="store14.html" class="card store">Store 14</a>
-      <a href="store15.html" class="card store">Store 15</a>
-    </div>
+<div class="left-buttons">
+  <a href="Sale Price.html" class="sale-btn">
+    <i class="fa fa-fire"></i> Sale Price 
+  </a>
 
+  <a href="Useful Excel.html" class="excel-btn">
+    <i class="fa-solid fa-table"></i> Useful Excel
+  </a>
+</div>
+
+<div class="container">
+  <h1>Stores</h1>
+
+  <div class="grid">
+    <a href="Karmel Veg.html" class="card karmel"><i class="fa fa-carrot"></i><span>Karmel Veg</span></a>
+    <a href="Karmel.html" class="card"><i class="fa fa-box"></i><span>Karmel Sku</span></a>
+    <a href="Shoneez.html" class="card"><i class="fa fa-store"></i><span>Shoneez</span></a>
+    <a href="Shoneez 6 Sku.html" class="card"><i class="fa fa-layer-group"></i><span>Shoneez 6 Sku</span></a>
+    <a href="City Store.html" class="card"><i class="fa fa-city"></i><span>City Store</span></a>
+    <a href="Al Mutasaweq.html" class="card"><i class="fa fa-user"></i><span>Al Mutasaweq</span></a>
+    <a href="store7.html" class="card"><i class="fa fa-shop"></i><span>Store 7</span></a>
+    <a href="store9.html" class="card"><i class="fa fa-shop"></i><span>Store 9</span></a>
+    <a href="store10.html" class="card"><i class="fa fa-shop"></i><span>Store 10</span></a>
+    <a href="store11.html" class="card"><i class="fa fa-shop"></i><span>Store 11</span></a>
+    <a href="store12.html" class="card"><i class="fa fa-shop"></i><span>Store 12</span></a>
+    <a href="store13.html" class="card"><i class="fa fa-shop"></i><span>Store 13</span></a>
+    <a href="store14.html" class="card"><i class="fa fa-shop"></i><span>Store 14</span></a>
+    <a href="store15.html" class="card"><i class="fa fa-shop"></i><span>Store 15</span></a>
+    <a href="store16.html" class="card"><i class="fa fa-shop"></i><span>Store 16</span></a>
+    <a href="store17.html" class="card"><i class="fa fa-shop"></i><span>Store 17</span></a>
+    <a href="store18.html" class="card"><i class="fa fa-shop"></i><span>Store 18</span></a>
+    <a href="store19.html" class="card"><i class="fa fa-shop"></i><span>Store 19</span></a>
+    <a href="store20.html" class="card"><i class="fa fa-shop"></i><span>Store 20</span></a>
+    <a href="store21.html" class="card"><i class="fa fa-shop"></i><span>Store 21</span></a>
   </div>
+
+</div>
 
 </body>
 </html>
