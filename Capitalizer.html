@@ -26,6 +26,7 @@ body{
 }
 
 .card{
+  position:relative;
   border-radius:30px;
   padding:28px;
   backdrop-filter:blur(20px);
@@ -79,6 +80,14 @@ button{
   color:#fff;
 }
 
+.back-btn{
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#222;
+  color:#fff;
+}
+
 #reaction{
   margin-top:10px;
   font-size:22px;
@@ -96,6 +105,10 @@ button{
 <body>
 <div class="page">
   <div class="card">
+
+    <!-- زر الرجوع -->
+    <button onclick="goBack()" class="back-btn">⬅ Back</button>
+
     <h1>Capitalize Text</h1>
 
     <textarea id="text" placeholder="Type your text here..."></textarea>
@@ -129,7 +142,6 @@ function isLatinWord(token){
 }
 
 function transformToken(token, isStart){
-  // Keep leading/trailing punctuation untouched, capitalize only the actual word part
   const match = token.match(/^([^A-Za-z]*)([A-Za-z]+(?:'[A-Za-z]+)?)([^A-Za-z]*)$/);
   if(!match) return token;
 
@@ -207,6 +219,10 @@ clearBtn.addEventListener('click', ()=>{
   updateReaction('');
   checkSpaces('');
 });
+
+function goBack(){
+  window.location.href = "index.html";
+}
 </script>
 </body>
 </html>
