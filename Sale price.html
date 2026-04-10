@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Matcher</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    body{font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;margin:0;padding:24px}
+    .box{max-width:960px;margin:auto;background:#111827;border:1px solid #334155;border-radius:18px;padding:24px}
+    h1{margin:0 0 12px;font-size:28px}
+    p{line-height:1.8;color:#cbd5e1}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+    .card{background:#0b1220;border:1px solid #334155;border-radius:14px;padding:16px}
+    input[type=file]{width:100%;margin-top:10px;padding:10px;border-radius:10px;background:#fff;color:#000}
+    button{border:none;border-radius:12px;padding:12px 18px;font-size:16px;cursor:pointer;margin-left:8px}
+    #run{background:#22c55e;color:#fff}
+    #download{background:#3b82f6;color:#fff}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    pre{background:#020617;border:1px solid #334155;border-radius:14px;padding:16px;white-space:pre-wrap;color:#cbd5e1;min-height:120px}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Sale Price</h1>
+
+    <div class="grid">
+      <div class="card">
+        <b>From Export (Dont do anything with it )</b>
+        <input id="file1" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="card">
+        <b>Sale Price (First Coloum Sku + Second Coloum Price)</b>
+        <input id="file2" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+    </div>
+
+    <button id="run" disabled>Process</button>
+    <button id="download" disabled>Download</button>
+
+    <pre id="log"></pre>
+  </div>
+
+<script>
+let wb1 = null, wb2 = null, outWb = null;
+const FIRST_COL_PREFIX = 'A'; // غيّر الحرف من هون إذا بدك مثل B1, B2...
+
+const f1 = document.getElementById('file1');
+const f2 = document.getElementById('file2');
+const runBtn = document.getElementById('run');
+const downloadBtn = document.getElementById('download');
+const logBox = document.getElementById('log');
+
+function log(t){ logBox.textContent = t; }
+function norm(v){ return v == null ? '' : String(v).trim(); }
+
+function readWorkbook(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        resolve(XLSX.read(data,{type:'array'}));
+      } catch(err){ reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function loadFile(input, which){
+  const file = input.files[0];
+  if(!file) return;
+  try{
+    if(which === 1) wb1 = await readWorkbook(file);
+    else wb2 = await readWorkbook(file);
+    runBtn.disabled = !(wb1 && wb2);
+    log('تم تحميل الملف' + (which === 1 ? ' الأول' : ' الثاني') + ' بنجاح.');
+  }catch(err){
+    log('خطأ في القراءة: ' + err.message);
+  }
+}
+
+f1.addEventListener('change',()=>loadFile(f1,1));
+f2.addEventListener('change',()=>loadFile(f2,2));
+
+runBtn.addEventListener('click', ()=>{
+  try{
+    const ws1 = wb1.Sheets[wb1.SheetNames[0]];
+    const ws2 = wb2.Sheets[wb2.SheetNames[0]];
+
+    const data1 = XLSX.utils.sheet_to_json(ws1, {header:1, defval:'', raw:false});
+    const data2 = XLSX.utils.sheet_to_json(ws2, {header:1, defval:'', raw:false});
+
+    const secondColMap = new Map();
+    for(let i = 0; i < data2.length; i++){
+      const key = norm(data2[i][0]);
+      const val = data2[i][1];
+      if(key !== '') secondColMap.set(key, val);
+    }
+
+    const out = [];
+
+    // أول صفين: نخليهم مثل الملف الأصلي لكن نضيف خانة فارغة بعد عمود السعر للتناسق
+    if(data1.length > 0){
+      const row0 = [...(data1[0] || [])];
+      while(row0.length < 2) row0.push('');
+      row0.splice(2, 0, '');
+      out.push(row0);
+    }
+
+    if(data1.length > 1){
+      const row1 = [...(data1[1] || [])];
+      while(row1.length < 2) row1.push('');
+      row1.splice(2, 0, '');
+      out.push(row1);
+    }
+
+    let kept = 0, removed = 0;
+
+    for(let r = 2; r < data1.length; r++){
+      const row = [...(data1[r] || [])];
+      const compareValue = norm(row[9]); // J
+
+      if(compareValue === '' || !secondColMap.has(compareValue)){
+        removed++;
+        continue;
+      }
+
+      while(row.length < 12) row.push('');
+
+      // Insert before H
+      row.splice(7, 0, '');
+
+      // Put excel2 column B into I
+      row[8] = secondColMap.get(compareValue);
+
+      out.push(row);
+      kept++;
+    }
+
+    // Renumber first column from row 3 => A1, A2, A3...
+    for(let r = 2; r < out.length; r++){
+      if(!out[r]) out[r] = [];
+      out[r][0] = `${FIRST_COL_PREFIX}${r - 1}`;
+    }
+
+    const newWs = XLSX.utils.aoa_to_sheet(out);
+
+    // Preserve original links from original K into new L after insert
+    let outRow = 2;
+    for(let r = 2; r < data1.length; r++){
+      const compareValue = norm((data1[r] || [])[9]);
+      if(compareValue === '' || !secondColMap.has(compareValue)) continue;
+
+      const oldAddr = XLSX.utils.encode_cell({r:r, c:10}); // original K
+      const oldCell = ws1[oldAddr];
+      let target = null;
+
+      if(oldCell && oldCell.l && oldCell.l.Target){
+        target = oldCell.l.Target;
+      } else {
+        const plain = norm((data1[r] || [])[10]);
+        if(/^https?:\/\//i.test(plain) || /^\.{0,2}\//.test(plain) || /^[^\\\/:*?"<>|]+\.(jpg|jpeg|png|webp)$/i.test(plain)){
+          target = plain;
+        }
+      }
+
+      const newAddr = XLSX.utils.encode_cell({r:outRow, c:11}); // new L
+      if(target){
+        newWs[newAddr] = { t:'s', v: target, l:{ Target: target } };
+      } else if(!newWs[newAddr]) {
+        newWs[newAddr] = { t:'s', v:'' };
+      }
+
+      outRow++;
+    }
+
+    const range = XLSX.utils.decode_range(newWs['!ref']);
+    const widths = [];
+    for(let c = range.s.c; c <= range.e.c; c++) widths.push({wch:22});
+    newWs['!cols'] = widths;
+
+    outWb = XLSX.utils.book_new();
+
+    // الصفحة الأولى هي المعدلة
+    XLSX.utils.book_append_sheet(outWb, newWs, wb1.SheetNames[0] || 'Result');
+
+    // أي صفحات أخرى من الملف الأول تبقى كما هي بدون تعديل
+    for(let i = 1; i < wb1.SheetNames.length; i++){
+      const sheetName = wb1.SheetNames[i];
+      XLSX.utils.book_append_sheet(outWb, wb1.Sheets[sheetName], sheetName);
+    }
+
+    downloadBtn.disabled = false;
+
+    log(
+      'تم التنفيذ بنجاح.\n' +
+      'الصفوف الباقية: ' + kept + '\n' +
+      'الصفوف المحذوفة: ' + removed + '\n\n' +
+      'النتيجة النهائية:\n' +
+      '- أول صفين صار فيهم خانة فارغة بعد عمود السعر للتناسق\n' +
+      '- Insert قبل H وترك العمود الجديد فارغ\n' +
+      '- وضع العمود الثاني من الملف الثاني في I\n' +
+      '- ترقيم العمود الأول من الصف الثالث: A1, A2, A3...\n' +
+      '- الإبقاء على روابط الصور الأصلية بدل 1.jpg\n' +
+      '- أي صفحة ثانية أو صفحات إضافية من الملف الأول تبقى كما هي'
+    );
+  } catch(err) {
+    log('صار خطأ: ' + err.message);
+    console.error(err);
+  }
+});
+
+downloadBtn.addEventListener('click', ()=>{
+  if(!outWb) return;
+  XLSX.writeFile(outWb, 'final_result.xlsx');
+});
+</script>
+</body>
+</html>
