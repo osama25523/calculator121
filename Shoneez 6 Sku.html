@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shoneez 6 Sku</title>
+  <title>Shoneez</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
@@ -249,7 +249,7 @@
 
   <div class="container">
     <div class="hero">
-      <h1>Shoneez 6 Sku</h1>
+      <h1>Shoneez</h1>
 
       <div class="actions">
         <label class="upload-label" for="zipInput">📦 Choose ZIP File</label>
@@ -271,7 +271,7 @@
         <div class="card">
           <h3>Applied Changes</h3>
           <div class="small">
-            Swap B/C + insert blank row 2 + keep first 3 columns + clear 1 in column 3 + delete rows where column 1 is longer than 6 characters
+            Swap column B with C + insert a blank second row + keep only first 3 columns + clear 1 in column 3
           </div>
         </div>
       </div>
@@ -439,32 +439,37 @@
         defval: ''
       });
 
-      const cleanedData = data
-        .map((row) => {
-          const newRow = [
-            row[0] ?? '',
-            row[1] ?? '',
-            row[2] ?? ''
-          ];
+      const cleanedData = [];
 
-          if (String(newRow[2]).trim() === '1') {
-            newRow[2] = '';
-          }
+      data.forEach((row, rowIndex) => {
+        const col1 = row[0] ?? '';
+        const col2 = row[1] ?? '';
+        const col3 = row[2] ?? '';
 
-          return newRow;
-        })
-        .filter((row) => {
-          const firstCell = String(row[0] ?? '').trim();
+        const col1Digits = String(col1).replace(/\D/g, '');
+        const isShortId = rowIndex > 1 && col1Digits.length > 0 && col1Digits.length < 6;
 
-          if (firstCell === '') return true;
+        if (isShortId) {
+          return;
+        }
 
-          return firstCell.length <= 6;
-        });
+        let newCol3;
+
+        if (rowIndex === 1) {
+          newCol3 = String(col3).trim() === '1' ? '' : col3;
+        } else if (Number(col2) === 0) {
+          newCol3 = 0;
+        } else {
+          newCol3 = String(col3).trim() === '1' ? '' : col3;
+        }
+
+        cleanedData.push([col1, col2, newCol3]);
+      });
 
       const finalSheet = XLSX.utils.aoa_to_sheet(cleanedData);
 
       if (sheet['!cols']) finalSheet['!cols'] = sheet['!cols'].slice(0, 3);
-      if (sheet['!rows']) finalSheet['!rows'] = sheet['!rows'].slice(0, cleanedData.length);
+      if (sheet['!rows']) finalSheet['!rows'] = sheet['!rows'];
 
       return finalSheet;
     }
