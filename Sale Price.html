@@ -154,7 +154,16 @@ runBtn.addEventListener('click', ()=>{
       out[r][0] = `${FIRST_COL_PREFIX}${r - 1}`;
     }
 
-    const newWs = XLSX.utils.aoa_to_sheet(out);
+    
+// إضافة Special Offers للعمود الرابع والخامس من الصف الثالث
+for(let r = 2; r < out.length; r++){
+  if(!out[r]) out[r] = [];
+  while(out[r].length < 5) out[r].push('');
+  out[r][3] = "Special Offers";
+  out[r][4] = "Special Offers";
+}
+
+const newWs = XLSX.utils.aoa_to_sheet(out);
     outWb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(outWb, newWs, 'Result');
 
