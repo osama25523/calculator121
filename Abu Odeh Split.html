@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Splitter 20000</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff1c4;
+      color: #3b2a00;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff9e8;
+      border: 2px solid #e2c978;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 28px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      text-align: center;
+      color: #6b4a00;
+    }
+    p {
+      margin: 8px 0;
+      line-height: 1.8;
+    }
+    .card {
+      background: #fffdf6;
+      border: 1px solid #ead38b;
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 18px;
+    }
+    .dropzone {
+      border: 2px dashed #c79c22;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      background: #fff8dc;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+    .dropzone.dragover {
+      background: #fff2b6;
+      border-color: #9a7000;
+    }
+    input[type="file"] { display: none; }
+    .btns {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #c88d00;
+      color: white;
+      transition: 0.2s ease;
+    }
+    button:hover { background: #aa7600; }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .secondary { background: #8a6a18; }
+    .secondary:hover { background: #705512; }
+    .status, .results {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #fffdf4;
+      border: 1px solid #ead38b;
+      white-space: pre-line;
+    }
+    .results ul {
+      margin: 8px 0 0;
+      padding-right: 22px;
+    }
+    .muted { color: #7a6730; }
+    .note {
+      background: #fff4cc;
+      border-right: 5px solid #d29a00;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>تقسيم ملف Excel إلى أجزاء</h1>
+    <p class="muted">كل ملف ناتج يحتوي على <strong>20000 صف بيانات</strong> فقط، مع الاحتفاظ بالصف الأول كما هو، وترك الصف الثاني فارغًا، وأي قيمة <strong>1</strong> في العمود الثالث تتحول إلى خلية فارغة بدون حذف أي صف.</p>
+
+    <div class="card">
+      <label class="dropzone" id="dropzone" for="fileInput">
+        <div style="font-size: 22px; font-weight: bold; margin-bottom: 8px;">ارفع ملف Excel هنا</div>
+        <div>اضغط للاختيار أو اسحب الملف وأفلته</div>
+        <div id="fileName" class="muted" style="margin-top: 10px;">لم يتم اختيار ملف بعد</div>
+      </label>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+
+      <div class="btns">
+        <button id="processBtn" disabled>تقسيم وتنزيل ZIP</button>
+        <button id="clearBtn" class="secondary">مسح</button>
+      </div>
+
+      <div class="note">
+        ملاحظة: يتم العمل على أول Sheet داخل ملف Excel.
+      </div>
+
+      <div id="status" class="status">جاهز.</div>
+      <div id="results" class="results" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const fileName = document.getElementById('fileName');
+    const processBtn = document.getElementById('processBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusBox = document.getElementById('status');
+    const resultsBox = document.getElementById('results');
+
+    let selectedFile = null;
+    const CHUNK_SIZE = 20000;
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function setFile(file) {
+      selectedFile = file || null;
+      fileName.textContent = selectedFile ? `الملف المختار: ${selectedFile.name}` : 'لم يتم اختيار ملف بعد';
+      processBtn.disabled = !selectedFile;
+      resultsBox.style.display = 'none';
+      resultsBox.innerHTML = '';
+      setStatus(selectedFile ? 'الملف جاهز للمعالجة.' : 'جاهز.');
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) setFile(file);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file) {
+        fileInput.files = e.dataTransfer.files;
+        setFile(file);
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      setFile(null);
+    });
+
+    function normalizeThirdColumn(row) {
+      if (!Array.isArray(row)) return row;
+      const newRow = [...row];
+      if (newRow.length >= 3) {
+        const value = newRow[2];
+        if (value === 1 || value === '1') {
+          newRow[2] = '';
+        }
+      }
+      return newRow;
+    }
+
+    function splitArray(arr, size) {
+      const chunks = [];
+      for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+      }
+      return chunks;
+    }
+
+    function getBaseFileName(name) {
+      return name.replace(/\.[^/.]+$/, '');
+    }
+
+    processBtn.addEventListener('click', async () => {
+      if (!selectedFile) {
+        alert('اختر ملف Excel أولاً.');
+        return;
+      }
+
+      processBtn.disabled = true;
+      setStatus('جاري قراءة الملف...');
+      resultsBox.style.display = 'none';
+      resultsBox.innerHTML = '';
+
+      try {
+        const buffer = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+
+        if (!workbook.SheetNames.length) {
+          throw new Error('الملف لا يحتوي على أي أوراق عمل.');
+        }
+
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        const allRows = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: '',
+          raw: false
+        });
+
+        if (!allRows.length) {
+          throw new Error('الورقة الأولى فارغة.');
+        }
+
+        const headerRow = Array.isArray(allRows[0]) ? [...allRows[0]] : [];
+        const dataRows = allRows.slice(1).map(normalizeThirdColumn);
+        const chunks = splitArray(dataRows, CHUNK_SIZE);
+
+        if (!chunks.length) {
+          chunks.push([]);
+        }
+
+        setStatus(`جاري إنشاء ${chunks.length} ملف/ملفات Excel...`);
+
+        const zip = new JSZip();
+        const baseName = getBaseFileName(selectedFile.name);
+        const generatedNames = [];
+
+        chunks.forEach((chunk, index) => {
+          const outputRows = [headerRow, [], ...chunk];
+          const outWb = XLSX.utils.book_new();
+          const outWs = XLSX.utils.aoa_to_sheet(outputRows);
+          XLSX.utils.book_append_sheet(outWb, outWs, firstSheetName);
+
+          const excelArray = XLSX.write(outWb, {
+            bookType: 'xlsx',
+            type: 'array'
+          });
+
+          const fileName = `${baseName}_part_${index + 1}.xlsx`;
+          generatedNames.push(fileName);
+          zip.file(fileName, excelArray);
+        });
+
+        setStatus('جاري ضغط الملفات...');
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const zipName = `${baseName}_split_files.zip`;
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = zipName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = `
+          <strong>تمت العملية بنجاح.</strong>
+          <ul>
+            <li>اسم الشيت المستخدم: ${escapeHtml(firstSheetName)}</li>
+            <li>عدد صفوف البيانات الأصلية: ${dataRows.length.toLocaleString()}</li>
+            <li>عدد الملفات الناتجة: ${generatedNames.length}</li>
+            <li>حجم كل جزء: ${CHUNK_SIZE.toLocaleString()} صف بيانات</li>
+            <li>الصف الأول محفوظ، والصف الثاني فارغ في كل ملف</li>
+            <li>أي قيمة 1 في العمود الثالث تم تحويلها إلى فارغ</li>
+          </ul>
+          <strong>الملفات الناتجة:</strong>
+          <ul>${generatedNames.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>
+        `;
+
+        setStatus('تم التنزيل بنجاح.');
+      } catch (error) {
+        console.error(error);
+        setStatus('حدث خطأ أثناء المعالجة.');
+        resultsBox.style.display = 'block';
+        resultsBox.textContent = `السبب: ${error.message || error}`;
+      } finally {
+        processBtn.disabled = !selectedFile;
+      }
+    });
+  </script>
+</body>
+</html>
