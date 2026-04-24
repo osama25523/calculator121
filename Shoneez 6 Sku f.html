@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shoneez</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    .top-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.4);
+      padding: 10px 18px;
+      border-radius: 12px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      backdrop-filter: blur(8px);
+      transition: 0.3s;
+      border: 1px solid rgba(255,255,255,0.2);
+      z-index: 999;
+    }
+
+    .top-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1150px, 92%);
+      margin: 32px auto;
+    }
+
+    .hero {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 4vw, 40px);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      align-items: center;
+    }
+
+    .upload-label, button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .upload-label {
+      background: #38bdf8;
+      color: #082f49;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-label:hover { transform: translateY(-1px); }
+
+    button {
+      background: #22c55e;
+      color: white;
+      font-weight: 700;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    input[type="file"] { display: none; }
+
+    .status {
+      margin-top: 18px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #e2e8f0;
+      min-height: 52px;
+      line-height: 1.8;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #f8fafc;
+    }
+
+    .small {
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .files-grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .file-card {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .preview-card {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 18px;
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .preview-title {
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .name {
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 420px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    th, td {
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    th {
+      background: rgba(56, 189, 248, 0.12);
+      color: #e0f2fe;
+      font-weight: 700;
+    }
+
+    .row-label {
+      background: rgba(148, 163, 184, 0.08);
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    .preview-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin: 4px 4px 0 0;
+    }
+
+    .note {
+      margin-top: 24px;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .success { color: #86efac; }
+    .warning { color: #fcd34d; }
+    .error { color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <a href="Market.html" class="top-btn">⬅ Market</a>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Shoneez</h1>
+
+      <div class="actions">
+        <label class="upload-label" for="zipInput">📦 Choose ZIP File</label>
+        <input id="zipInput" type="file" accept=".zip" />
+        <button id="processBtn" disabled>⚙️ Process & Download</button>
+      </div>
+
+      <div id="status" class="status">Waiting for a ZIP file...</div>
+
+      <div class="summary">
+        <div class="card">
+          <h3>Excel Files Found</h3>
+          <div id="excelCount" class="small">0</div>
+        </div>
+        <div class="card">
+          <h3>Other Files in ZIP</h3>
+          <div id="otherCount" class="small">0</div>
+        </div>
+        <div class="card">
+          <h3>Applied Changes</h3>
+          <div class="small">
+            Swap column B with C + insert a blank second row + keep only first 3 columns + clear 1 in column 3
+          </div>
+        </div>
+      </div>
+
+      <div id="filesGrid" class="files-grid"></div>
+      <div id="previewSection" class="files-grid"></div>
+
+      <div class="note"></div>
+    </div>
+  </div>
+
+  <script>
+    const zipInput = document.getElementById('zipInput');
+    const processBtn = document.getElementById('processBtn');
+    const statusEl = document.getElementById('status');
+    const excelCountEl = document.getElementById('excelCount');
+    const otherCountEl = document.getElementById('otherCount');
+    const filesGrid = document.getElementById('filesGrid');
+    const previewSection = document.getElementById('previewSection');
+
+    let selectedZipFile = null;
+    let cachedZip = null;
+    let excelEntries = [];
+    let otherEntries = [];
+
+    function setStatus(message, className = '') {
+      statusEl.className = 'status ' + className;
+      statusEl.innerHTML = message;
+    }
+
+    function isExcelFile(name) {
+      return /\.(xlsx|xls)$/i.test(name);
+    }
+
+    function renderFiles() {
+      filesGrid.innerHTML = '';
+
+      excelEntries.forEach((entry, index) => {
+        const div = document.createElement('div');
+        div.className = 'file-card';
+        div.innerHTML = `
+          <div class="name">${index + 1}. ${entry.name}</div>
+          <div class="small">Ready for processing</div>
+          <span class="badge">Excel</span>
+        `;
+        filesGrid.appendChild(div);
+      });
+
+      if (otherEntries.length > 0) {
+        otherEntries.forEach((entry) => {
+          const div = document.createElement('div');
+          div.className = 'file-card';
+          div.innerHTML = `
+            <div class="name">${entry.name}</div>
+            <div class="small">This is not an Excel file and it will stay unchanged inside the new ZIP</div>
+            <span class="badge">Non-Excel</span>
+          `;
+          filesGrid.appendChild(div);
+        });
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getPreviewRows(sheet, maxRows = 5, maxCols = 6) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: true,
+        defval: ''
+      });
+
+      return data.slice(0, maxRows).map(row => {
+        const trimmed = Array.isArray(row) ? row.slice(0, maxCols) : [];
+        while (trimmed.length < maxCols) trimmed.push('');
+        return trimmed;
+      });
+    }
+
+    function renderPreviewCard(fileName, sheetName, beforeRows, afterRows) {
+      const maxCols = Math.max(
+        1,
+        ...beforeRows.map(r => r.length),
+        ...afterRows.map(r => r.length)
+      );
+
+      const headers = Array.from({ length: maxCols }, (_, i) => `<th>Column ${i + 1}</th>`).join('');
+
+      const makeRows = (rows) => rows.map((row, index) => {
+        const cols = Array.from({ length: maxCols }, (_, i) => `<td>${escapeHtml(row[i] ?? '')}</td>`).join('');
+        return `<tr><td class="row-label">Row ${index + 1}</td>${cols}</tr>`;
+      }).join('');
+
+      const card = document.createElement('div');
+      card.className = 'preview-card';
+      card.innerHTML = `
+        <div class="preview-title">${escapeHtml(fileName)} — ${escapeHtml(sheetName)}</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                ${headers}
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="row-label" colspan="${maxCols + 1}">Before Processing</td></tr>
+              ${makeRows(beforeRows)}
+              <tr><td class="row-label" colspan="${maxCols + 1}">After Processing</td></tr>
+              ${makeRows(afterRows)}
+            </tbody>
+          </table>
+        </div>
+        <div class="preview-note">Quick preview of about the first 5 rows from each sheet.</div>
+      `;
+      previewSection.appendChild(card);
+    }
+
+    function swapSecondAndThirdColumnsAndInsertBlankSecondRow(sheet) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: true,
+        defval: ''
+      });
+
+      for (let r = 0; r < data.length; r++) {
+        const row = data[r] || [];
+        const temp = row[1];
+        row[1] = row[2];
+        row[2] = temp;
+        data[r] = row;
+      }
+
+      const maxCols = Math.max(
+        3,
+        ...data.map(row => Array.isArray(row) ? row.length : 0)
+      );
+
+      const blankRow = new Array(maxCols).fill('');
+      if (data.length === 0) {
+        data.push([]);
+      }
+
+      data.splice(1, 0, blankRow);
+
+      const newSheet = XLSX.utils.aoa_to_sheet(data);
+
+      if (sheet['!cols']) newSheet['!cols'] = sheet['!cols'];
+      if (sheet['!rows']) newSheet['!rows'] = sheet['!rows'];
+      if (sheet['!merges']) newSheet['!merges'] = sheet['!merges'];
+
+      return newSheet;
+    }
+
+    function finalCleanupSheet(sheet) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: true,
+        defval: ''
+      });
+
+      const cleanedData = [];
+
+      data.forEach((row, rowIndex) => {
+        const col1 = row[0] ?? '';
+        const col2 = row[1] ?? '';
+        const col3 = row[2] ?? '';
+
+        const col1Digits = String(col1).replace(/\D/g, '');
+        const isShortId = rowIndex > 1 && col1Digits.length > 0 && col1Digits.length < 6;
+
+        if (isShortId) {
+          return;
+        }
+
+        let newCol3;
+
+        if (rowIndex === 1) {
+          newCol3 = String(col3).trim() === '1' ? '' : col3;
+        } else if (Number(col2) === 0) {
+          newCol3 = 0;
+        } else {
+          newCol3 = String(col3).trim() === '1' ? '' : col3;
+        }
+
+        cleanedData.push([col1, col2, newCol3]);
+      });
+
+      const finalSheet = XLSX.utils.aoa_to_sheet(cleanedData);
+
+      if (sheet['!cols']) finalSheet['!cols'] = sheet['!cols'].slice(0, 3);
+      if (sheet['!rows']) finalSheet['!rows'] = sheet['!rows'];
+
+      return finalSheet;
+    }
+
+    async function buildQuickPreviews() {
+      previewSection.innerHTML = '';
+
+      for (const entry of excelEntries) {
+        try {
+          const fileData = await entry.async('arraybuffer');
+          const workbook = XLSX.read(fileData, { type: 'array' });
+
+          for (const sheetName of workbook.SheetNames) {
+            const originalSheet = workbook.Sheets[sheetName];
+            const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
+            const finalSheet = finalCleanupSheet(updatedSheet);
+
+            const beforeRows = getPreviewRows(originalSheet);
+            const afterRows = getPreviewRows(finalSheet);
+
+            renderPreviewCard(entry.name, sheetName, beforeRows, afterRows);
+          }
+        } catch (err) {
+          const card = document.createElement('div');
+          card.className = 'preview-card';
+          card.innerHTML = `
+            <div class="preview-title">${escapeHtml(entry.name)}</div>
+            <div class="small error">Could not generate a preview for this file.</div>
+          `;
+          previewSection.appendChild(card);
+        }
+      }
+    }
+
+    zipInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      selectedZipFile = file || null;
+      cachedZip = null;
+      excelEntries = [];
+      otherEntries = [];
+      filesGrid.innerHTML = '';
+      previewSection.innerHTML = '';
+      processBtn.disabled = true;
+
+      if (!file) {
+        setStatus('No file selected.');
+        excelCountEl.textContent = '0';
+        otherCountEl.textContent = '0';
+        return;
+      }
+
+      try {
+        setStatus('Reading ZIP file...');
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        cachedZip = zip;
+
+        zip.forEach((relativePath, zipEntry) => {
+          if (zipEntry.dir) return;
+          if (isExcelFile(zipEntry.name)) {
+            excelEntries.push(zipEntry);
+          } else {
+            otherEntries.push(zipEntry);
+          }
+        });
+
+        excelCountEl.textContent = excelEntries.length;
+        otherCountEl.textContent = otherEntries.length;
+        renderFiles();
+        await buildQuickPreviews();
+
+        if (excelEntries.length === 0) {
+          setStatus('No Excel files were found inside the ZIP.', 'warning');
+          return;
+        }
+
+        setStatus(`Found <strong>${excelEntries.length}</strong> Excel files inside the ZIP. You can now process and download them.`, 'success');
+        processBtn.disabled = false;
+      } catch (error) {
+        console.error(error);
+        setStatus('An error occurred while reading the ZIP file. Make sure the file is valid and not corrupted.', 'error');
+      }
+    });
+
+    
+let clickStep = 0;
+
+processBtn.addEventListener('click', async () => {
+  clickStep++;
+
+  if (clickStep === 1) {
+    processBtn.innerText = "😏 بمزح معك";
+    setTimeout(() => {
+      processBtn.style.transform = "translateX(120px)";
+    }, 1500);
+    return;
+  }
+
+  if (clickStep === 2) {
+    processBtn.innerText = "😂 بمزح مرة ثانية";
+    setTimeout(() => {
+      processBtn.style.transform = "translateX(240px)";
+      processBtn.innerText = "⚙️ Process & Download";
+    }, 1500);
+    return;
+  }
+
+
+      if (!cachedZip || excelEntries.length === 0) return;
+
+      try {
+        processBtn.disabled = true;
+        setStatus('Processing files, please wait...');
+
+        const outputZip = new JSZip();
+        let processedCount = 0;
+
+        const allEntries = Object.values(cachedZip.files);
+
+        for (const entry of allEntries) {
+          if (entry.dir) continue;
+
+          const fileData = await entry.async('arraybuffer');
+
+          if (isExcelFile(entry.name)) {
+            const workbook = XLSX.read(fileData, { type: 'array' });
+            const newWorkbook = XLSX.utils.book_new();
+
+            workbook.SheetNames.forEach(sheetName => {
+              const originalSheet = workbook.Sheets[sheetName];
+              const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
+              const finalSheet = finalCleanupSheet(updatedSheet);
+              XLSX.utils.book_append_sheet(newWorkbook, finalSheet, sheetName);
+            });
+
+            const bookType = entry.name.toLowerCase().endsWith('.xls') ? 'xls' : 'xlsx';
+            const outArray = XLSX.write(newWorkbook, {
+              bookType,
+              type: 'array'
+            });
+
+            outputZip.file(entry.name, outArray);
+            processedCount++;
+            setStatus(`Processed ${processedCount} of ${excelEntries.length} Excel files...`);
+          } else {
+            outputZip.file(entry.name, fileData);
+          }
+        }
+
+        const finalBlob = await outputZip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(finalBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'processed_excel_files.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        setStatus(`✅ Done successfully. <strong>${processedCount}</strong> Excel files were processed and the new ZIP has been downloaded.`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus('An error occurred while processing the files. One of the Excel files may be corrupted or not fully supported.', 'error');
+      } finally {
+        processBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
