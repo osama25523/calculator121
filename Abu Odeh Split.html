@@ -1,129 +1,197 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Excel Splitter 20000</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fff1c4;
-      color: #3b2a00;
-      min-height: 100vh;
-    }
-    .wrap {
-      max-width: 900px;
-      margin: 40px auto;
-      background: #fff9e8;
-      border: 2px solid #e2c978;
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      padding: 28px;
-    }
-    h1 {
-      margin: 0 0 10px;
-      font-size: 30px;
-      text-align: center;
-      color: #6b4a00;
-    }
-    p {
-      margin: 8px 0;
-      line-height: 1.8;
-    }
-    .card {
-      background: #fffdf6;
-      border: 1px solid #ead38b;
-      border-radius: 14px;
-      padding: 18px;
-      margin-top: 18px;
-    }
-    .dropzone {
-      border: 2px dashed #c79c22;
-      border-radius: 16px;
-      padding: 28px;
-      text-align: center;
-      background: #fff8dc;
-      transition: 0.2s ease;
-      cursor: pointer;
-    }
-    .dropzone.dragover {
-      background: #fff2b6;
-      border-color: #9a7000;
-    }
-    input[type="file"] { display: none; }
-    .btns {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      background: #c88d00;
-      color: white;
-      transition: 0.2s ease;
-    }
-    button:hover { background: #aa7600; }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .secondary { background: #8a6a18; }
-    .secondary:hover { background: #705512; }
-    .status, .results {
-      margin-top: 18px;
-      padding: 14px;
-      border-radius: 12px;
-      background: #fffdf4;
-      border: 1px solid #ead38b;
-      white-space: pre-line;
-    }
-    .results ul {
-      margin: 8px 0 0;
-      padding-right: 22px;
-    }
-    .muted { color: #7a6730; }
-    .note {
-      background: #fff4cc;
-      border-right: 5px solid #d29a00;
-      padding: 12px 14px;
-      border-radius: 10px;
-      margin-top: 14px;
-    }
-  </style>
+  
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #2b2b45, #12121a);
+  color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.market-back {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: linear-gradient(135deg, #ff9f1c, #ffbf69);
+  color: #000;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  z-index: 999;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 40px auto;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  padding: 28px;
+}
+
+h1 {
+  margin: 0 0 14px;
+  font-size: 34px;
+  text-align: center;
+  color: #ffd369;
+}
+
+p {
+  margin: 8px 0;
+  line-height: 1.8;
+}
+
+.muted {
+  color: #f0f0f0;
+  text-align: center;
+}
+
+.card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 18px;
+  padding: 22px;
+  margin-top: 18px;
+}
+
+.dropzone {
+  display: block;
+  border: 2px dashed #ffd369;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  transition: 0.3s ease;
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+  background: rgba(255,211,105,0.12);
+  border-color: #ffbf69;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.btns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 22px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff9f1c, #ffbf69);
+  color: #000;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(255,159,28,0.4);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.secondary {
+  background: #555;
+  color: #fff;
+}
+
+.secondary:hover {
+  background: #666;
+}
+
+.status, .results {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
+  white-space: pre-line;
+}
+
+.results ul {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.note {
+  background: rgba(255,211,105,0.12);
+  border-left: 5px solid #ffd369;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-top: 18px;
+}
+
+@media (max-width: 700px) {
+  .wrap {
+    margin: 80px 14px 30px;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+
+  .market-back {
+    left: 14px;
+    top: 14px;
+  }
+}
+</style>
+
+
 </head>
 <body>
-  <div class="wrap">
-    <h1>تقسيم ملف Excel إلى أجزاء</h1>
-    <p class="muted">كل ملف ناتج يحتوي على <strong>20000 صف بيانات</strong> فقط، مع الاحتفاظ بالصف الأول كما هو، وترك الصف الثاني فارغًا، وأي قيمة <strong>1</strong> في العمود الثالث تتحول إلى خلية فارغة بدون حذف أي صف.</p>
 
-    <div class="card">
+<a href="Market.html" class="market-back">⬅ Back to Market</a>
+
+  <div class="wrap">
+    <h1>Split Excel File into Parts</h1>
+       <div class="card">
       <label class="dropzone" id="dropzone" for="fileInput">
-        <div style="font-size: 22px; font-weight: bold; margin-bottom: 8px;">ارفع ملف Excel هنا</div>
-        <div>اضغط للاختيار أو اسحب الملف وأفلته</div>
-        <div id="fileName" class="muted" style="margin-top: 10px;">لم يتم اختيار ملف بعد</div>
+        <div style="font-size: 22px; font-weight: bold; margin-bottom: 8px;">Upload Excel File Here</div>
+        <div>Click to select or drag & drop file</div>
+        <div id="fileName" class="muted" style="margin-top: 10px;">No file selected</div>
       </label>
       <input type="file" id="fileInput" accept=".xlsx,.xls" />
 
       <div class="btns">
-        <button id="processBtn" disabled>تقسيم وتنزيل ZIP</button>
-        <button id="clearBtn" class="secondary">مسح</button>
+        <button id="processBtn" disabled>Process & Download ZIP</button>
+        <button id="clearBtn" class="secondary">Clear</button>
       </div>
 
-      <div class="note">
-        ملاحظة: يتم العمل على أول Sheet داخل ملف Excel.
-      </div>
-
-      <div id="status" class="status">جاهز.</div>
+      
+      <div id="status" class="status">Ready.</div>
       <div id="results" class="results" style="display:none;"></div>
     </div>
   </div>
@@ -155,11 +223,11 @@
 
     function setFile(file) {
       selectedFile = file || null;
-      fileName.textContent = selectedFile ? `الملف المختار: ${selectedFile.name}` : 'لم يتم اختيار ملف بعد';
+      fileName.textContent = selectedFile ? `Selected file: ${selectedFile.name}` : 'No file selected';
       processBtn.disabled = !selectedFile;
       resultsBox.style.display = 'none';
       resultsBox.innerHTML = '';
-      setStatus(selectedFile ? 'الملف جاهز للمعالجة.' : 'جاهز.');
+      setStatus(selectedFile ? 'File ready for processing.' : 'Ready.');
     }
 
     fileInput.addEventListener('change', (e) => {
@@ -222,12 +290,12 @@
 
     processBtn.addEventListener('click', async () => {
       if (!selectedFile) {
-        alert('اختر ملف Excel أولاً.');
+        alert('Please select an Excel file first.');
         return;
       }
 
       processBtn.disabled = true;
-      setStatus('جاري قراءة الملف...');
+      setStatus('Reading file...');
       resultsBox.style.display = 'none';
       resultsBox.innerHTML = '';
 
@@ -236,7 +304,7 @@
         const workbook = XLSX.read(buffer, { type: 'array' });
 
         if (!workbook.SheetNames.length) {
-          throw new Error('الملف لا يحتوي على أي أوراق عمل.');
+          throw new Error('No sheets found in file.');
         }
 
         const firstSheetName = workbook.SheetNames[0];
@@ -248,7 +316,7 @@
         });
 
         if (!allRows.length) {
-          throw new Error('الورقة الأولى فارغة.');
+          throw new Error('First sheet is empty.');
         }
 
         const headerRow = Array.isArray(allRows[0]) ? [...allRows[0]] : [];
@@ -259,7 +327,7 @@
           chunks.push([]);
         }
 
-        setStatus(`جاري إنشاء ${chunks.length} ملف/ملفات Excel...`);
+        setStatus(`Creating ${chunks.length} Excel file(s)...`);
 
         const zip = new JSZip();
         const baseName = getBaseFileName(selectedFile.name);
@@ -281,7 +349,7 @@
           zip.file(fileName, excelArray);
         });
 
-        setStatus('جاري ضغط الملفات...');
+        setStatus('Zipping files...');
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         const zipName = `${baseName}_split_files.zip`;
 
@@ -295,25 +363,25 @@
 
         resultsBox.style.display = 'block';
         resultsBox.innerHTML = `
-          <strong>تمت العملية بنجاح.</strong>
+          <strong>Process completed successfully.</strong>
           <ul>
-            <li>اسم الشيت المستخدم: ${escapeHtml(firstSheetName)}</li>
-            <li>عدد صفوف البيانات الأصلية: ${dataRows.length.toLocaleString()}</li>
-            <li>عدد الملفات الناتجة: ${generatedNames.length}</li>
-            <li>حجم كل جزء: ${CHUNK_SIZE.toLocaleString()} صف بيانات</li>
-            <li>الصف الأول محفوظ، والصف الثاني فارغ في كل ملف</li>
-            <li>أي قيمة 1 في العمود الثالث تم تحويلها إلى فارغ</li>
+            <li>Sheet name: ${escapeHtml(firstSheetName)}</li>
+            <li>Total rows: ${dataRows.length.toLocaleString()}</li>
+            <li>Generated files: ${generatedNames.length}</li>
+            <li>Rows per file: ${CHUNK_SIZE.toLocaleString()} صف بيانات</li>
+            <li>Header kept, second row empty in each file</li>
+            <li>Any '1' in column 3 replaced with empty</li>
           </ul>
-          <strong>الملفات الناتجة:</strong>
+          <strong>Generated files:</strong>
           <ul>${generatedNames.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>
         `;
 
-        setStatus('تم التنزيل بنجاح.');
+        setStatus('Download completed.');
       } catch (error) {
         console.error(error);
-        setStatus('حدث خطأ أثناء المعالجة.');
+        setStatus('Error during processing.');
         resultsBox.style.display = 'block';
-        resultsBox.textContent = `السبب: ${error.message || error}`;
+        resultsBox.textContent = `Reason: ${error.message || error}`;
       } finally {
         processBtn.disabled = !selectedFile;
       }
