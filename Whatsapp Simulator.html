@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp Export Viewer Pro</title>
+  <style>
+    :root{
+      --bg:#0b141a;
+      --panel:#111b21;
+      --panel-2:#202c33;
+      --chat-bg:#0b141a;
+      --mine:#005c4b;
+      --other:#202c33;
+      --text:#e9edef;
+      --muted:#8696a0;
+      --accent:#00a884;
+      --line:#2a3942;
+      --sys:#182229;
+      --bubble-shadow: 0 1px 0 rgba(11,20,26,.15), 0 1px 2px rgba(11,20,26,.2);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      background: linear-gradient(180deg,#00a884 0 127px,var(--bg) 127px 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .app{
+      width:min(1500px, calc(100vw - 24px));
+      height:min(920px, calc(100vh - 24px));
+      margin:12px auto;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      background:var(--panel);
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:1px solid #0e171c;
+    }
+    .sidebar{
+      border-inline-end:1px solid var(--line);
+      background:var(--panel);
+      display:flex;
+      flex-direction:column;
+      min-width:320px;
+    }
+    .topbar{
+      background:var(--panel-2);
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .avatar{
+      width:40px;height:40px;border-radius:50%;
+      background:#dfe5e7;color:#111b21;font-weight:700;
+      display:grid;place-items:center;flex:0 0 auto;
+    }
+    .title-wrap{min-width:0;flex:1}
+    .title{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .subtitle{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-content{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+    .card{
+      background:#111b21;border:1px solid var(--line);border-radius:14px;padding:12px;
+    }
+    .section-title{font-size:13px;color:#aebac1;margin-bottom:10px;font-weight:700}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .row>*{flex:1}
+    .input, .button, select{
+      width:100%;background:#0c1317;color:var(--text);border:1px solid var(--line);
+      border-radius:10px;padding:11px 12px;font-size:14px;
+    }
+    .button{cursor:pointer;background:#00a884;color:#081c15;border:none;font-weight:700}
+    .button.secondary{background:#202c33;color:#d1d7db;border:1px solid var(--line)}
+    .button:disabled{opacity:.45;cursor:not-allowed}
+    .hint{font-size:12px;color:var(--muted);line-height:1.45}
+    .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .stat{background:#0c1317;border:1px solid var(--line);border-radius:10px;padding:10px}
+    .stat .label{font-size:11px;color:var(--muted)}
+    .stat .value{font-size:16px;font-weight:700;margin-top:4px}
+
+    .main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--chat-bg);overflow:hidden}
+    .chat-header{background:var(--panel-2);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.04);flex:0 0 auto}
+    .searchbar{padding:10px 12px;background:rgba(17,27,33,.95);border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:8px;align-items:center;flex:0 0 auto}
+    .searchbar input{flex:1}
+    .chat-wallpaper{
+      flex:1 1 auto;min-height:0;overflow:auto;padding:18px 5vw 24px 5vw;
+      background-color:#0b141a;
+      background-image:
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,.025) 0 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, rgba(255,255,255,.02) 0 1px, transparent 1px);
+      background-size:32px 32px;
+    }
+    .day-sep{
+      width:max-content;max-width:100%;margin:14px auto;padding:7px 12px;border-radius:8px;
+      background:#182229;color:#d9fdd3;font-size:12px;box-shadow:var(--bubble-shadow);
+      position:sticky;top:8px;z-index:2;
+    }
+    .sysmsg{
+      width:max-content;max-width:min(100%,720px);margin:10px auto;padding:8px 12px;border-radius:8px;
+      background:#182229;color:#e9edef;font-size:12px;line-height:1.5;box-shadow:var(--bubble-shadow);
+      text-align:center;
+    }
+    .msg-row{display:flex;margin:2px 0 10px}
+    .msg-row.mine{justify-content:flex-end}
+    .msg-row.other{justify-content:flex-start}
+    .bubble{
+      max-width:min(75%, 760px);
+      min-width:120px;
+      padding:6px 7px 8px 9px;
+      border-radius:8px;
+      box-shadow:var(--bubble-shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .mine .bubble{background:var(--mine);border-top-right-radius:0}
+    .other .bubble{background:var(--other);border-top-left-radius:0}
+    .sender{font-size:12px;font-weight:700;color:#53bdeb;margin-bottom:4px}
+    .text{font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+    .meta{font-size:11px;color:#c7d1d6;opacity:.9;display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+    .filename{font-size:12px;color:#d1d7db;margin-top:6px;word-break:break-all}
+    .thumb, .video-box{display:block;max-width:100%;border-radius:8px;margin-top:4px;background:#111}
+    audio{width:320px;max-width:100%;margin-top:6px}
+    .file-pill{margin-top:6px;padding:10px;border-radius:10px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08)}
+    .file-pill a{color:#d9fdd3;text-decoration:none}
+    .empty{height:100%;display:grid;place-items:center;padding:40px;text-align:center;color:#9fb0b8}
+    .empty .logo{font-size:64px;margin-bottom:10px}
+    a{color:#7ad7ff}
+    .hl{outline:2px solid #ffd54a; outline-offset:2px; border-radius:6px;}
+    .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 8px;border-radius:999px;background:#0c1317;border:1px solid var(--line);color:#cdd6da}
+    .footer-note{font-size:11px;color:#82939c;line-height:1.5}
+
+    .drop-overlay{
+      position:fixed;inset:0;display:none;place-items:center;background:rgba(11,20,26,.72);
+      z-index:9999;backdrop-filter:blur(2px)
+    }
+    .drop-overlay.show{display:grid}
+    .drop-box{
+      width:min(680px,calc(100vw - 32px));padding:28px 24px;border-radius:22px;
+      border:2px dashed rgba(217,253,211,.45);background:#111b21;text-align:center;
+      box-shadow:0 18px 40px rgba(0,0,0,.35)
+    }
+    .drop-box .icon{font-size:54px;margin-bottom:10px}
+    .drop-box .big{font-size:22px;font-weight:800;margin-bottom:8px}
+    .drop-box .small{font-size:14px;color:var(--muted);line-height:1.6}
+    @media (max-width: 980px){
+      .app{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 24px)}
+      .sidebar{border-inline-end:none;border-bottom:1px solid var(--line)}
+      .chat-wallpaper{padding-inline:12px}
+      .bubble{max-width:88%}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="topbar">
+      <div class="avatar">WA</div>
+      <div class="title-wrap">
+        <div class="title">WhatsApp Export Viewer Pro</div>
+        <div class="subtitle">يدعم TXT و ZIP مباشرة وبشكل قريب من واتساب ويب</div>
+      </div>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="card">
+        <div class="section-title">الاستيراد</div>
+        <div class="row" style="margin-bottom:8px">
+          <input id="fileInput" class="input" type="file" accept=".txt,.zip" />
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <input id="mediaInput" class="input" type="file" webkitdirectory multiple />
+        </div>
+        <div class="row">
+          <button id="loadBtn" class="button">تحميل المحادثة</button>
+          <button id="demoBtn" class="button secondary">تجربة سريعة</button>
+        </div>
+        <div class="hint" style="margin-top:10px">
+          اختر ملف <b>TXT</b> أو <b>ZIP</b> من تصدير واتساب. إذا رفعت TXT فقط، تقدر تضيف مجلد الميديا يدويًا من نفس التصدير.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">الإعدادات</div>
+        <div class="row" style="margin-bottom:8px">
+          <input id="myNameInput" class="input" placeholder="اسمك داخل المحادثة (اختياري)" />
+          <select id="dirSelect" class="input">
+            <option value="rtl">RTL عربي</option>
+            <option value="ltr">LTR English</option>
+          </select>
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <button id="autoDetectBtn" class="button secondary">تحديد اسمي تلقائيًا</button>
+          <button id="exportHtmlBtn" class="button secondary" disabled>حفظ نسخة HTML</button>
+        </div>
+        <div class="hint">التحديد التلقائي يعتمد على أكثر اسم تكرر داخل المحادثة ويظهر غالبًا كرسائلك.</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">إحصائيات</div>
+        <div class="stats">
+          <div class="stat"><div class="label">عدد الرسائل</div><div class="value" id="statMessages">0</div></div>
+          <div class="stat"><div class="label">المشاركون</div><div class="value" id="statParticipants">0</div></div>
+          <div class="stat"><div class="label">ملفات ميديا</div><div class="value" id="statMedia">0</div></div>
+          <div class="stat"><div class="label">اسم المحادثة</div><div class="value" id="statChat" style="font-size:13px">—</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">الحالة</div>
+        <div id="statusBox" class="hint">بانتظار تحميل ملف المحادثة.</div>
+      </div>
+
+      <div class="footer-note">
+        ملاحظة: دعم ZIP هنا مدمج داخل الصفحة نفسها بدون مكتبات خارجية. إذا كان المتصفح قديم جدًا وما يدعم فك ضغط Deflate، قد تحتاج Chrome/Edge حديث أو Firefox حديث.
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="chat-header">
+      <div class="avatar" id="chatAvatar">💬</div>
+      <div class="title-wrap">
+        <div class="title" id="chatTitle">المحادثة</div>
+        <div class="subtitle" id="chatSubtitle">قم بتحميل ملف التصدير لعرض الرسائل</div>
+      </div>
+      <div class="badge" id="headerBadge">جاهز</div>
+    </div>
+
+    <div class="searchbar">
+      <input id="searchInput" class="input" placeholder="ابحث داخل المحادثة..." />
+      <button id="prevBtn" class="button secondary" style="max-width:72px">↑</button>
+      <button id="nextBtn" class="button secondary" style="max-width:72px">↓</button>
+    </div>
+
+    <div id="chatWall" class="chat-wallpaper">
+      <div class="empty">
+        <div>
+          <div class="logo">💬</div>
+          <div style="font-size:22px;font-weight:700;margin-bottom:8px">عارض واتساب</div>
+          <div>حمّل ملف TXT أو ZIP من تصدير واتساب، وسيظهر بشكل قريب جدًا من WhatsApp Web.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<div id="dropOverlay" class="drop-overlay">
+  <div class="drop-box">
+    <div class="icon">📦</div>
+    <div class="big">اسحب ملف ZIP أو TXT وأفلته هنا</div>
+    <div class="small">يمكنك أيضًا إفلات ملفات الميديا أو مجلد كامل بعد فتحه من جهازك.</div>
+  </div>
+</div>
+
+<script>
+const state = {
+  messages: [],
+  mediaMap: new Map(),
+  mediaCount: 0,
+  myName: '',
+  searchMatches: [],
+  searchIndex: -1,
+  chatName: 'المحادثة',
+  importedFrom: ''
+};
+
+const el = id => document.getElementById(id);
+const statusBox = el('statusBox');
+const chatWall = el('chatWall');
+
+function setStatus(msg, tone='normal'){
+  statusBox.innerHTML = msg;
+  el('headerBadge').textContent = tone === 'error' ? 'خطأ' : tone === 'ok' ? 'تم' : 'جاري';
+}
+
+function scrollChatToBottom(force=false){
+  requestAnimationFrame(()=>{
+    if (force || chatWall.scrollHeight > chatWall.clientHeight){
+      chatWall.scrollTop = chatWall.scrollHeight;
+    }
+  });
+}
+
+function getDroppedFiles(dt){
+  const files = [];
+  if (dt.items && dt.items.length){
+    for (const item of dt.items){
+      if (item.kind === 'file'){
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+  } else if (dt.files && dt.files.length){
+    files.push(...dt.files);
+  }
+  return files;
+}
+
+function esc(s=''){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function linkify(text){
+  const safe = esc(text);
+  return safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
+function formatTime(raw){
+  return raw || '';
+}
+
+function initials(name){
+  const p = (name||'?').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x => x[0]).join('');
+  return p || '?';
+}
+
+function guessMediaType(filename=''){
+  const lower = filename.toLowerCase();
+  if (/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(lower)) return 'image';
+  if (/\.(mp4|mov|avi|mkv|webm|3gp)$/i.test(lower)) return 'video';
+  if (/\.(mp3|ogg|wav|m4a|aac|opus)$/i.test(lower)) return 'audio';
+  return 'file';
+}
+
+function normName(name=''){
+  return name.replace(/^\.\//,'').split('/').pop().trim().toLowerCase();
+}
+
+function updateStats(){
+  el('statMessages').textContent = state.messages.length.toLocaleString();
+  el('statParticipants').textContent = new Set(state.messages.map(m => m.sender).filter(Boolean)).size;
+  el('statMedia').textContent = state.mediaCount.toLocaleString();
+  el('statChat').textContent = state.chatName || '—';
+  el('chatTitle').textContent = state.chatName || 'المحادثة';
+  el('chatSubtitle').textContent = `${state.messages.length} رسالة • ${new Set(state.messages.map(m => m.sender).filter(Boolean)).size} مشاركين`;
+  el('chatAvatar').textContent = initials(state.chatName || 'WA');
+  el('exportHtmlBtn').disabled = !state.messages.length;
+}
+
+function parseWhatsAppText(text){
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+  const msgs = [];
+  let current = null;
+
+  const patterns = [
+    /^(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}),?\s+(\d{1,2}:\d{2}(?:\s?[APMapm]{2})?)\s+-\s+([^:]+?):\s([\s\S]*)$/,
+    /^\[(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}),?\s+(\d{1,2}:\d{2}(?:\s?[APMapm]{2})?)\]\s+([^:]+?):\s([\s\S]*)$/,
+    /^(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[APMapm]{2})?)\s+-\s+([\s\S]*)$/,
+    /^\[(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[APMapm]{2})?)\]\s+([\s\S]*)$/
+  ];
+
+  for (const line of lines){
+    let matched = false;
+
+    for (let i = 0; i < patterns.length; i++){
+      const m = line.match(patterns[i]);
+      if (!m) continue;
+      matched = true;
+
+      if (current) msgs.push(current);
+
+      if (i < 2){
+        current = {
+          date: m[1],
+          time: m[2],
+          sender: m[3].trim(),
+          text: m[4] || '',
+          system: false
+        };
+      } else {
+        current = {
+          date: m[1],
+          time: m[2],
+          sender: '',
+          text: m[3] || '',
+          system: true
+        };
+      }
+      break;
+    }
+
+    if (!matched){
+      if (current) current.text += (current.text ? '\n' : '') + line;
+    }
+  }
+  if (current) msgs.push(current);
+
+  state.chatName = inferChatName(msgs);
+  return msgs.map((m, idx) => ({...m, id:`m_${idx}`}));
+}
+
+function inferChatName(msgs){
+  const unique = [...new Set(msgs.map(m=>m.sender).filter(Boolean))];
+  if (unique.length === 2) return unique.join(' • ');
+  if (unique.length > 2) return 'Group Chat';
+  return unique[0] || 'المحادثة';
+}
+
+function autoDetectMyName(){
+  const counts = {};
+  for (const m of state.messages){
+    if (!m.sender) continue;
+    counts[m.sender] = (counts[m.sender]||0)+1;
+  }
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const candidate = sorted[0]?.[0] || '';
+  if (candidate){
+    state.myName = candidate;
+    el('myNameInput').value = candidate;
+    renderMessages();
+    setStatus(`تم تحديد اسمك تلقائيًا كالتالي: <b>${esc(candidate)}</b>`, 'ok');
+  }
+}
+
+function parseMediaPlaceholder(text=''){
+  let filename = '';
+  const raw = (text || '').trim();
+
+  const patterns = [
+    /<attached:\s*([^>]+)>/i,
+    /^(.+?)\s*\((?:file attached|attached file|مرفق ملف|الملف مرفق)\)\s*$/i,
+    /^(?:file attached|attached file|مرفق ملف|الملف مرفق):\s*(.+)$/i,
+    /^(.+?)\s*\((?:image omitted|video omitted|audio omitted|document omitted|GIF omitted|تم حذف الصورة|تم حذف الفيديو|تم حذف الصوت|تم حذف المستند)\)\s*$/i
+  ];
+
+  for (const re of patterns){
+    const m = raw.match(re);
+    if (m){
+      filename = (m[1] || '').trim();
+      break;
+    }
+  }
+
+  if (!filename){
+    const maybe = raw.match(/([\w\-()\[\] .]+\.(?:jpg|jpeg|png|gif|webp|bmp|mp4|mov|avi|mkv|webm|3gp|mp3|ogg|wav|m4a|aac|opus|pdf|docx?|xlsx?|pptx?|vcf))/i);
+    if (maybe) filename = maybe[1].trim();
+  }
+
+  const type = guessMediaType(filename || raw);
+  return { filename, type };
+}
+
+function renderAttachment(message){
+  const {filename, type} = parseMediaPlaceholder(message.text || '');
+  const blobUrl = filename ? state.mediaMap.get(normName(filename)) : null;
+
+  if (!filename) return '';
+
+  if (!blobUrl){
+    return `<div class="file-pill"><div>📎 ${esc(filename)}</div><div class="hint">الملف غير محمّل حاليًا</div></div>`;
+  }
+
+  if (type === 'image'){
+    return `<a href="${blobUrl}" target="_blank"><img class="thumb" src="${blobUrl}" alt="${esc(filename)}"></a><div class="filename">${esc(filename)}</div>`;
+  }
+  if (type === 'video'){
+    return `<video class="video-box" controls src="${blobUrl}"></video><div class="filename">${esc(filename)}</div>`;
+  }
+  if (type === 'audio'){
+    return `<audio controls src="${blobUrl}"></audio><div class="filename">${esc(filename)}</div>`;
+  }
+  return `<div class="file-pill">📄 <a href="${blobUrl}" download="${esc(filename)}">${esc(filename)}</a></div>`;
+}
+
+function renderMessages(){
+  if (!state.messages.length){
+    chatWall.innerHTML = `<div class="empty"><div><div class="logo">💬</div><div style="font-size:22px;font-weight:700;margin-bottom:8px">لا توجد رسائل</div></div></div>`;
+    updateStats();
+    return;
+  }
+
+  const myName = (state.myName || el('myNameInput').value || '').trim();
+  state.myName = myName;
+  const dir = el('dirSelect').value;
+  document.documentElement.dir = dir;
+  document.documentElement.lang = dir === 'rtl' ? 'ar' : 'en';
+
+  let html = '';
+  let currentDate = '';
+
+  for (const m of state.messages){
+    if (m.date !== currentDate){
+      currentDate = m.date;
+      html += `<div class="day-sep">${esc(currentDate)}</div>`;
+    }
+
+    if (m.system){
+      html += `<div class="sysmsg">${linkify(m.text)}</div>`;
+      continue;
+    }
+
+    const mine = myName && m.sender === myName;
+    const attachmentInfo = parseMediaPlaceholder(m.text || '');
+    const hasAttachment = !!attachmentInfo.filename;
+    const cleanText = m.text
+      .replace(/<attached:\s*[^>]+>/ig, '')
+      .replace(/^(.+?)\s*\((?:file attached|attached file|مرفق ملف|الملف مرفق)\)\s*$/ig, '')
+      .replace(/^(?:file attached|attached file|مرفق ملف|الملف مرفق):\s*.+$/ig, '')
+      .trim();
+
+    html += `
+      <div class="msg-row ${mine ? 'mine' : 'other'}">
+        <div class="bubble" data-mid="${m.id}">
+          ${!mine ? `<div class="sender">${esc(m.sender)}</div>` : ''}
+          ${cleanText ? `<div class="text">${linkify(cleanText)}</div>` : ''}
+          ${hasAttachment ? renderAttachment({...m, text: attachmentInfo.filename}) : ''}
+          <div class="meta"><span>${esc(formatTime(m.time))}</span></div>
+        </div>
+      </div>`;
+  }
+
+  chatWall.innerHTML = html;
+  updateStats();
+  applySearch();
+  el('exportHtmlBtn').disabled = false;
+  scrollChatToBottom(true);
+}
+
+function applySearch(){
+  state.searchMatches = [];
+  state.searchIndex = -1;
+  const q = el('searchInput').value.trim().toLowerCase();
+  [...chatWall.querySelectorAll('.bubble,.sysmsg')].forEach(n=>n.classList.remove('hl'));
+  if (!q) return;
+
+  const nodes = [...chatWall.querySelectorAll('.bubble, .sysmsg')];
+  for (const node of nodes){
+    if ((node.textContent || '').toLowerCase().includes(q)) state.searchMatches.push(node);
+  }
+  if (state.searchMatches.length){
+    state.searchIndex = 0;
+    focusMatch();
+  }
+}
+
+function focusMatch(){
+  state.searchMatches.forEach(n=>n.classList.remove('hl'));
+  const node = state.searchMatches[state.searchIndex];
+  if (!node) return;
+  node.classList.add('hl');
+  node.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+async function fileToText(file){
+  return await file.text();
+}
+
+async function fileToDataUrl(file){
+  return await new Promise((resolve,reject)=>{
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+async function addMediaFiles(files){
+  let count = 0;
+  for (const file of files){
+    if (!file.name) continue;
+    const url = await fileToDataUrl(file);
+    state.mediaMap.set(normName(file.name), url);
+    count++;
+  }
+  state.mediaCount = state.mediaMap.size;
+  updateStats();
+  if (state.messages.length) renderMessages();
+  return count;
+}
+
+function getU16(v,o){return v.getUint16(o,true)}
+function getU32(v,o){return v.getUint32(o,true)}
+
+async function inflateRaw(uint8){
+  if (typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream غير مدعوم في هذا المتصفح');
+  const ds = new DecompressionStream('deflate-raw');
+  const stream = new Blob([uint8]).stream().pipeThrough(ds);
+  const ab = await new Response(stream).arrayBuffer();
+  return new Uint8Array(ab);
+}
+
+async function parseZipEntries(file){
+  const buf = await file.arrayBuffer();
+  const view = new DataView(buf);
+  const bytes = new Uint8Array(buf);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 66000); i--){
+    if (bytes[i]===0x50 && bytes[i+1]===0x4b && bytes[i+2]===0x05 && bytes[i+3]===0x06){ eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('تعذر قراءة ملف ZIP');
+
+  const totalEntries = getU16(view, eocd + 10);
+  const centralDirOffset = getU32(view, eocd + 16);
+  let ptr = centralDirOffset;
+  const td = new TextDecoder('utf-8');
+  const entries = [];
+
+  for (let i=0; i<totalEntries; i++){
+    if (getU32(view, ptr) !== 0x02014b50) throw new Error('ZIP central directory غير صالح');
+    const compression = getU16(view, ptr + 10);
+    const compressedSize = getU32(view, ptr + 20);
+    const uncompressedSize = getU32(view, ptr + 24);
+    const nameLen = getU16(view, ptr + 28);
+    const extraLen = getU16(view, ptr + 30);
+    const commentLen = getU16(view, ptr + 32);
+    const localOffset = getU32(view, ptr + 42);
+    const nameBytes = bytes.slice(ptr + 46, ptr + 46 + nameLen);
+    const filename = td.decode(nameBytes);
+    entries.push({ filename, compression, compressedSize, uncompressedSize, localOffset });
+    ptr += 46 + nameLen + extraLen + commentLen;
+  }
+  return { buf, view, bytes, entries };
+}
+
+async function extractZipEntry(zip, entry){
+  const {view, bytes} = zip;
+  const o = entry.localOffset;
+  if (getU32(view, o) !== 0x04034b50) throw new Error('ZIP local header غير صالح');
+  const nameLen = getU16(view, o + 26);
+  const extraLen = getU16(view, o + 28);
+  const start = o + 30 + nameLen + extraLen;
+  const comp = bytes.slice(start, start + entry.compressedSize);
+  if (entry.compression === 0) return comp;
+  if (entry.compression === 8) return await inflateRaw(comp);
+  throw new Error(`طريقة ضغط غير مدعومة: ${entry.compression} في ${entry.filename}`);
+}
+
+function mimeFromName(name=''){
+  const n = name.toLowerCase();
+  if (n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'image/jpeg';
+  if (n.endsWith('.png')) return 'image/png';
+  if (n.endsWith('.gif')) return 'image/gif';
+  if (n.endsWith('.webp')) return 'image/webp';
+  if (n.endsWith('.mp4')) return 'video/mp4';
+  if (n.endsWith('.webm')) return 'video/webm';
+  if (n.endsWith('.mov')) return 'video/quicktime';
+  if (n.endsWith('.mp3')) return 'audio/mpeg';
+  if (n.endsWith('.ogg') || n.endsWith('.opus')) return 'audio/ogg';
+  if (n.endsWith('.wav')) return 'audio/wav';
+  if (n.endsWith('.m4a')) return 'audio/mp4';
+  if (n.endsWith('.pdf')) return 'application/pdf';
+  return 'application/octet-stream';
+}
+
+async function loadZip(file){
+  setStatus('جاري قراءة ملف ZIP واستخراج المحادثة والميديا...');
+  const zip = await parseZipEntries(file);
+  const txtEntries = zip.entries.filter(e => /(^|\/)_(chat|تصدير_الدردشة)\.txt$/i.test(e.filename) || /\.txt$/i.test(e.filename));
+  if (!txtEntries.length) throw new Error('لم يتم العثور على ملف TXT داخل ZIP');
+
+  txtEntries.sort((a,b)=>b.uncompressedSize-a.uncompressedSize);
+  const chatEntry = txtEntries[0];
+  const textBytes = await extractZipEntry(zip, chatEntry);
+  const text = new TextDecoder('utf-8').decode(textBytes);
+  state.messages = parseWhatsAppText(text);
+  state.importedFrom = file.name;
+
+  for (const entry of zip.entries){
+    if (/\/$/.test(entry.filename) || entry.filename === chatEntry.filename) continue;
+    const type = guessMediaType(entry.filename);
+    if (type === 'file' && !/\.(pdf|docx?|xlsx?|pptx?|vcf|txt)$/i.test(entry.filename)) continue;
+    try{
+      const raw = await extractZipEntry(zip, entry);
+      const blob = new Blob([raw], {type: mimeFromName(entry.filename)});
+      const url = URL.createObjectURL(blob);
+      state.mediaMap.set(normName(entry.filename), url);
+    } catch(err){
+      console.warn('Skipped ZIP entry', entry.filename, err);
+    }
+  }
+  state.mediaCount = state.mediaMap.size;
+}
+
+async function loadTxt(file){
+  setStatus('جاري قراءة ملف TXT...');
+  const text = await fileToText(file);
+  state.messages = parseWhatsAppText(text);
+  state.importedFrom = file.name;
+}
+
+async function handleLoad(){
+  try{
+    const file = el('fileInput').files[0];
+    const mediaFiles = [...el('mediaInput').files];
+    state.messages = [];
+    state.mediaMap = new Map();
+    state.mediaCount = 0;
+    el('exportHtmlBtn').disabled = true;
+
+    if (!file && !mediaFiles.length) throw new Error('اختر ملف TXT أو ZIP أولًا');
+
+    if (file){
+      if (/\.zip$/i.test(file.name)) await loadZip(file);
+      else if (/\.txt$/i.test(file.name)) await loadTxt(file);
+      else throw new Error('الملف يجب أن يكون TXT أو ZIP');
+    }
+
+    if (mediaFiles.length){
+      setStatus('جاري إضافة ملفات الميديا اليدوية...');
+      await addMediaFiles(mediaFiles);
+    }
+
+    if (!state.messages.length) throw new Error('لم يتم العثور على رسائل قابلة للعرض');
+
+    if (!state.myName && el('myNameInput').value.trim()) state.myName = el('myNameInput').value.trim();
+    renderMessages();
+    setStatus(`تم تحميل المحادثة بنجاح من <b>${esc(state.importedFrom || 'الملف')}</b>.`, 'ok');
+  } catch(err){
+    console.error(err);
+    setStatus(`فشل التحميل: ${esc(err.message || String(err))}`, 'error');
+  }
+}
+
+function loadDemo(){
+  const demo = `23/04/2026, 9:12 PM - Amjad: هلا
+23/04/2026, 9:13 PM - Ahmad: هلا فيك
+23/04/2026, 9:14 PM - Amjad: هذا شكل قريب من واتساب
+23/04/2026, 9:15 PM - Ahmad: <attached: IMG-20260423-WA0001.jpg>
+23/04/2026, 9:16 PM - Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+23/04/2026, 9:17 PM - Amjad: وفيه بحث كمان
+24/04/2026, 12:03 AM - Ahmad: حلو جدًا`;
+  state.messages = parseWhatsAppText(demo);
+  state.mediaMap = new Map();
+  state.mediaCount = 0;
+  state.myName = 'Amjad';
+  el('myNameInput').value = 'Amjad';
+  state.importedFrom = 'demo';
+  renderMessages();
+  el('exportHtmlBtn').disabled = false;
+  setStatus('تم تحميل تجربة سريعة.', 'ok');
+}
+
+function downloadCurrentHtml(){
+  const blob = new Blob([document.documentElement.outerHTML], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'whatsapp_viewer_saved.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+
+async function handleDroppedFiles(files){
+  try{
+    if (!files || !files.length) return;
+    const zipOrTxt = files.find(f => /\.(zip|txt)$/i.test(f.name));
+    const mediaFiles = files.filter(f => !/\.(zip|txt)$/i.test(f.name));
+
+    if (!zipOrTxt && !mediaFiles.length){
+      throw new Error('الملفات المسحوبة لا تحتوي على ZIP أو TXT أو ميديا معروفة');
+    }
+
+    if (zipOrTxt){
+      state.messages = [];
+      state.mediaMap = new Map();
+      state.mediaCount = 0;
+      el('exportHtmlBtn').disabled = true;
+
+      if (/\.zip$/i.test(zipOrTxt.name)) await loadZip(zipOrTxt);
+      else await loadTxt(zipOrTxt);
+    }
+
+    if (mediaFiles.length){
+      setStatus('جاري إضافة الملفات المسحوبة...');
+      await addMediaFiles(mediaFiles);
+    }
+
+    if (!state.messages.length){
+      throw new Error('لم يتم العثور على رسائل قابلة للعرض');
+    }
+
+    if (!state.myName && el('myNameInput').value.trim()) state.myName = el('myNameInput').value.trim();
+    renderMessages();
+    setStatus(`تم تحميل الملفات المسحوبة بنجاح من <b>${esc(state.importedFrom || 'الملف')}</b>.`, 'ok');
+  } catch(err){
+    console.error(err);
+    setStatus(`فشل تحميل الملفات المسحوبة: ${esc(err.message || String(err))}`, 'error');
+  }
+}
+
+el('loadBtn').addEventListener('click', handleLoad);
+el('demoBtn').addEventListener('click', loadDemo);
+el('autoDetectBtn').addEventListener('click', autoDetectMyName);
+el('dirSelect').addEventListener('change', renderMessages);
+el('myNameInput').addEventListener('input', ()=>{ state.myName = el('myNameInput').value.trim(); renderMessages(); });
+el('searchInput').addEventListener('input', applySearch);
+el('prevBtn').addEventListener('click', ()=>{
+  if (!state.searchMatches.length) return;
+  state.searchIndex = (state.searchIndex - 1 + state.searchMatches.length) % state.searchMatches.length;
+  focusMatch();
+});
+el('nextBtn').addEventListener('click', ()=>{
+  if (!state.searchMatches.length) return;
+  state.searchIndex = (state.searchIndex + 1) % state.searchMatches.length;
+  focusMatch();
+});
+el('exportHtmlBtn').addEventListener('click', downloadCurrentHtml);
+
+const dropOverlay = el('dropOverlay');
+let dragCounter = 0;
+
+window.addEventListener('dragenter', (e)=>{
+  e.preventDefault();
+  dragCounter++;
+  dropOverlay.classList.add('show');
+});
+window.addEventListener('dragover', (e)=>{
+  e.preventDefault();
+});
+window.addEventListener('dragleave', (e)=>{
+  e.preventDefault();
+  dragCounter = Math.max(0, dragCounter - 1);
+  if (dragCounter === 0) dropOverlay.classList.remove('show');
+});
+window.addEventListener('drop', async (e)=>{
+  e.preventDefault();
+  dragCounter = 0;
+  dropOverlay.classList.remove('show');
+  const files = getDroppedFiles(e.dataTransfer);
+  await handleDroppedFiles(files);
+});
+
+</script>
+</body>
+</html>
