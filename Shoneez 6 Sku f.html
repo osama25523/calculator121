@@ -239,6 +239,57 @@
       line-height: 1.9;
     }
 
+
+    .salsabil-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      z-index: 2000;
+      padding: 90px 18px 18px;
+    }
+
+    .salsabil-box {
+      width: min(420px, 92vw);
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.45);
+      text-align: center;
+      animation: popIn 0.18s ease-out;
+    }
+
+    .salsabil-box h2 {
+      margin: 0 0 10px;
+      color: #f8fafc;
+      font-size: 24px;
+    }
+
+    .salsabil-box p {
+      margin: 0 0 20px;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    .salsabil-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .yes-btn { background: #ef4444; }
+    .no-btn { background: #22c55e; }
+
+    @keyframes popIn {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
     .success { color: #86efac; }
     .warning { color: #fcd34d; }
     .error { color: #fca5a5; }
@@ -258,6 +309,19 @@
       </div>
 
       <div id="status" class="status">Waiting for a ZIP file...</div>
+
+
+      <div id="salsabilModal" class="salsabil-overlay">
+        <div class="salsabil-box">
+          <h2>هل انت سلسبيل ؟</h2>
+          <p>اذا جاوبت خطأ رح تحسب سيئة يوم القيامة</p>
+          <div class="salsabil-actions">
+            <button id="salsabilYes" class="no-btn" type="button">نعم</button>
+            <button id="salsabilNo" class="yes-btn" type="button">لا</button>
+          </div>
+        </div>
+      </div>
+
 
       <div class="summary">
         <div class="card">
@@ -291,6 +355,9 @@
     const otherCountEl = document.getElementById('otherCount');
     const filesGrid = document.getElementById('filesGrid');
     const previewSection = document.getElementById('previewSection');
+    const salsabilModal = document.getElementById('salsabilModal');
+    const salsabilYes = document.getElementById('salsabilYes');
+    const salsabilNo = document.getElementById('salsabilNo');
 
     let selectedZipFile = null;
     let cachedZip = null;
@@ -555,28 +622,38 @@
     });
 
     
-let clickStep = 0;
+    function askSalsabil() {
+      return new Promise((resolve) => {
+        salsabilModal.style.display = 'flex';
 
-processBtn.addEventListener('click', async () => {
-  clickStep++;
+        const cleanup = () => {
+          salsabilModal.style.display = 'none';
+          salsabilYes.removeEventListener('click', yesHandler);
+          salsabilNo.removeEventListener('click', noHandler);
+        };
 
-  if (clickStep === 1) {
-    processBtn.innerText = "😏 بمزح معك";
-    setTimeout(() => {
-      processBtn.style.transform = "translateX(120px)";
-    }, 1500);
-    return;
-  }
+        const yesHandler = () => {
+          cleanup();
+          resolve(true);
+        };
 
-  if (clickStep === 2) {
-    processBtn.innerText = "😂 بمزح مرة ثانية";
-    setTimeout(() => {
-      processBtn.style.transform = "translateX(240px)";
-      processBtn.innerText = "⚙️ Process & Download";
-    }, 1500);
-    return;
-  }
+        const noHandler = () => {
+          cleanup();
+          resolve(false);
+        };
 
+        salsabilYes.addEventListener('click', yesHandler);
+        salsabilNo.addEventListener('click', noHandler);
+      });
+    }
+
+    processBtn.addEventListener('click', async () => {
+      const isSalsabil = await askSalsabil();
+
+      if (isSalsabil) {
+        setStatus('آسف، ما بطلع الملف لسلسبيل الموضوع شخصي 😅', 'error');
+        return;
+      }
 
       if (!cachedZip || excelEntries.length === 0) return;
 
@@ -629,7 +706,7 @@ processBtn.addEventListener('click', async () => {
         a.remove();
         URL.revokeObjectURL(url);
 
-        setStatus(`✅ Done successfully. <strong>${processedCount}</strong> Excel files were processed and the new ZIP has been downloaded.`, 'success');
+        setStatus(`✅ الملف جاهز طالما انت مش سلسبيل`, 'success');
       } catch (error) {
         console.error(error);
         setStatus('An error occurred while processing the files. One of the Excel files may be corrupted or not fully supported.', 'error');
@@ -637,6 +714,7 @@ processBtn.addEventListener('click', async () => {
         processBtn.disabled = false;
       }
     });
+
   </script>
 </body>
 </html>
