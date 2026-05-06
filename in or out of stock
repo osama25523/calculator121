@@ -91,7 +91,7 @@ button:hover {
 <body>
 <a href="Market.html" class="market-back">⬅ Back to Market</a>
 <div class="container">
-    <h2>Best Shop</h2>
+    <h2in or out of stock</h2>
 
     <div class="card">
         <p>Excel from Export (without any Change)</p>
