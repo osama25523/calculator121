@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendor Daily Excel Lookup</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+
+    :root{
+      --bg:#070b14;
+      --bg2:#101827;
+      --card:#111c2e;
+      --card2:#17253c;
+      --line:rgba(255,255,255,.12);
+      --white:#ffffff;
+      --muted:#9fb0cc;
+      --blue:#58a6ff;
+      --purple:#9b6dff;
+      --cyan:#4de2ff;
+      --gold:#ffcc66;
+      --green:#41d392;
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--white);
+      font-family:Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(88,166,255,.22), transparent 28%),
+        radial-gradient(circle at top right, rgba(155,109,255,.18), transparent 30%),
+        radial-gradient(circle at bottom center, rgba(77,226,255,.12), transparent 35%),
+        linear-gradient(145deg,var(--bg),var(--bg2));
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size:34px 34px;
+    }
+
+    .page{
+      position:relative;
+      max-width:1300px;
+      margin:auto;
+      padding:24px 20px 40px;
+    }
+
+    .page::after{
+      content:"";
+      position:absolute;
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle, rgba(88,166,255,.14), transparent 70%);
+      top:-180px;
+      right:-120px;
+      border-radius:50%;
+      filter:blur(10px);
+      pointer-events:none;
+    }
+
+    .top{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-bottom:28px;
+    }
+
+    .box{
+      background:linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      backdrop-filter:blur(14px);
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.05);
+      transition:.25s ease;
+    }
+
+    .box:hover{
+      transform:translateY(-3px);
+      border-color:rgba(88,166,255,.4);
+      box-shadow:
+        0 24px 50px rgba(0,0,0,.45),
+        0 0 30px rgba(88,166,255,.15);
+    }
+
+    .titleBox{
+      padding:16px;
+      text-align:center;
+      font-size:24px;
+      font-weight:900;
+      color:#fff;
+      letter-spacing:.5px;
+      text-shadow:0 0 12px rgba(88,166,255,.35);
+    }
+
+    .uploadBox{
+      position:relative;
+      overflow:hidden;
+      padding:14px;
+      text-align:center;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+    }
+
+    .uploadBox::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(120deg, rgba(88,166,255,.15), rgba(155,109,255,.12));
+      opacity:.9;
+    }
+
+    .uploadBox *{
+      position:relative;
+      z-index:2;
+    }
+
+    .uploadBox input{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+    }
+
+    .fileName{
+      display:block;
+      margin-top:8px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .searchRow{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      max-width:650px;
+      margin-bottom:20px;
+    }
+
+    .searchRow input{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      border-radius:18px;
+      padding:13px 16px;
+      font-size:16px;
+      font-weight:800;
+      outline:none;
+      transition:.2s ease;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+
+    .searchRow input:focus{
+      border-color:rgba(88,166,255,.55);
+      box-shadow:0 0 0 4px rgba(88,166,255,.14);
+    }
+
+    .searchRow button{
+      border:none;
+      border-radius:18px;
+      padding:0 28px;
+      font-weight:900;
+      font-size:16px;
+      color:white;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--blue),var(--purple));
+      box-shadow:0 10px 28px rgba(88,166,255,.25);
+      transition:.2s ease;
+    }
+
+    .searchRow button:hover{
+      transform:translateY(-2px) scale(1.02);
+      box-shadow:0 16px 34px rgba(88,166,255,.35);
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:18px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-weight:800;
+      font-size:14px;
+    }
+
+    .dashboard{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+    }
+
+    .section,.rightBlock{
+      padding:14px;
+      border-radius:20px;
+      background:linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(12px);
+      margin-bottom:18px;
+      box-shadow:0 16px 32px rgba(0,0,0,.28);
+    }
+
+    .dateGrid{
+      display:grid;
+      grid-template-columns:145px 1fr;
+      gap:18px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .dateLabels{
+      text-align:center;
+      font-size:15px;
+      font-weight:900;
+      line-height:1.4;
+      color:#fff;
+    }
+
+    .dateValue{
+      color:var(--muted);
+      text-align:center;
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .smallBox,.provider,.yn{
+      min-height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:9px 12px;
+      border-radius:16px;
+      background:linear-gradient(145deg,var(--card),var(--card2));
+      border:1px solid rgba(255,255,255,.08);
+      font-weight:900;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.05),
+        0 8px 18px rgba(0,0,0,.28);
+    }
+
+    .smallBox{
+      font-size:17px;
+      color:#fff;
+    }
+
+    .provider{
+      font-size:15px;
+      color:#fff;
+    }
+
+    .branch,.rightFlow{
+      display:grid;
+      grid-template-columns:140px 28px 1fr;
+      gap:14px;
+      align-items:center;
+      margin-top:16px;
+    }
+
+    .join{
+      height:3px;
+      background:linear-gradient(90deg,var(--blue),var(--cyan));
+      border-radius:999px;
+      position:relative;
+      box-shadow:0 0 16px rgba(88,166,255,.4);
+    }
+
+    .join::before,
+    .join::after{
+      content:"";
+      position:absolute;
+      width:3px;
+      height:46px;
+      background:linear-gradient(var(--blue),var(--cyan));
+      border-radius:999px;
+      top:-21px;
+      box-shadow:0 0 16px rgba(88,166,255,.4);
+    }
+
+    .join::before{left:0}
+    .join::after{right:0}
+
+    .providerStack{
+      display:grid;
+      gap:12px;
+    }
+
+    .groupTitle{
+      text-align:center;
+      font-size:19px;
+      font-weight:950;
+      margin-bottom:12px;
+      color:#fff;
+      text-shadow:0 0 10px rgba(88,166,255,.3);
+    }
+
+    .yn{
+      flex-direction:column;
+      color:#fff;
+      border-color:rgba(255,204,102,.28);
+      background:
+        linear-gradient(145deg, rgba(255,204,102,.08), rgba(255,255,255,.03)),
+        linear-gradient(145deg,var(--card),var(--card2));
+    }
+
+    .valueLine{
+      margin-top:6px;
+      font-size:13px;
+      font-weight:800;
+      color:var(--gold);
+      line-height:1.4;
+    }
+
+    .hint{
+      display:none;
+    }
+
+    
+    .searchArea{
+      position:relative;
+      max-width:650px;
+      margin-bottom:20px;
+    }
+
+    .searchArea .searchRow{
+      margin-bottom:0;
+    }
+
+    .suggestionsBox{
+      position:absolute;
+      left:0;
+      right:0;
+      top:calc(100% + 8px);
+      z-index:50;
+      display:none;
+      max-height:260px;
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#101827;
+      box-shadow:0 18px 40px rgba(0,0,0,.45);
+      padding:8px;
+    }
+
+    .suggestionItem{
+      padding:11px 13px;
+      border-radius:13px;
+      cursor:pointer;
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      transition:.15s ease;
+    }
+
+    .suggestionItem:hover{
+      background:rgba(88,166,255,.16);
+    }
+
+    .suggestionId{
+      color:#ffcc66;
+      white-space:nowrap;
+    }
+
+    .suggestionName{
+      color:#fff;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    @media(max-width:950px){
+      .top,.dashboard{
+        grid-template-columns:1fr;
+      }
+
+      .searchRow{
+        grid-template-columns:1fr;
+      }
+
+      .searchRow button{
+        height:54px;
+      }
+
+      .dateGrid,
+      .branch,
+      .rightFlow{
+        grid-template-columns:1fr;
+      }
+
+      .join{
+        display:none;
+      }
+    }
+
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="top">
+      
+      <label class="box uploadBox">export discount name file
+        <input id="discountFile" type="file" accept=".xlsx,.xls" />
+        <span id="discountName" class="fileName">No file selected</span>
+      </label>
+      <label class="box uploadBox">export sale price file
+        <input id="saleFile" type="file" accept=".xlsx,.xls" />
+        <span id="saleName" class="fileName">No file selected</span>
+      </label>
+    </div>
+
+    <div class="searchArea">
+      <div class="searchRow">
+        <input id="searchInput" type="text" placeholder="Search by Vendor Name or Vendor ID" autocomplete="off" />
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="suggestionsBox" class="suggestionsBox"></div>
+    </div>
+    <div id="status" class="status">Upload the two Excel files, then search.</div>
+
+    <div class="dashboard">
+      <section class="leftSide">
+        <div class="section">
+          <div class="dateGrid">
+            <div class="dateLabels">Start Date<br><br>End Date</div>
+            <div class="movWrap"><div id="dDate1" class="dateValue"></div><div class="box smallBox"><span id="dMov1">MOV1</span></div></div>
+          </div>
+          <div class="branch">
+            <div></div><div class="join"></div>
+            <div class="providerStack">
+              <div class="box provider"><span>By Service Provider:&nbsp;</span><span id="dMov1SP">-</span></div>
+              <div class="box provider"><span>By MyThings:&nbsp;</span><span id="dMov1MT">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="dateGrid">
+            <div class="dateLabels">Start Date<br><br>End Date</div>
+            <div class="movWrap"><div id="dDate2" class="dateValue"></div><div class="box smallBox"><span id="dMov2">MOV2</span></div></div>
+          </div>
+          <div class="branch">
+            <div></div><div class="join"></div>
+            <div class="providerStack">
+              <div class="box provider"><span>By Service Provider:&nbsp;</span><span id="dMov2SP">-</span></div>
+              <div class="box provider"><span>By MyThings:&nbsp;</span><span id="dMov2MT">-</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rightSide">
+        <div class="rightBlock">
+          <div class="groupTitle">Product Discount <span id="discountHeader"></span></div>
+          <div class="rightFlow">
+            <div class="box yn"><span id="productDiscountYN">yes or no</span><div id="discountPercent" class="valueLine"></div></div>
+            <div class="join"></div>
+            <div class="providerStack">
+              <div class="box provider"><span>By Service Provider:&nbsp;</span><span id="productSP">-</span></div>
+              <div class="box provider"><span>By MyThings:&nbsp;</span><span id="productMT">-</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rightBlock">
+          <div class="groupTitle">sale price</div>
+          <div class="rightFlow">
+            <div class="box yn"><span id="saleYN">yes or no</span><div id="saleValue" class="valueLine"></div></div>
+            <div class="join"></div>
+            <div class="providerStack">
+              <div class="box provider"><span>By Service Provider:&nbsp;</span><span id="saleSP">-</span></div>
+              <div class="box provider"><span>By MyThings:&nbsp;</span><span id="saleMT">-</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+   
+  </main>
+
+<script>
+const COL = {
+  A:0,B:1,C:2,E:4,G:6,H:7,I:8,K:10,N:13,O:14,P:15,S:18,T:19,U:20,V:21,W:22,X:23,AE:30,AF:31
+};
+let discountRows = [];
+let saleRows = [];
+
+function cell(row, letter){
+  const v = row[COL[letter]];
+  return v === undefined || v === null ? '' : String(v).trim();
+}
+function isHeader(row){
+  return Object.values(row).join(' ').toLowerCase().includes('vendor') || String(row[0]||'').toLowerCase().includes('id');
+}
+function excelDate(v){
+  if(v === undefined || v === null || v === '') return '';
+  if(typeof v === 'number'){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(d) return `${String(d.d).padStart(2,'0')}/${String(d.m).padStart(2,'0')}/${d.y}`;
+  }
+  return String(v).trim();
+}
+
+function formatPercent(v){
+  if(v === undefined || v === null || String(v).trim() === ''){
+    return 'no';
+  }
+
+  if(typeof v === 'number'){
+    if(v === 0) return 'no';
+    return (v * 100).toFixed(2) + '%';
+  }
+
+  const s = String(v).trim();
+  if(s === '0' || s === '0.00%' || s === '0%'){
+    return 'no';
+  }
+
+  return s;
+}
+function yesNo(v){
+  const s = String(v || '').trim();
+  if(!s || s.toLowerCase() === 'no') return 'no';
+  return 'yes';
+}
+function valOrNo(v){
+  const s = String(v || '').trim();
+  return s ? s : 'no';
+}
+function normalize(v){return String(v||'').trim().toLowerCase();}
+function cleanType(v){return normalize(v).replace(/\s+/g,' ');}
+function isMov1Type(v){
+  const g = cleanType(v);
+  return g === 'free delivery - two segments' || g === 'rdf';
+}
+function isMov2Type(v){
+  return cleanType(v) === 'free delivery only';
+}
+function isProductDiscountType(v){
+  return cleanType(v) === 'product discount';
+}
+
+function readExcel(file, target){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:false});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        let rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        rows = rows.filter(r => r.some(c => String(c).trim() !== '') && !isHeader(r));
+        if(target === 'discount') discountRows = rows;
+        if(target === 'sale') saleRows = rows;
+        resolve(rows.length);
+      }catch(err){reject(err)}
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function findRows(rows, q){
+  const n = normalize(q);
+  if(!n) return [];
+  const exact = rows.filter(r => normalize(cell(r,'A')) === n || normalize(cell(r,'E')) === n);
+  if(exact.length) return exact;
+  return rows.filter(r => normalize(cell(r,'A')).includes(n) || normalize(cell(r,'E')).includes(n));
+}
+function findRow(rows, q){
+  const results = findRows(rows, q);
+  return results.length ? results[0] : null;
+}
+function setText(id, text){document.getElementById(id).textContent = text || '-';}
+function clearData(){
+  ['dMov1','dMov2'].forEach((id,i)=>setText(id, i?'MOV2':'MOV1'));
+  ['dDate1','dDate2','discountPercent','saleValue'].forEach(id=>setText(id,''));
+  ['dMov1SP','dMov1MT','dMov2SP','dMov2MT','productSP','productMT','saleSP','saleMT'].forEach(id=>setText(id,'-'));
+  setText('productDiscountYN','yes or no'); setText('saleYN','no');
+}
+function updateStatus(msg){document.getElementById('status').textContent = msg;}
+
+
+function getVendorOptions(){
+  const map = new Map();
+
+  function addRow(r){
+    const id = cell(r,'A');
+    const name = cell(r,'E');
+    if(!id || !name) return;
+
+    const key = `${id}||${name}`;
+    if(!map.has(key)){
+      map.set(key, {id, name});
+    }
+  }
+
+  discountRows.forEach(addRow);
+  saleRows.forEach(addRow);
+
+  return Array.from(map.values());
+}
+
+function showSuggestions(){
+  const input = document.getElementById('searchInput');
+  const box = document.getElementById('suggestionsBox');
+  const q = normalize(input.value);
+
+  box.innerHTML = '';
+
+  if(!q){
+    box.style.display = 'none';
+    return;
+  }
+
+  const matches = getVendorOptions()
+    .filter(v => normalize(v.id).includes(q) || normalize(v.name).includes(q))
+    .slice(0, 12);
+
+  if(!matches.length){
+    box.style.display = 'none';
+    return;
+  }
+
+  matches.forEach(v=>{
+    const item = document.createElement('div');
+    item.className = 'suggestionItem';
+    item.innerHTML = `<span class="suggestionName">${v.name}</span><span class="suggestionId">${v.id}</span>`;
+
+    item.addEventListener('mousedown', e=>{
+      e.preventDefault();
+      input.value = `${v.id} - ${v.name}`;
+      box.style.display = 'none';
+      search();
+    });
+
+    box.appendChild(item);
+  });
+
+  box.style.display = 'block';
+}
+
+function hideSuggestionsSoon(){
+  setTimeout(()=>{
+    const box = document.getElementById('suggestionsBox');
+    if(box) box.style.display = 'none';
+  }, 180);
+}
+
+function search(){
+  clearData();
+  let q = document.getElementById('searchInput').value;
+  if(q.includes(' - ')){
+    q = q.split(' - ')[0].trim();
+  }
+  if(!q.trim()) return updateStatus('Write Vendor Name or Vendor ID first.');
+
+  const dRows = findRows(discountRows, q);
+  const s = findRow(saleRows, q);
+
+  if(!dRows.length && !s) return updateStatus('No result found for this Vendor Name / ID.');
+
+  const rdfRow = dRows.find(r => cleanType(cell(r,'G')) === 'rdf');
+  const twoSegmentsRow = dRows.find(r => cleanType(cell(r,'G')) === 'free delivery - two segments');
+  const freeOnlyRow = dRows.find(r => cleanType(cell(r,'G')) === 'free delivery only');
+  const productRow = dRows.find(r => cleanType(cell(r,'G')) === 'product discount');
+
+  const movRow = twoSegmentsRow || rdfRow || freeOnlyRow;
+
+  if(movRow){
+    const gType = cleanType(cell(movRow,'G'));
+    const dateRange = `${excelDate(movRow[COL.B])}  →  ${excelDate(movRow[COL.C])}`;
+
+    if(gType === 'rdf'){
+      setText('dMov1', valOrNo(cell(movRow,'H')));
+      setText('dDate1', dateRange);
+      setText('dMov1SP', valOrNo(cell(movRow,'X')));
+      setText('dMov1MT', valOrNo(cell(movRow,'W')));
+
+      setText('dMov2', 'no');
+      setText('dDate2', '');
+      setText('dMov2SP', '-');
+      setText('dMov2MT', '-');
+
+    } else if(gType === 'free delivery - two segments'){
+      setText('dMov1', valOrNo(cell(movRow,'H')));
+      setText('dDate1', dateRange);
+      setText('dMov1SP', valOrNo(cell(movRow,'X')));
+      setText('dMov1MT', valOrNo(cell(movRow,'W')));
+
+      setText('dMov2', valOrNo(cell(movRow,'I')));
+      setText('dDate2', dateRange);
+      setText('dMov2SP', valOrNo(cell(movRow,'AF')));
+      setText('dMov2MT', valOrNo(cell(movRow,'AE')));
+
+    } else if(gType === 'free delivery only'){
+      setText('dMov1', 'no');
+      setText('dDate1', '');
+      setText('dMov1SP', '-');
+      setText('dMov1MT', '-');
+
+      setText('dMov2', valOrNo(cell(movRow,'I')));
+      setText('dDate2', dateRange);
+      setText('dMov2SP', valOrNo(cell(movRow,'AF')));
+      setText('dMov2MT', valOrNo(cell(movRow,'AE')));
+    }
+  } else {
+    setText('dMov1', 'no');
+    setText('dMov2', 'no');
+    setText('dDate1', '');
+    setText('dDate2', '');
+  }
+
+  if(productRow){
+    const productDate = `${excelDate(productRow[COL.B])}  →  ${excelDate(productRow[COL.C])}`;
+
+    let sValue = String(valOrNo(cell(productRow,'S'))).trim();
+    const tValue = String(valOrNo(cell(productRow,'T'))).trim();
+    const hValue = valOrNo(cell(productRow,'H'));
+
+    let isCapped = false;
+
+    if(sValue === '0' || sValue === '0.00%' || sValue === '0%'){
+      sValue = cell(productRow,'T');
+    }else{
+      sValue = cell(productRow,'S');
+      isCapped = true;
+    }
+
+    let uValue = String(cell(productRow,'U')).trim();
+    let vValue = String(cell(productRow,'V')).trim();
+
+    const uIsZero = (uValue === '0.00%' || uValue === '0%' || uValue === '0');
+    const vIsZero = (vValue === '0.00%' || vValue === '0%' || vValue === '0');
+
+    let productMT = '';
+    let productSP = '';
+
+    if(uIsZero && vIsZero){
+      productMT = formatPercent(productRow[COL.W]);
+      productSP = formatPercent(productRow[COL.X]);
+    }else{
+      productMT = formatPercent(productRow[COL.U]);
+      productSP = formatPercent(productRow[COL.V]);
+    }
+
+    setText('productDiscountYN', 'yes');
+    setText('discountHeader', productDate);
+
+    if(isCapped){
+      setText('discountPercent', `capped: ${sValue} / MOV : ${hValue}`);
+    }else{
+      setText('discountPercent', `${sValue} / MOV : ${hValue}`);
+    }
+    setText('productSP', productSP);
+    setText('productMT', productMT);
+  } else {
+    setText('productDiscountYN', 'no');
+    setText('discountPercent', '');
+    setText('productSP', 'no');
+    setText('productMT', 'no');
+  }
+
+  if(s){
+    const saleN = cell(s,'N');
+    const saleHas = yesNo(saleN);
+
+    // قيمة K جنب sale price
+    const saleK = cell(s,'K');
+
+    if(saleHas === 'yes'){
+      setText('saleYN', `yes : ${saleK}`);
+      setText('saleValue', `${excelDate(s[COL.B])}  →  ${excelDate(s[COL.C])}`);
+      setText('saleSP', formatPercent(s[COL.P]));
+      setText('saleMT', formatPercent(s[COL.O]));
+    } else {
+      setText('saleYN', 'no');
+      setText('saleValue', '');
+      setText('saleSP', 'no');
+      setText('saleMT', 'no');
+    }
+  } else {
+    setText('saleYN', 'no');
+    setText('saleValue', '');
+    setText('saleSP', 'no');
+    setText('saleMT', 'no');
+  }
+
+  updateStatus('Result loaded.');
+}
+
+document.getElementById('discountFile').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  document.getElementById('discountName').textContent=f.name;
+  const count = await readExcel(f,'discount');
+  updateStatus(`Discount file loaded: ${count} rows.`);
+});
+document.getElementById('saleFile').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  document.getElementById('saleName').textContent=f.name;
+  const count = await readExcel(f,'sale');
+  updateStatus(`Sale price file loaded: ${count} rows.`);
+});
+document.getElementById('searchBtn').addEventListener('click', search);
+document.getElementById('searchInput').addEventListener('input', showSuggestions);
+document.getElementById('searchInput').addEventListener('focus', showSuggestions);
+document.getElementById('searchInput').addEventListener('blur', hideSuggestionsSoon);
+document.getElementById('searchInput').addEventListener('keydown', e=>{if(e.key==='Enter') search();});
+</script>
+</body>
+</html>
