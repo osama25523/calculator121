@@ -1,151 +1,56 @@
-<!DOCTYPE html>
-<html lang="ar">
+  <!DOCTYPE html>
+<html lang="en">
+  
 <head>
-  <meta charset="UTF-8">
-  <title>Pics Extractor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Image in New Tab</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 80px; /* عشان ما يغطي الرابط على المحتوى */
+  }
 
-  <a href="index.html" style="position:fixed; top:15px; right:20px; color:#6d3b00; font-weight:bold;">⬅ Back</a>
+  /* تنسيق الرابط */
+  #link1 {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    text-decoration: none;
+    font-size: 18px;
+    background: #222;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  #link1:hover {
+    background: #22d3ee;
+    color: #001018;
+  }
+</style>
 
-  <style>
-    body {
-      direction: rtl;
-      font-family: Arial;
-      padding: 20px;
-      background: radial-gradient(circle at center, #fff3b0, #ffd54f 45%, #ffb300 75%, #8a4b00 100%);
-      color: #2b1600;
-      text-align: center;
-    }
-
-    h2 {
-      color: #8a4b00;
-      text-shadow: 0 0 10px #fff176, 0 0 20px #ffca28;
-    }
-
-    textarea {
-      width: 90%;
-      height: 150px;
-      background: #ffffff;
-      color: #2b1600;
-      border: 2px solid #ffd54f;
-      border-radius: 10px;
-      padding: 10px;
-    }
-
-    input {
-      background: #ffffff;
-      color: #2b1600;
-      border: 2px solid #ffca28;
-      border-radius: 8px;
-      padding: 5px;
-    }
-
-    button {
-      background: #ffd54f;
-      color: #2b1600;
-      border: 1px solid #c58b00;
-      padding: 10px 25px;
-      font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      transform: scale(1.03);
-    }
-
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-      color: #6d3b00;
-    }
-  </style>
 </head>
-
 <body>
+<a id="link1" href="index.html">Discount & Sale Price</a>
 
-  <h2>Pics Links</h2>
+     <input type="text" id="urlInput" placeholder="Enter image URL" />
+    <button onclick="processUrl()">Open Image in New Tab</button>
+    <p id="result"></p>
 
-  <textarea id="links" placeholder="https://example.com/image1.png"></textarea><br><br>
+    <script>
+        function processUrl() {
+            const url = document.getElementById("urlInput").value;
+            const cleanedUrl = url.split('?')[0];
 
-  <label>Start From</label>
-  <input type="number" id="startNum" value="1"><br><br>
+            // Open the cleaned URL in a new tab
+            window.open(cleanedUrl, '_blank');
 
-  <button onclick="downloadAndZip()">Download</button>
-
-  <p id="status"></p>
-
-  <script>
-    async function downloadAndZip() {
-      const textarea = document.getElementById('links');
-      const status = document.getElementById('status');
-      const startNumInput = document.getElementById('startNum');
-
-      const urls = textarea.value.trim().split('\n').filter(Boolean);
-      let startNum = parseInt(startNumInput.value) || 1;
-
-      if (urls.length === 0) {
-        status.textContent = '';
-        return;
-      }
-
-      status.textContent = 'Downloading 🔥';
-
-      const zip = new JSZip();
-
-      for (let i = 0; i < urls.length; i++) {
-        const url = urls[i];
-
-        // 🔥 الرقم يعتمد على موقع اللينك
-        const fileNumber = startNum + i;
-
-        try {
-          const response = await fetch(url);
-
-          if (!response.ok) throw new Error("Failed");
-
-          const blob = await response.blob();
-
-          const img = await createImageBitmap(blob);
-
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-
-          const jpgBlob = await new Promise(resolve =>
-            canvas.toBlob(resolve, "image/jpeg", 0.9)
-          );
-
-          // ✅ نحفظ بنفس الرقم الأصلي
-          zip.file(`${fileNumber}.jpg`, jpgBlob);
-
-          status.textContent = `🔥 ${i + 1} / ${urls.length} 🔥`;
-
-        } catch (error) {
-          console.error(`Error in image ${fileNumber}`, error);
-
-          // ❌ بس بنتجاهلها بدون ما نغير الترقيم
-          status.textContent = `❌ Skipped ${fileNumber}`;
+            // Optional: Display the cleaned URL
+            document.getElementById("result").textContent = `Cleaned URL: ${cleanedUrl}`;
         }
-      }
-
-      status.textContent = '🔥 Preparing ZIP... 🔥';
-
-      const zipFile = await zip.generateAsync({ type: "blob" });
-
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(zipFile);
-      link.download = "fire_images.zip";
-      link.click();
-
-      status.textContent = '✅ Done 🔥';
-    }
-  </script>
-
+    </script>
 </body>
 </html>
+
