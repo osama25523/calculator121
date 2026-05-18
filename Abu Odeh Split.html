@@ -183,7 +183,7 @@ button:disabled {
         <div>Click to select or drag & drop file</div>
         <div id="fileName" class="muted" style="margin-top: 10px;">No file selected</div>
       </label>
-      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
 
       <div class="btns">
         <button id="processBtn" disabled>Process & Download ZIP</button>
@@ -301,7 +301,13 @@ button:disabled {
 
       try {
         const buffer = await selectedFile.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: 'array' });
+
+const workbook = XLSX.read(buffer, {
+  type: 'array',
+  raw: true,
+  cellText: false,
+  cellDates: true
+});
 
         if (!workbook.SheetNames.length) {
           throw new Error('No sheets found in file.');
@@ -309,11 +315,18 @@ button:disabled {
 
         const firstSheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[firstSheetName];
-        const allRows = XLSX.utils.sheet_to_json(sheet, {
-          header: 1,
-          defval: '',
-          raw: false
-        });
+       const allRows = XLSX.utils.sheet_to_json(sheet, {
+  header: 1,
+  defval: '',
+  raw: true
+}).map(row =>
+  row.map(cell => {
+    if (typeof cell === 'number') {
+      return cell.toLocaleString('fullwide', { useGrouping: false });
+    }
+    return cell;
+  })
+);
 
         if (!allRows.length) {
           throw new Error('First sheet is empty.');
