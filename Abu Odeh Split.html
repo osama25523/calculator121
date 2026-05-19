@@ -1,11 +1,3 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Abu Odeh</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   
 
 <style>
@@ -183,7 +175,7 @@ button:disabled {
         <div>Click to select or drag & drop file</div>
         <div id="fileName" class="muted" style="margin-top: 10px;">No file selected</div>
       </label>
-      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
 
       <div class="btns">
         <button id="processBtn" disabled>Process & Download ZIP</button>
@@ -223,7 +215,7 @@ button:disabled {
 
     function setFile(file) {
       selectedFile = file || null;
-      fileName.textContent = selectedFile ? `Selected file: ${selectedFile.name}` : 'No file selected';
+      fileName.textContent = selectedFile ? Selected file: ${selectedFile.name} : 'No file selected';
       processBtn.disabled = !selectedFile;
       resultsBox.style.display = 'none';
       resultsBox.innerHTML = '';
@@ -301,13 +293,7 @@ button:disabled {
 
       try {
         const buffer = await selectedFile.arrayBuffer();
-
-const workbook = XLSX.read(buffer, {
-  type: 'array',
-  raw: true,
-  cellText: false,
-  cellDates: true
-});
+        const workbook = XLSX.read(buffer, { type: 'array' });
 
         if (!workbook.SheetNames.length) {
           throw new Error('No sheets found in file.');
@@ -315,18 +301,11 @@ const workbook = XLSX.read(buffer, {
 
         const firstSheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[firstSheetName];
-       const allRows = XLSX.utils.sheet_to_json(sheet, {
-  header: 1,
-  defval: '',
-  raw: true
-}).map(row =>
-  row.map(cell => {
-    if (typeof cell === 'number') {
-      return cell.toLocaleString('fullwide', { useGrouping: false });
-    }
-    return cell;
-  })
-);
+        const allRows = XLSX.utils.sheet_to_json(sheet, {
+          header: 1,
+          defval: '',
+          raw: false
+        });
 
         if (!allRows.length) {
           throw new Error('First sheet is empty.');
@@ -340,7 +319,7 @@ const workbook = XLSX.read(buffer, {
           chunks.push([]);
         }
 
-        setStatus(`Creating ${chunks.length} Excel file(s)...`);
+        setStatus(Creating ${chunks.length} Excel file(s)...);
 
         const zip = new JSZip();
         const baseName = getBaseFileName(selectedFile.name);
@@ -357,14 +336,14 @@ const workbook = XLSX.read(buffer, {
             type: 'array'
           });
 
-          const fileName = `${baseName}_part_${index + 1}.xlsx`;
+          const fileName = ${baseName}_part_${index + 1}.xlsx;
           generatedNames.push(fileName);
           zip.file(fileName, excelArray);
         });
 
         setStatus('Zipping files...');
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const zipName = `${baseName}_split_files.zip`;
+        const zipName = ${baseName}_split_files.zip;
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(zipBlob);
@@ -375,7 +354,7 @@ const workbook = XLSX.read(buffer, {
         URL.revokeObjectURL(link.href);
 
         resultsBox.style.display = 'block';
-        resultsBox.innerHTML = `
+        resultsBox.innerHTML = 
           <strong>Process completed successfully.</strong>
           <ul>
             <li>Sheet name: ${escapeHtml(firstSheetName)}</li>
@@ -386,15 +365,15 @@ const workbook = XLSX.read(buffer, {
             <li>Any '1' in column 3 replaced with empty</li>
           </ul>
           <strong>Generated files:</strong>
-          <ul>${generatedNames.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>
-        `;
+          <ul>${generatedNames.map(name => <li>${escapeHtml(name)}</li>).join('')}</ul>
+        ;
 
         setStatus('Download completed.');
       } catch (error) {
         console.error(error);
         setStatus('Error during processing.');
         resultsBox.style.display = 'block';
-        resultsBox.textContent = `Reason: ${error.message || error}`;
+        resultsBox.textContent = Reason: ${error.message || error};
       } finally {
         processBtn.disabled = !selectedFile;
       }
@@ -402,3 +381,7 @@ const workbook = XLSX.read(buffer, {
   </script>
 </body>
 </html>
+بدي يتقبل csv
+وبدي كمان لما يسحب الاكسل يحول العمود 
+6253505520069 
+لانو بكتب الرقم وبكتب بعدها +12
