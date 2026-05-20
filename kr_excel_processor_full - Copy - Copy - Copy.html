@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KR Excel Processor</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
+body { min-height: 100vh; background: radial-gradient(circle at top, #1e40af 0, #0f172a 42%, #020617 100%); color: #fff; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.card { width: 100%; max-width: 880px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); border-radius: 28px; padding: 34px; box-shadow: 0 24px 70px rgba(0,0,0,.42); backdrop-filter: blur(16px); }
+.badge { width: fit-content; margin: 0 auto 14px; padding: 8px 16px; border-radius: 999px; background: rgba(34,197,94,.16); border: 1px solid rgba(34,197,94,.35); color: #bbf7d0; font-weight: bold; }
+h1 { text-align: center; font-size: 38px; margin-bottom: 10px; }
+.sub { text-align: center; color: #cbd5e1; margin-bottom: 28px; line-height: 1.8; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
+.box { background: rgba(15,23,42,.62); border: 1px dashed rgba(255,255,255,.28); border-radius: 22px; padding: 22px; }
+label { display: block; font-weight: bold; margin-bottom: 12px; font-size: 17px; }
+input[type=file] { width: 100%; padding: 14px; border-radius: 14px; background: #fff; color: #0f172a; border: 0; }
+button { width: 100%; border: 0; border-radius: 18px; padding: 18px 20px; margin-top: 8px; cursor: pointer; color: white; background: linear-gradient(135deg, #22c55e, #16a34a); font-size: 19px; font-weight: bold; transition: .2s; box-shadow: 0 14px 30px rgba(22,163,74,.28); }
+button:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(22,163,74,.38); }
+button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.status { margin-top: 22px; background: rgba(2,6,23,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 18px; white-space: pre-line; line-height: 1.8; color: #e2e8f0; direction: rtl; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+.stat { background: rgba(255,255,255,.08); border-radius: 16px; padding: 14px; text-align: center; }
+.stat strong { display:block; font-size: 24px; color:#86efac; }
+.note { color:#cbd5e1; font-size:13px; line-height:1.8; margin-top:12px; }
+@media (max-width: 700px) { .grid, .stats { grid-template-columns: 1fr; } h1 { font-size: 30px; } .card { padding: 24px; } }
+</style>
+</head>
+<body>
+<main class="card">
+  
+  <h1>KR Excel Processor</h1>
+
+  <div class="stats">
+    <div class="stat"><strong>540</strong> أكواد مسموحة</div>
+    <div class="stat"><strong>282</strong> تقسيم ÷ 4</div>
+    <div class="stat"><strong>158</strong> تقسيم ÷ 2</div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <label for="excel1">SKU +Price+0,1</label>
+      <input type="file" id="excel1" accept=".xlsx,.xls,.csv" />
+    </div>
+    <div class="box">
+      <label for="excel2">Export</label>
+      <input type="file" id="excel2" accept=".xlsx,.xls" />
+    </div>
+  </div>
+
+  <button id="runBtn" onclick="processFiles()">Download Excel</button>
+  <div class="status" id="status">بانتظار رفع الملفين...</div>
+
+<script>
+const allowedCodes = new Set(["60002KR", "60003KR", "60004KR", "60005KR", "60006KR", "60007KR", "60008KR", "60009KR", "60010KR", "60011KR", "60012KR", "60013KR", "60014KR", "60015KR", "60016KR", "60017KR", "60018KR", "60019KR", "60020KR", "60021KR", "60022KR", "60023KR", "60024KR", "60025KR", "60026KR", "60027KR", "60028KR", "60029KR", "60030KR", "60031KR", "60032KR", "60033KR", "60034KR", "60035KR", "60036KR", "60037KR", "60038KR", "60039KR", "60040KR", "60041KR", "60042KR", "60043KR", "60044KR", "60045KR", "60046KR", "60047KR", "60048KR", "60049KR", "60050KR", "60051KR", "60052KR", "60053KR", "60054KR", "60056KR", "60057KR", "60058KR", "60059KR", "60060KR", "60061KR", "60062KR", "60063KR", "60064KR", "60065KR", "60066KR", "60067KR", "60068KR", "60069KR", "60070KR", "60071KR", "60072KR", "60073KR", "60074KR", "60075KR", "60076KR", "60077KR", "60078KR", "60079KR", "60080KR", "60081KR", "60082KR", "60083KR", "60084KR", "60085KR", "60086KR", "60087KR", "60088KR", "60089KR", "60090KR", "60091KR", "60092KR", "60094KR", "60095KR", "60096KR", "60097KR", "60098KR", "60099KR", "60100KR", "60101KR", "60102KR", "60103KR", "60104KR", "60105KR", "60106KR", "60107KR", "60108KR", "60110KR", "60111KR", "60112KR", "60115KR", "60116KR", "60117KR", "60118KR", "60119KR", "60120KR", "60121KR", "60122KR", "60124KR", "60125KR", "60126KR", "60127KR", "60128KR", "60129KR", "60130KR", "60131KR", "60134KR", "60135KR", "60136KR", "60137KR", "60138KR", "60139KR", "60140KR", "60141KR", "60142KR", "60143KR", "60144KR", "60146KR", "60147KR", "60148KR", "60149KR", "60150KR", "60151KR", "60152KR", "60153KR", "60154KR", "60155KR", "60156KR", "60158KR", "60159KR", "60160KR", "60161KR", "60163KR", "60164KR", "60165KR", "60166KR", "60167KR", "60168KR", "60169KR", "60170KR", "60171KR", "60172KR", "60173KR", "60174KR", "60175KR", "60176KR", "60177KR", "60178KR", "60179KR", "60180KR", "60181KR", "60182KR", "60183KR", "60184KR", "60185KR", "60186KR", "60187KR", "60188KR", "60189KR", "60190KR", "60191KR", "60192KR", "60194KR", "60195KR", "60196KR", "60197KR", "60198KR", "60199KR", "60201KR", "60202KR", "60203KR", "60204KR", "60205KR", "60206KR", "60207KR", "60209KR", "60210KR", "60211KR", "60212KR", "60214KR", "60215KR", "60216KR", "60217KR", "60218KR", "60219KR", "60220KR", "60221KR", "60222KR", "60223KR", "60224KR", "60225KR", "60226KR", "60227KR", "60228KR", "60229KR", "60230KR", "60231KR", "60232KR", "60233KR", "60234KR", "60235KR", "60236KR", "60237KR", "60238KR", "60239KR", "60241KR", "60242KR", "60243KR", "60244KR", "60245KR", "60246KR", "60248KR", "60249KR", "60251KR", "60252KR", "60253KR", "60254KR", "60255KR", "60257KR", "60258KR", "60259KR", "60260KR", "60261KR", "60262KR", "60263KR", "60264KR", "60271KR", "60272KR", "60273KR", "60274KR", "60275KR", "60276KR", "60277KR", "60278KR", "60279KR", "60280KR", "60282KR", "60283KR", "60284KR", "60285KR", "60286KR", "60287KR", "60288KR", "60290KR", "60291KR", "60292KR", "60293KR", "60294KR", "60295KR", "60296KR", "60297KR", "60298KR", "60299KR", "60300KR", "60301KR", "60302KR", "60303KR", "60304KR", "60305KR", "60306KR", "60307KR", "60308KR", "60309KR", "60311KR", "60312KR", "60313KR", "60314KR", "60315KR", "60316KR", "60317KR", "60318KR", "60319KR", "60320KR", "60321KR", "60322KR", "60324KR", "60325KR", "60326KR", "60327KR", "60328KR", "60329KR", "60330KR", "60331KR", "60332KR", "60333KR", "60334KR", "60335KR", "60336KR", "60337KR", "60338KR", "60339KR", "60340KR", "60342KR", "60343KR", "6104527KR", "625300530029KR", "886736005001KR", "6251038007095KR", "6251038007101KR", "6251038007910KR", "6251038007927KR", "6251098003396KR", "6251098004324KR", "6251098004553KR", "6251098004584KR", "6251098004591KR", "6251098004607KR", "6251098105939KR", "6253003140622KR", "6253005300215KR", "6253005316049KR", "6253005316056KR", "6253005365987KR", "6253341001623KR", "6253341010076KR", "6253341110202KR", "6253503400820KR", "6253503401094KR", "6253503401216KR", "6253503401261KR", "6253503401315KR", "6253503401360KR", "6253503402398KR", "6253506002946KR", "6254000066106KR", "6254000066144KR", "6254000066151KR", "6254000695078KR", "13KR", "27KR", "29KR", "33KR", "42KR", "44KR", "58KR", "59KR", "60KR", "66KR", "67KR", "68KR", "87KR", "155KR", "170KR", "171KR", "271KR", "603KR", "604KR", "799KR", "800KR", "801KR", "802KR", "803KR", "804KR", "806KR", "808KR", "809KR", "811KR", "818KR", "819KR", "995KR", "80001KR", "80002KR", "80003KR", "80004KR", "80005KR", "80006KR", "80007KR", "80008KR", "80009KR", "80010KR", "80011KR", "80012KR", "80013KR", "80014KR", "80015KR", "80016KR", "80017KR", "80018KR", "80019KR", "80020KR", "80021KR", "80022KR", "80023KR", "80024KR", "80025KR", "80026KR", "80027KR", "80028KR", "80029KR", "80030KR", "80031KR", "80032KR", "80033KR", "80034KR", "80035KR", "80036KR", "80037KR", "80038KR", "80039KR", "80040KR", "80041KR", "80042KR", "80043KR", "80044KR", "80045KR", "80046KR", "80047KR", "80048KR", "80049KR", "80050KR", "80051KR", "80052KR", "80053KR", "80054KR", "80055KR", "80056KR", "80057KR", "80058KR", "80059KR", "80060KR", "80061KR", "80062KR", "80063KR", "80064KR", "80065KR", "80066KR", "80067KR", "80068KR", "80069KR", "80070KR", "80071KR", "80072KR", "80073KR", "80074KR", "80075KR", "80076KR", "80077KR", "80078KR", "80079KR", "80080KR", "80081KR", "80082KR", "80083KR", "80084KR", "80085KR", "80086KR", "80087KR", "80088KR", "80089KR", "80090KR", "80091KR", "80092KR", "80093KR", "80094KR", "80095KR", "80096KR", "80097KR", "80098KR", "80099KR", "80100KR", "80101KR", "80102KR", "80103KR", "80104KR", "80105KR", "80106KR", "80107KR", "80108KR", "80109KR", "80110KR", "80111KR", "80112KR", "80113KR", "80114KR", "80115KR", "80116KR", "80117KR", "80118KR", "80119KR", "80120KR", "80121KR", "80122KR", "80123KR", "80124KR", "80125KR", "80126KR", "80127KR", "80128KR", "80129KR", "80130KR", "80131KR", "80132KR", "80134KR", "80135KR", "80136KR", "80137KR", "80138KR", "80139KR", "80140KR", "80141KR", "80142KR", "80143KR", "80159KR", "80160KR", "80161KR", "80168KR", "80177KR", "80181KR", "80182KR", "80189KR", "80199KR", "80200KR", "80201KR", "80202KR", "80210KR", "80213KR", "80214KR", "80218KR", "1000006KR", "1000007KR", "1000008KR", "1000009KR"]);
+const divideBy4 = new Set(["60002KR", "60003KR", "60004KR", "60005KR", "60006KR", "60007KR", "60008KR", "60009KR", "60010KR", "60011KR", "60012KR", "60013KR", "60014KR", "60015KR", "60016KR", "60017KR", "60018KR", "60019KR", "60020KR", "60021KR", "60022KR", "60023KR", "60024KR", "60025KR", "60026KR", "60027KR", "60028KR", "60029KR", "60030KR", "60031KR", "60032KR", "60033KR", "60034KR", "60035KR", "60036KR", "60037KR", "60038KR", "60039KR", "60040KR", "60041KR", "60042KR", "60043KR", "60044KR", "60045KR", "60046KR", "60047KR", "60048KR", "60049KR", "60050KR", "60051KR", "60052KR", "60053KR", "60054KR", "60056KR", "60057KR", "60058KR", "60059KR", "60060KR", "60061KR", "60062KR", "60063KR", "60064KR", "60065KR", "60066KR", "60067KR", "60068KR", "60069KR", "60070KR", "60071KR", "60072KR", "60073KR", "60074KR", "60075KR", "60076KR", "60077KR", "60078KR", "60079KR", "60080KR", "60081KR", "60082KR", "60083KR", "60084KR", "60085KR", "60086KR", "60087KR", "60088KR", "60089KR", "60090KR", "60091KR", "60092KR", "60094KR", "60095KR", "60096KR", "60097KR", "60098KR", "60099KR", "60100KR", "60101KR", "60102KR", "60103KR", "60104KR", "60105KR", "60106KR", "60107KR", "60110KR", "60112KR", "60115KR", "60116KR", "60117KR", "60118KR", "60119KR", "60120KR", "60121KR", "60122KR", "60124KR", "60125KR", "60126KR", "60127KR", "60128KR", "60129KR", "60130KR", "60131KR", "60134KR", "60135KR", "60137KR", "60138KR", "60139KR", "60140KR", "60141KR", "60142KR", "60143KR", "60144KR", "60146KR", "60147KR", "60148KR", "60149KR", "60150KR", "60151KR", "60152KR", "60153KR", "60154KR", "60155KR", "60156KR", "60158KR", "60159KR", "60160KR", "60161KR", "60163KR", "60167KR", "60168KR", "60169KR", "60170KR", "60172KR", "60173KR", "60174KR", "60175KR", "60176KR", "60177KR", "60178KR", "60179KR", "60180KR", "60181KR", "60182KR", "60183KR", "60184KR", "60185KR", "60186KR", "60187KR", "60188KR", "60189KR", "60190KR", "60191KR", "60192KR", "60194KR", "60195KR", "60196KR", "60197KR", "60198KR", "60199KR", "60201KR", "60202KR", "60203KR", "60204KR", "60205KR", "60206KR", "60207KR", "60209KR", "60210KR", "60211KR", "60212KR", "60214KR", "60215KR", "60216KR", "60217KR", "60218KR", "60219KR", "60220KR", "60221KR", "60222KR", "60223KR", "60224KR", "60225KR", "60226KR", "60227KR", "60228KR", "60229KR", "60230KR", "60231KR", "60232KR", "60233KR", "60234KR", "60235KR", "60236KR", "60237KR", "60238KR", "60239KR", "60241KR", "60242KR", "60243KR", "60244KR", "60245KR", "60246KR", "60248KR", "60249KR", "60251KR", "60252KR", "60254KR", "60257KR", "60258KR", "60259KR", "60260KR", "60261KR", "60262KR", "60263KR", "60264KR", "60271KR", "60272KR", "60273KR", "60274KR", "60277KR", "60278KR", "60279KR", "60280KR", "60282KR", "60283KR", "60285KR", "60286KR", "60288KR", "60291KR", "60292KR", "60294KR", "60295KR", "60296KR", "60297KR", "60298KR", "60299KR", "60300KR", "60301KR", "60302KR", "60303KR", "60304KR", "60306KR", "60307KR", "60308KR", "60309KR", "60311KR", "60312KR", "60313KR", "60314KR", "60315KR", "60316KR", "60318KR", "60331KR", "60333KR", "60334KR", "60335KR", "60336KR", "60337KR", "60338KR", "60339KR", "60340KR", "60343KR"]);
+const divideBy2 = new Set(["625300530029KR", "886736005001KR", "6253005316049KR", "6253005316056KR", "6253341010076KR", "6253341110202KR", "6254000066151KR", "80001KR", "80002KR", "80003KR", "80004KR", "80005KR", "80006KR", "80007KR", "80008KR", "80009KR", "80010KR", "80011KR", "80012KR", "80013KR", "80014KR", "80015KR", "80016KR", "80017KR", "80018KR", "80019KR", "80020KR", "80021KR", "80022KR", "80023KR", "80024KR", "80025KR", "80026KR", "80027KR", "80028KR", "80031KR", "80032KR", "80033KR", "80034KR", "80035KR", "80036KR", "80037KR", "80038KR", "80039KR", "80040KR", "80041KR", "80042KR", "80043KR", "80044KR", "80045KR", "80046KR", "80047KR", "80048KR", "80049KR", "80050KR", "80051KR", "80052KR", "80053KR", "80054KR", "80055KR", "80056KR", "80057KR", "80058KR", "80059KR", "80060KR", "80061KR", "80062KR", "80064KR", "80065KR", "80066KR", "80067KR", "80069KR", "80070KR", "80071KR", "80072KR", "80073KR", "80074KR", "80076KR", "80077KR", "80078KR", "80079KR", "80080KR", "80081KR", "80082KR", "80083KR", "80084KR", "80085KR", "80086KR", "80087KR", "80088KR", "80089KR", "80090KR", "80091KR", "80092KR", "80093KR", "80094KR", "80095KR", "80096KR", "80097KR", "80098KR", "80099KR", "80100KR", "80101KR", "80102KR", "80103KR", "80104KR", "80105KR", "80106KR", "80107KR", "80108KR", "80109KR", "80110KR", "80111KR", "80112KR", "80113KR", "80114KR", "80115KR", "80116KR", "80117KR", "80118KR", "80119KR", "80120KR", "80121KR", "80122KR", "80123KR", "80124KR", "80125KR", "80126KR", "80129KR", "80130KR", "80131KR", "80132KR", "80134KR", "80135KR", "80136KR", "80137KR", "80138KR", "80139KR", "80140KR", "80141KR", "80142KR", "80143KR", "80159KR", "80160KR", "80161KR", "80177KR", "80181KR", "80182KR", "80189KR", "80199KR", "80200KR", "80201KR", "80202KR", "80210KR", "80214KR", "80218KR"]);
+
+function setStatus(text) { document.getElementById('status').innerText = text; }
+function normalizeCode(value) {
+  let code = String(value ?? '').trim();
+  if (!code) return '';
+  if (!code.endsWith('KR')) code += 'KR';
+  return code;
+}
+function parsePrice(value) {
+  if (typeof value === 'number') return isFinite(value) ? value : 0;
+  let s = String(value ?? '').replace(/,/g, '').replace(/[^0-9.\-]/g, '').trim();
+  let n = parseFloat(s);
+  return isFinite(n) ? n : 0;
+}
+function readExcel(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      resolve(XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }));
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function processFiles() {
+  const file1 = document.getElementById('excel1').files[0];
+  const file2 = document.getElementById('excel2').files[0];
+  const btn = document.getElementById('runBtn');
+  if (!file1 || !file2) { alert('ارفع الملفين الأول والثاني.'); return; }
+  try {
+    btn.disabled = true;
+    setStatus('جاري قراءة الملفات...');
+    const excel1 = await readExcel(file1);
+    const excel2 = await readExcel(file2);
+
+    setStatus('جاري تجهيز خريطة المطابقة من Excel الثاني...');
+    const mapExcel2 = new Map();
+    for (const row of excel2) {
+      const jVal = normalizeCode(row[9]);
+      if (jVal) mapExcel2.set(jVal, row[10]);
+    }
+
+    setStatus('جاري فلترة Excel الأول وحذف غير المطلوب...');
+    const rows = [];
+    let skipped = 0;
+    for (const sourceRow of excel1) {
+      if (!sourceRow || sourceRow.length === 0) continue;
+      const row = [...sourceRow];
+      const code = normalizeCode(row[0]);
+      if (!code) continue;
+      row[0] = code;
+      if (!allowedCodes.has(code)) { skipped++; continue; }
+      rows.push(row);
+    }
+
+    setStatus('جاري حذف التكرار والاحتفاظ بأعلى سعر...');
+    const unique = new Map();
+    for (const row of rows) {
+      const code = row[0];
+      const price = parsePrice(row[1]);
+      if (!unique.has(code) || price > parsePrice(unique.get(code)[1])) unique.set(code, row);
+    }
+// إضافة الأكواد الناقصة تلقائياً
+allowedCodes.forEach(code => {
+  if (!unique.has(code)) {
+    unique.set(code, [code, 0, 0]);
+  }
+});
+    let matched = 0, notMatched = 0, d4 = 0, d2 = 0;
+    const finalRows = Array.from(unique.values());
+
+    setStatus('جاري تقسيم الأسعار والمطابقة مع Excel الثاني...');
+    for (const row of finalRows) {
+      const code = row[0];
+      const price = parsePrice(row[1]);
+      if (divideBy4.has(code)) { row[1] = price / 4; d4++; }
+      else if (divideBy2.has(code)) { row[1] = price / 2; d2++; }
+
+      if (mapExcel2.has(code)) { row[2] = mapExcel2.get(code); matched++; }
+      else { row[2] = 0; notMatched++; }
+
+      if (String(row[2]).trim() !== '0') row[2] = '';
+    }
+
+finalRows.unshift([]);
+finalRows.unshift([]);
+    const ws = XLSX.utils.aoa_to_sheet(finalRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Processed');
+    XLSX.writeFile(wb, 'KR_Processed.xlsx');
+
+    setStatus(`تم بنجاح ✅
+
+الصفوف النهائية: ${finalRows.length - 1}
+المحذوفة لأنها ليست بالقائمة: ${skipped}
+المطابقة من Excel الثاني: ${matched}
+غير موجودة في Excel الثاني وتم وضع 0: ${notMatched}
+تم تقسيم ÷4: ${d4}
+تم تقسيم ÷2: ${d2}
+
+تم تنزيل ملف KR_Processed.xlsx`);
+  } catch (err) {
+    console.error(err);
+    setStatus('صار خطأ أثناء المعالجة. تأكد أن الملفات Excel صحيحة.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
