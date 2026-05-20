@@ -1,173 +1,1209 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KR Excel Processor</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
-body { min-height: 100vh; background: radial-gradient(circle at top, #1e40af 0, #0f172a 42%, #020617 100%); color: #fff; display: flex; align-items: center; justify-content: center; padding: 24px; }
-.card { width: 100%; max-width: 880px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); border-radius: 28px; padding: 34px; box-shadow: 0 24px 70px rgba(0,0,0,.42); backdrop-filter: blur(16px); }
-.badge { width: fit-content; margin: 0 auto 14px; padding: 8px 16px; border-radius: 999px; background: rgba(34,197,94,.16); border: 1px solid rgba(34,197,94,.35); color: #bbf7d0; font-weight: bold; }
-h1 { text-align: center; font-size: 38px; margin-bottom: 10px; }
-.sub { text-align: center; color: #cbd5e1; margin-bottom: 28px; line-height: 1.8; }
-.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
-.box { background: rgba(15,23,42,.62); border: 1px dashed rgba(255,255,255,.28); border-radius: 22px; padding: 22px; }
-label { display: block; font-weight: bold; margin-bottom: 12px; font-size: 17px; }
-input[type=file] { width: 100%; padding: 14px; border-radius: 14px; background: #fff; color: #0f172a; border: 0; }
-button { width: 100%; border: 0; border-radius: 18px; padding: 18px 20px; margin-top: 8px; cursor: pointer; color: white; background: linear-gradient(135deg, #22c55e, #16a34a); font-size: 19px; font-weight: bold; transition: .2s; box-shadow: 0 14px 30px rgba(22,163,74,.28); }
-button:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(22,163,74,.38); }
-button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
-.status { margin-top: 22px; background: rgba(2,6,23,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 18px; white-space: pre-line; line-height: 1.8; color: #e2e8f0; direction: rtl; }
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
-.stat { background: rgba(255,255,255,.08); border-radius: 16px; padding: 14px; text-align: center; }
-.stat strong { display:block; font-size: 24px; color:#86efac; }
-.note { color:#cbd5e1; font-size:13px; line-height:1.8; margin-top:12px; }
-@media (max-width: 700px) { .grid, .stats { grid-template-columns: 1fr; } h1 { font-size: 30px; } .card { padding: 24px; } }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shoneez Fresh</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <style>
+
+    :root {
+      --bg: #111c2e;
+      --bg-2: #172337;
+      --panel: #101829;
+      --panel-2: #162236;
+      --panel-3: #1b2940;
+      --border: rgba(148, 163, 184, 0.18);
+      --border-strong: rgba(148, 163, 184, 0.28);
+      --text: #e8eef8;
+      --muted: #b8c3d4;
+      --muted-2: #7f8da3;
+      --cyan: #39c8f4;
+      --cyan-2: #1fb4e9;
+      --slate-btn: #647086;
+      --green: #22c55e;
+      --red: #ef4444;
+      --orange: #f59e0b;
+      --shadow: 0 28px 80px rgba(0,0,0,0.26);
+      --radius: 26px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% -10%, rgba(57, 200, 244, 0.10), transparent 36%),
+        radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.10), transparent 28%),
+        linear-gradient(135deg, #0e1728 0%, #162236 44%, #1b2a40 100%);
+      padding: 26px 24px 70px;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 18px;
+      left: 22px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 1px solid var(--border-strong);
+      border-radius: 15px;
+      background: rgba(16, 24, 41, 0.86);
+      color: #f8fafc;
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: -0.2px;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .back-link:hover { border-color: rgba(57, 200, 244, 0.55); }
+
+    .shell {
+      width: min(1320px, calc(100% - 210px));
+      margin: 0 auto;
+    }
+
+    .main-panel,
+    .card {
+      background: rgba(16, 24, 41, 0.76);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .main-panel {
+      min-height: 420px;
+      padding: 34px;
+      overflow: hidden;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .brand-chip,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(27, 41, 64, 0.72);
+      color: var(--muted);
+      padding: 9px 13px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .quick-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 6px 0 10px;
+      font-size: clamp(38px, 5vw, 56px);
+      letter-spacing: -1.5px;
+      line-height: 1;
+      color: #eef5ff;
+      text-shadow: 0 10px 28px rgba(0,0,0,0.24);
+    }
+
+    .hero-subtitle {
+      margin: 0 0 24px;
+      max-width: 800px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .card { padding: 22px; }
+    .card + .card { margin-top: 18px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    h2, h3 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.2px;
+      color: #f8fafc;
+    }
+
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+
+    .step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 31px;
+      height: 31px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #04111d;
+      background: var(--cyan);
+      box-shadow: 0 14px 28px rgba(57, 200, 244, 0.22);
+      font-size: 13px;
+      font-weight: 1000;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .mode-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: start;
+      min-height: 140px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(12, 20, 34, 0.58);
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(57, 200, 244, 0.48);
+      background: rgba(22, 34, 54, 0.8);
+    }
+
+    .mode-card.active {
+      border-color: rgba(57, 200, 244, 0.72);
+      background: linear-gradient(135deg, rgba(57, 200, 244, 0.15), rgba(100, 112, 134, 0.12));
+      box-shadow: 0 20px 48px rgba(57, 200, 244, 0.10);
+    }
+
+    .mode-card input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-icon {
+      width: 46px;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: rgba(57, 200, 244, 0.14);
+      color: var(--cyan);
+      font-weight: 1000;
+      font-size: 20px;
+    }
+
+    .mode-copy small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-size: 11px;
+      font-weight: 1000;
+    }
+
+    .mode-copy strong {
+      display: block;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      font-size: 17px;
+    }
+
+    .mode-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .mode-check {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      color: transparent;
+      font-weight: 1000;
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .mode-card.active .mode-check {
+      color: #06121e;
+      border-color: var(--cyan);
+      background: var(--cyan);
+    }
+
+    .section {
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(13, 22, 38, 0.52);
+    }
+
+    .hidden { display: none !important; }
+
+    .field { margin-top: 16px; }
+
+    .field label {
+      display: block;
+      font-weight: 1000;
+      color: #edf4ff;
+      margin-bottom: 8px;
+    }
+
+    .file-box {
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      background: rgba(27, 41, 64, 0.76);
+      padding: 14px;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .file-box:hover {
+      border-color: rgba(57, 200, 244, 0.65);
+      background: rgba(31, 47, 72, 0.9);
+    }
+
+    input[type="file"] {
+      width: 100%;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    input[type="file"]::file-selector-button {
+      margin-right: 12px;
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 15px;
+      background: var(--cyan);
+      color: #06121e;
+      font-weight: 1000;
+      cursor: pointer;
+      box-shadow: 0 15px 34px rgba(57, 200, 244, 0.22);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      min-height: 50px;
+      font-size: 14px;
+      font-weight: 1000;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .primary {
+      color: #07111d;
+      background: var(--cyan);
+      box-shadow: 0 18px 38px rgba(57, 200, 244, 0.25);
+    }
+
+    .primary:hover { transform: translateY(-1px); background: #4ad1fa; }
+
+    .secondary {
+      color: #f8fafc;
+      background: var(--slate-btn);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
+    }
+
+    .secondary:hover { transform: translateY(-1px); background: #758098; }
+
+    .status {
+      margin-top: 18px;
+      min-height: 68px;
+      padding: 19px 20px;
+      border-radius: 18px;
+      border: 1px solid var(--border-strong);
+      background: rgba(27, 41, 64, 0.76);
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .status.success { background: rgba(34, 197, 94, 0.12); border-color: rgba(34,197,94,0.42); color: #bbf7d0; }
+    .status.error { background: rgba(239, 68, 68, 0.12); border-color: rgba(239,68,68,0.44); color: #fecaca; }
+    .status.warn { background: rgba(245, 158, 11, 0.11); border-color: rgba(245,158,11,0.44); color: #fde68a; }
+
+    .info-grid,
+    .summary-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .info-card,
+    .stat {
+      min-height: 120px;
+      padding: 18px;
+      border-radius: 21px;
+      border: 1px solid var(--border);
+      background: rgba(13, 22, 38, 0.62);
+    }
+
+    .info-card h3 {
+      display: block;
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .rules {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .rule {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(13, 22, 38, 0.50);
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .rule strong { color: #f8fafc; }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      margin-top: 7px;
+      border-radius: 999px;
+      background: var(--cyan);
+    }
+
+    .preview-card { margin-top: 22px; }
+
+    .summary-list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted-2);
+      font-size: 12px;
+      font-weight: 1000;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .stat b {
+      display: block;
+      color: #f8fafc;
+      font-size: 27px;
+      letter-spacing: -0.6px;
+    }
+
+    .files-list {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 9px;
+      max-height: 250px;
+      overflow: auto;
+    }
+
+    .files-list li {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(13, 22, 38, 0.56);
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    .files-list li span:last-child { color: var(--muted-2); text-align: right; }
+
+    .preview-stack {
+      display: grid;
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .file-preview {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(13, 22, 38, 0.62);
+      box-shadow: 0 20px 42px rgba(0,0,0,0.16);
+    }
+
+    .file-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 16px;
+      background: rgba(27, 41, 64, 0.78);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .file-preview-title {
+      min-width: 0;
+      font-weight: 1000;
+      color: #f8fafc;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-preview-meta {
+      flex: 0 0 auto;
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 1000;
+    }
+
+    .table-scroll {
+      overflow: auto;
+      max-height: 390px;
+    }
+
+    .empty-preview {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(13, 22, 38, 0.56);
+      text-align: center;
+      color: var(--muted-2);
+    }
+
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      text-align: left;
+      color: #dbeafe;
+    }
+
+    th, td {
+      padding: 12px 13px;
+      border-bottom: 1px solid rgba(148,163,184,0.14);
+      white-space: nowrap;
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 13px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #1b2940;
+      color: #eaf2ff;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tr:hover td { background: rgba(57, 200, 244, 0.06); }
+    td.empty { color: #53647b; }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted-2);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1120px) {
+      .shell { width: min(100%, 980px); padding-top: 58px; }
+      .back-link { position: absolute; }
+    }
+
+    @media (max-width: 850px) {
+      body { padding: 16px; }
+      .shell { width: 100%; padding-top: 64px; }
+      .main-panel, .card { padding: 22px; border-radius: 22px; }
+      .mode-grid, .info-grid, .summary-list { grid-template-columns: 1fr; }
+      .top-row { align-items: flex-start; flex-direction: column; }
+      .files-list li { grid-template-columns: 1fr; }
+      .files-list li span:last-child { text-align: left; }
+    }
+
+  </style>
 </head>
+
 <body>
-<main class="card">
-  
-  <h1>KR Excel Processor</h1>
+  <a class="back-link" href="index.html">← Market</a>
 
-  <div class="stats">
-    <div class="stat"><strong>540</strong> أكواد مسموحة</div>
-    <div class="stat"><strong>282</strong> تقسيم ÷ 4</div>
-    <div class="stat"><strong>158</strong> تقسيم ÷ 2</div>
-  </div>
+  <main class="shell">
+    <section class="main-panel">
+      <div class="top-row">
+        
+        <div class="quick-tags">
+        </div>
+      </div>
 
-  <div class="grid">
-    <div class="box">
-      <label for="excel1">SKU +Price+0,1</label>
-      <input type="file" id="excel1" accept=".xlsx,.xls,.csv" />
-    </div>
-    <div class="box">
-      <label for="excel2">Export</label>
-      <input type="file" id="excel2" accept=".xlsx,.xls" />
-    </div>
-  </div>
+      <h1>Shoneez Fresh</h1>
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="step">1</span> Choose Processing Mode</h2>
+        </div>
+        <div class="mode-grid" aria-label="Processing mode">
+          <label class="mode-card" id="exportOption" tabindex="0">
+            <input type="checkbox" id="modeExport" value="export" />
+            <span class="mode-icon" aria-hidden="true">⇄</span>
+            <span class="mode-copy">
+              <small>File 1 + Export</small>
+              <strong>From Export</strong>
+              <span>Compare File 1 column K with Export column J, then place the matching Export column K value into output column C.</span>
+            </span>
+            <span class="mode-check" aria-hidden="true">✓</span>
+          </label>
 
-  <button id="runBtn" onclick="processFiles()">Download Excel</button>
-  <div class="status" id="status">بانتظار رفع الملفين...</div>
+          <label class="mode-card" id="sameOption" tabindex="0">
+            <input type="checkbox" id="modeSame" value="same" />
+            <span class="mode-icon" aria-hidden="true">☑</span>
+            <span class="mode-copy">
+              <small>Single source</small>
+              <strong>From the Same Excel</strong>
+              <span>No second file needed. Keep columns K, M, and L from the Excel file or every Excel file inside a ZIP.</span>
+            </span>
+            <span class="mode-check" aria-hidden="true">✓</span>
+          </label>
+        </div>
 
-<script>
-const allowedCodes = new Set(["60002KR", "60003KR", "60004KR", "60005KR", "60006KR", "60007KR", "60008KR", "60009KR", "60010KR", "60011KR", "60012KR", "60013KR", "60014KR", "60015KR", "60016KR", "60017KR", "60018KR", "60019KR", "60020KR", "60021KR", "60022KR", "60023KR", "60024KR", "60025KR", "60026KR", "60027KR", "60028KR", "60029KR", "60030KR", "60031KR", "60032KR", "60033KR", "60034KR", "60035KR", "60036KR", "60037KR", "60038KR", "60039KR", "60040KR", "60041KR", "60042KR", "60043KR", "60044KR", "60045KR", "60046KR", "60047KR", "60048KR", "60049KR", "60050KR", "60051KR", "60052KR", "60053KR", "60054KR", "60056KR", "60057KR", "60058KR", "60059KR", "60060KR", "60061KR", "60062KR", "60063KR", "60064KR", "60065KR", "60066KR", "60067KR", "60068KR", "60069KR", "60070KR", "60071KR", "60072KR", "60073KR", "60074KR", "60075KR", "60076KR", "60077KR", "60078KR", "60079KR", "60080KR", "60081KR", "60082KR", "60083KR", "60084KR", "60085KR", "60086KR", "60087KR", "60088KR", "60089KR", "60090KR", "60091KR", "60092KR", "60094KR", "60095KR", "60096KR", "60097KR", "60098KR", "60099KR", "60100KR", "60101KR", "60102KR", "60103KR", "60104KR", "60105KR", "60106KR", "60107KR", "60108KR", "60110KR", "60111KR", "60112KR", "60115KR", "60116KR", "60117KR", "60118KR", "60119KR", "60120KR", "60121KR", "60122KR", "60124KR", "60125KR", "60126KR", "60127KR", "60128KR", "60129KR", "60130KR", "60131KR", "60134KR", "60135KR", "60136KR", "60137KR", "60138KR", "60139KR", "60140KR", "60141KR", "60142KR", "60143KR", "60144KR", "60146KR", "60147KR", "60148KR", "60149KR", "60150KR", "60151KR", "60152KR", "60153KR", "60154KR", "60155KR", "60156KR", "60158KR", "60159KR", "60160KR", "60161KR", "60163KR", "60164KR", "60165KR", "60166KR", "60167KR", "60168KR", "60169KR", "60170KR", "60171KR", "60172KR", "60173KR", "60174KR", "60175KR", "60176KR", "60177KR", "60178KR", "60179KR", "60180KR", "60181KR", "60182KR", "60183KR", "60184KR", "60185KR", "60186KR", "60187KR", "60188KR", "60189KR", "60190KR", "60191KR", "60192KR", "60194KR", "60195KR", "60196KR", "60197KR", "60198KR", "60199KR", "60201KR", "60202KR", "60203KR", "60204KR", "60205KR", "60206KR", "60207KR", "60209KR", "60210KR", "60211KR", "60212KR", "60214KR", "60215KR", "60216KR", "60217KR", "60218KR", "60219KR", "60220KR", "60221KR", "60222KR", "60223KR", "60224KR", "60225KR", "60226KR", "60227KR", "60228KR", "60229KR", "60230KR", "60231KR", "60232KR", "60233KR", "60234KR", "60235KR", "60236KR", "60237KR", "60238KR", "60239KR", "60241KR", "60242KR", "60243KR", "60244KR", "60245KR", "60246KR", "60248KR", "60249KR", "60251KR", "60252KR", "60253KR", "60254KR", "60255KR", "60257KR", "60258KR", "60259KR", "60260KR", "60261KR", "60262KR", "60263KR", "60264KR", "60271KR", "60272KR", "60273KR", "60274KR", "60275KR", "60276KR", "60277KR", "60278KR", "60279KR", "60280KR", "60282KR", "60283KR", "60284KR", "60285KR", "60286KR", "60287KR", "60288KR", "60290KR", "60291KR", "60292KR", "60293KR", "60294KR", "60295KR", "60296KR", "60297KR", "60298KR", "60299KR", "60300KR", "60301KR", "60302KR", "60303KR", "60304KR", "60305KR", "60306KR", "60307KR", "60308KR", "60309KR", "60311KR", "60312KR", "60313KR", "60314KR", "60315KR", "60316KR", "60317KR", "60318KR", "60319KR", "60320KR", "60321KR", "60322KR", "60324KR", "60325KR", "60326KR", "60327KR", "60328KR", "60329KR", "60330KR", "60331KR", "60332KR", "60333KR", "60334KR", "60335KR", "60336KR", "60337KR", "60338KR", "60339KR", "60340KR", "60342KR", "60343KR", "6104527KR", "625300530029KR", "886736005001KR", "6251038007095KR", "6251038007101KR", "6251038007910KR", "6251038007927KR", "6251098003396KR", "6251098004324KR", "6251098004553KR", "6251098004584KR", "6251098004591KR", "6251098004607KR", "6251098105939KR", "6253003140622KR", "6253005300215KR", "6253005316049KR", "6253005316056KR", "6253005365987KR", "6253341001623KR", "6253341010076KR", "6253341110202KR", "6253503400820KR", "6253503401094KR", "6253503401216KR", "6253503401261KR", "6253503401315KR", "6253503401360KR", "6253503402398KR", "6253506002946KR", "6254000066106KR", "6254000066144KR", "6254000066151KR", "6254000695078KR", "13KR", "27KR", "29KR", "33KR", "42KR", "44KR", "58KR", "59KR", "60KR", "66KR", "67KR", "68KR", "87KR", "155KR", "170KR", "171KR", "271KR", "603KR", "604KR", "799KR", "800KR", "801KR", "802KR", "803KR", "804KR", "806KR", "808KR", "809KR", "811KR", "818KR", "819KR", "995KR", "80001KR", "80002KR", "80003KR", "80004KR", "80005KR", "80006KR", "80007KR", "80008KR", "80009KR", "80010KR", "80011KR", "80012KR", "80013KR", "80014KR", "80015KR", "80016KR", "80017KR", "80018KR", "80019KR", "80020KR", "80021KR", "80022KR", "80023KR", "80024KR", "80025KR", "80026KR", "80027KR", "80028KR", "80029KR", "80030KR", "80031KR", "80032KR", "80033KR", "80034KR", "80035KR", "80036KR", "80037KR", "80038KR", "80039KR", "80040KR", "80041KR", "80042KR", "80043KR", "80044KR", "80045KR", "80046KR", "80047KR", "80048KR", "80049KR", "80050KR", "80051KR", "80052KR", "80053KR", "80054KR", "80055KR", "80056KR", "80057KR", "80058KR", "80059KR", "80060KR", "80061KR", "80062KR", "80063KR", "80064KR", "80065KR", "80066KR", "80067KR", "80068KR", "80069KR", "80070KR", "80071KR", "80072KR", "80073KR", "80074KR", "80075KR", "80076KR", "80077KR", "80078KR", "80079KR", "80080KR", "80081KR", "80082KR", "80083KR", "80084KR", "80085KR", "80086KR", "80087KR", "80088KR", "80089KR", "80090KR", "80091KR", "80092KR", "80093KR", "80094KR", "80095KR", "80096KR", "80097KR", "80098KR", "80099KR", "80100KR", "80101KR", "80102KR", "80103KR", "80104KR", "80105KR", "80106KR", "80107KR", "80108KR", "80109KR", "80110KR", "80111KR", "80112KR", "80113KR", "80114KR", "80115KR", "80116KR", "80117KR", "80118KR", "80119KR", "80120KR", "80121KR", "80122KR", "80123KR", "80124KR", "80125KR", "80126KR", "80127KR", "80128KR", "80129KR", "80130KR", "80131KR", "80132KR", "80134KR", "80135KR", "80136KR", "80137KR", "80138KR", "80139KR", "80140KR", "80141KR", "80142KR", "80143KR", "80159KR", "80160KR", "80161KR", "80168KR", "80177KR", "80181KR", "80182KR", "80189KR", "80199KR", "80200KR", "80201KR", "80202KR", "80210KR", "80213KR", "80214KR", "80218KR", "1000006KR", "1000007KR", "1000008KR", "1000009KR"]);
-const divideBy4 = new Set(["60002KR", "60003KR", "60004KR", "60005KR", "60006KR", "60007KR", "60008KR", "60009KR", "60010KR", "60011KR", "60012KR", "60013KR", "60014KR", "60015KR", "60016KR", "60017KR", "60018KR", "60019KR", "60020KR", "60021KR", "60022KR", "60023KR", "60024KR", "60025KR", "60026KR", "60027KR", "60028KR", "60029KR", "60030KR", "60031KR", "60032KR", "60033KR", "60034KR", "60035KR", "60036KR", "60037KR", "60038KR", "60039KR", "60040KR", "60041KR", "60042KR", "60043KR", "60044KR", "60045KR", "60046KR", "60047KR", "60048KR", "60049KR", "60050KR", "60051KR", "60052KR", "60053KR", "60054KR", "60056KR", "60057KR", "60058KR", "60059KR", "60060KR", "60061KR", "60062KR", "60063KR", "60064KR", "60065KR", "60066KR", "60067KR", "60068KR", "60069KR", "60070KR", "60071KR", "60072KR", "60073KR", "60074KR", "60075KR", "60076KR", "60077KR", "60078KR", "60079KR", "60080KR", "60081KR", "60082KR", "60083KR", "60084KR", "60085KR", "60086KR", "60087KR", "60088KR", "60089KR", "60090KR", "60091KR", "60092KR", "60094KR", "60095KR", "60096KR", "60097KR", "60098KR", "60099KR", "60100KR", "60101KR", "60102KR", "60103KR", "60104KR", "60105KR", "60106KR", "60107KR", "60110KR", "60112KR", "60115KR", "60116KR", "60117KR", "60118KR", "60119KR", "60120KR", "60121KR", "60122KR", "60124KR", "60125KR", "60126KR", "60127KR", "60128KR", "60129KR", "60130KR", "60131KR", "60134KR", "60135KR", "60137KR", "60138KR", "60139KR", "60140KR", "60141KR", "60142KR", "60143KR", "60144KR", "60146KR", "60147KR", "60148KR", "60149KR", "60150KR", "60151KR", "60152KR", "60153KR", "60154KR", "60155KR", "60156KR", "60158KR", "60159KR", "60160KR", "60161KR", "60163KR", "60167KR", "60168KR", "60169KR", "60170KR", "60172KR", "60173KR", "60174KR", "60175KR", "60176KR", "60177KR", "60178KR", "60179KR", "60180KR", "60181KR", "60182KR", "60183KR", "60184KR", "60185KR", "60186KR", "60187KR", "60188KR", "60189KR", "60190KR", "60191KR", "60192KR", "60194KR", "60195KR", "60196KR", "60197KR", "60198KR", "60199KR", "60201KR", "60202KR", "60203KR", "60204KR", "60205KR", "60206KR", "60207KR", "60209KR", "60210KR", "60211KR", "60212KR", "60214KR", "60215KR", "60216KR", "60217KR", "60218KR", "60219KR", "60220KR", "60221KR", "60222KR", "60223KR", "60224KR", "60225KR", "60226KR", "60227KR", "60228KR", "60229KR", "60230KR", "60231KR", "60232KR", "60233KR", "60234KR", "60235KR", "60236KR", "60237KR", "60238KR", "60239KR", "60241KR", "60242KR", "60243KR", "60244KR", "60245KR", "60246KR", "60248KR", "60249KR", "60251KR", "60252KR", "60254KR", "60257KR", "60258KR", "60259KR", "60260KR", "60261KR", "60262KR", "60263KR", "60264KR", "60271KR", "60272KR", "60273KR", "60274KR", "60277KR", "60278KR", "60279KR", "60280KR", "60282KR", "60283KR", "60285KR", "60286KR", "60288KR", "60291KR", "60292KR", "60294KR", "60295KR", "60296KR", "60297KR", "60298KR", "60299KR", "60300KR", "60301KR", "60302KR", "60303KR", "60304KR", "60306KR", "60307KR", "60308KR", "60309KR", "60311KR", "60312KR", "60313KR", "60314KR", "60315KR", "60316KR", "60318KR", "60331KR", "60333KR", "60334KR", "60335KR", "60336KR", "60337KR", "60338KR", "60339KR", "60340KR", "60343KR"]);
-const divideBy2 = new Set(["625300530029KR", "886736005001KR", "6253005316049KR", "6253005316056KR", "6253341010076KR", "6253341110202KR", "6254000066151KR", "80001KR", "80002KR", "80003KR", "80004KR", "80005KR", "80006KR", "80007KR", "80008KR", "80009KR", "80010KR", "80011KR", "80012KR", "80013KR", "80014KR", "80015KR", "80016KR", "80017KR", "80018KR", "80019KR", "80020KR", "80021KR", "80022KR", "80023KR", "80024KR", "80025KR", "80026KR", "80027KR", "80028KR", "80031KR", "80032KR", "80033KR", "80034KR", "80035KR", "80036KR", "80037KR", "80038KR", "80039KR", "80040KR", "80041KR", "80042KR", "80043KR", "80044KR", "80045KR", "80046KR", "80047KR", "80048KR", "80049KR", "80050KR", "80051KR", "80052KR", "80053KR", "80054KR", "80055KR", "80056KR", "80057KR", "80058KR", "80059KR", "80060KR", "80061KR", "80062KR", "80064KR", "80065KR", "80066KR", "80067KR", "80069KR", "80070KR", "80071KR", "80072KR", "80073KR", "80074KR", "80076KR", "80077KR", "80078KR", "80079KR", "80080KR", "80081KR", "80082KR", "80083KR", "80084KR", "80085KR", "80086KR", "80087KR", "80088KR", "80089KR", "80090KR", "80091KR", "80092KR", "80093KR", "80094KR", "80095KR", "80096KR", "80097KR", "80098KR", "80099KR", "80100KR", "80101KR", "80102KR", "80103KR", "80104KR", "80105KR", "80106KR", "80107KR", "80108KR", "80109KR", "80110KR", "80111KR", "80112KR", "80113KR", "80114KR", "80115KR", "80116KR", "80117KR", "80118KR", "80119KR", "80120KR", "80121KR", "80122KR", "80123KR", "80124KR", "80125KR", "80126KR", "80129KR", "80130KR", "80131KR", "80132KR", "80134KR", "80135KR", "80136KR", "80137KR", "80138KR", "80139KR", "80140KR", "80141KR", "80142KR", "80143KR", "80159KR", "80160KR", "80161KR", "80177KR", "80181KR", "80182KR", "80189KR", "80199KR", "80200KR", "80201KR", "80202KR", "80210KR", "80214KR", "80218KR"]);
+        <div id="exportSection" class="section hidden">
+          <h3><span class="step">2</span> From Export Files</h3>
 
-function setStatus(text) { document.getElementById('status').innerText = text; }
-function normalizeCode(value) {
-  let code = String(value ?? '').trim();
-  if (!code) return '';
-  if (!code.endsWith('KR')) code += 'KR';
-  return code;
-}
-function parsePrice(value) {
-  if (typeof value === 'number') return isFinite(value) ? value : 0;
-  let s = String(value ?? '').replace(/,/g, '').replace(/[^0-9.\-]/g, '').trim();
-  let n = parseFloat(s);
-  return isFinite(n) ? n : 0;
-}
-function readExcel(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      resolve(XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }));
+          <div class="field">
+            <label for="firstExcel">SKU</label>
+            <div class="file-box">
+              <input id="firstExcel" type="file" accept=".xlsx,.xls,.xlsm,.xlsb" />
+            </div>
+            <p class="hint">From the first file: column K becomes A, and column M becomes B.</p>
+          </div>
+
+          <div class="field">
+            <label for="secondFile">Export xlsx or zip</label>
+            <div class="file-box">
+              <input id="secondFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.zip" />
+            </div>
+            <p class="hint">Match File 1 column K with File 2 column J. If found, File 2 column K becomes output column C. If not found, the row is removed.</p>
+          </div>
+        </div>
+
+        <div id="sameSection" class="section hidden">
+          <h3><span class="step">2</span> Same Excel / ZIP</h3>
+
+          <div class="field">
+            <label for="sameFile">Excel or ZIP File</label>
+            <div class="file-box">
+              <input id="sameFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.zip" />
+            </div>
+          
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="processBtn" class="primary">⚙ Process & Download</button>
+          <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+
+        <div id="status" class="status">Waiting for files... Output keeps Row 1, inserts a blank Row 2, then shifts the rest down.</div>
+      </section>
+      
+
+    <section class="card preview-card">
+      <div class="card-head">
+        <h2><span class="step">3</span> Preview</h2>
+      </div>
+      <p class="hint" id="previewHint">After processing, a preview for each output file will appear here. Row 1 stays in place, Row 2 is blank, and the rest shifts down.</p>
+
+      <div id="summary" class="summary-list hidden"></div>
+      <ul id="filesList" class="files-list hidden"></ul>
+
+      <div id="previewArea" class="preview-stack">
+        <div class="empty-preview">No preview yet.</div>
+      </div>
+
+      
+    </section>
+  </main>
+
+  <script>
+
+    const COL = { J: 9, K: 10, L: 11, M: 12 };
+    const EXCEL_RE = /\.(xlsx|xls|xlsm|xlsb)$/i;
+    const ZIP_RE = /\.zip$/i;
+
+    const els = {
+      modeExport: document.getElementById('modeExport'),
+      modeSame: document.getElementById('modeSame'),
+      exportOption: document.getElementById('exportOption'),
+      sameOption: document.getElementById('sameOption'),
+      exportSection: document.getElementById('exportSection'),
+      sameSection: document.getElementById('sameSection'),
+      firstExcel: document.getElementById('firstExcel'),
+      secondFile: document.getElementById('secondFile'),
+      sameFile: document.getElementById('sameFile'),
+      processBtn: document.getElementById('processBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      status: document.getElementById('status'),
+      previewArea: document.getElementById('previewArea'),
+      previewHint: document.getElementById('previewHint'),
+      summary: document.getElementById('summary'),
+      filesList: document.getElementById('filesList')
     };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
 
-async function processFiles() {
-  const file1 = document.getElementById('excel1').files[0];
-  const file2 = document.getElementById('excel2').files[0];
-  const btn = document.getElementById('runBtn');
-  if (!file1 || !file2) { alert('ارفع الملفين الأول والثاني.'); return; }
-  try {
-    btn.disabled = true;
-    setStatus('جاري قراءة الملفات...');
-    const excel1 = await readExcel(file1);
-    const excel2 = await readExcel(file2);
+    let latestOutputs = [];
+    let latestMode = '';
 
-    setStatus('جاري تجهيز خريطة المطابقة من Excel الثاني...');
-    const mapExcel2 = new Map();
-    for (const row of excel2) {
-      const jVal = normalizeCode(row[9]);
-      if (jVal) mapExcel2.set(jVal, row[10]);
+    function setStatus(message, type = '') {
+      els.status.className = `status ${type}`.trim();
+      els.status.textContent = message;
     }
 
-    setStatus('جاري فلترة Excel الأول وحذف غير المطلوب...');
-    const rows = [];
-    let skipped = 0;
-    for (const sourceRow of excel1) {
-      if (!sourceRow || sourceRow.length === 0) continue;
-      const row = [...sourceRow];
-      const code = normalizeCode(row[0]);
-      if (!code) continue;
-      row[0] = code;
-      if (!allowedCodes.has(code)) { skipped++; continue; }
-      rows.push(row);
+    function isExcelName(name) {
+      return EXCEL_RE.test(name || '');
     }
 
-    setStatus('جاري حذف التكرار والاحتفاظ بأعلى سعر...');
-    const unique = new Map();
-    for (const row of rows) {
-      const code = row[0];
-      const price = parsePrice(row[1]);
-      if (!unique.has(code) || price > parsePrice(unique.get(code)[1])) unique.set(code, row);
-    }
-// إضافة الأكواد الناقصة تلقائياً
-allowedCodes.forEach(code => {
-  if (!unique.has(code)) {
-    unique.set(code, [code, 0, 0]);
-  }
-});
-    let matched = 0, notMatched = 0, d4 = 0, d2 = 0;
-    const finalRows = Array.from(unique.values());
-
-    setStatus('جاري تقسيم الأسعار والمطابقة مع Excel الثاني...');
-    for (const row of finalRows) {
-      const code = row[0];
-      const price = parsePrice(row[1]);
-      if (divideBy4.has(code)) { row[1] = price / 4; d4++; }
-      else if (divideBy2.has(code)) { row[1] = price / 2; d2++; }
-
-      if (mapExcel2.has(code)) { row[2] = mapExcel2.get(code); matched++; }
-      else { row[2] = 0; notMatched++; }
-
-      if (String(row[2]).trim() !== '0') row[2] = '';
+    function isZipName(name) {
+      return ZIP_RE.test(name || '');
     }
 
-finalRows.unshift([]);
-finalRows.unshift([]);
-    const ws = XLSX.utils.aoa_to_sheet(finalRows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Processed');
-    XLSX.writeFile(wb, 'KR_Processed.xlsx');
+    function baseName(name) {
+      return String(name || 'Output')
+        .split(/[\\/]/).pop()
+        .replace(/\.(xlsx|xls|xlsm|xlsb)$/i, '')
+        .replace(/[^a-z0-9_\- .()]/gi, '_') || 'Output';
+    }
 
-    setStatus(`تم بنجاح ✅
+    function getMode() {
+      if (els.modeExport.checked) return 'export';
+      if (els.modeSame.checked) return 'same';
+      return '';
+    }
 
-الصفوف النهائية: ${finalRows.length - 1}
-المحذوفة لأنها ليست بالقائمة: ${skipped}
-المطابقة من Excel الثاني: ${matched}
-غير موجودة في Excel الثاني وتم وضع 0: ${notMatched}
-تم تقسيم ÷4: ${d4}
-تم تقسيم ÷2: ${d2}
+    function updateModeUI() {
+      const mode = getMode();
+      els.exportOption.classList.toggle('active', mode === 'export');
+      els.sameOption.classList.toggle('active', mode === 'same');
+      els.exportSection.classList.toggle('hidden', mode !== 'export');
+      els.sameSection.classList.toggle('hidden', mode !== 'same');
+    }
 
-تم تنزيل ملف KR_Processed.xlsx`);
-  } catch (err) {
-    console.error(err);
-    setStatus('صار خطأ أثناء المعالجة. تأكد أن الملفات Excel صحيحة.');
-  } finally {
-    btn.disabled = false;
-  }
-}
-</script>
+    function chooseMode(mode) {
+      els.modeExport.checked = mode === 'export';
+      els.modeSame.checked = mode === 'same';
+      latestOutputs = [];
+      clearPreview();
+      updateModeUI();
+      setStatus('Mode selected. Upload the required file(s), then click Process & Download.');
+    }
+
+    els.modeExport.addEventListener('change', () => chooseMode(els.modeExport.checked ? 'export' : ''));
+    els.modeSame.addEventListener('change', () => chooseMode(els.modeSame.checked ? 'same' : ''));
+
+    [els.exportOption, els.sameOption].forEach((card, index) => {
+      card.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          chooseMode(index === 0 ? 'export' : 'same');
+        }
+      });
+    });
+
+    function normalizeKey(value) {
+      return String(value ?? '').trim();
+    }
+
+    function normalizeStockValue(value) {
+      const raw = String(value ?? '').trim();
+      if (raw === '') return '';
+      return Number(raw) === 0 ? 0 : '';
+    }
+
+    function insertBlankSecondRow(dataRows) {
+      if (!Array.isArray(dataRows) || dataRows.length === 0) return [];
+      return [dataRows[0], [], ...dataRows.slice(1)];
+    }
+
+    function readWorkbookFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => {
+          try {
+            const data = new Uint8Array(event.target.result);
+            resolve(XLSX.read(data, { type: 'array' }));
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function readWorkbookFromArrayBuffer(buffer) {
+      const data = new Uint8Array(buffer);
+      return XLSX.read(data, { type: 'array' });
+    }
+
+    function rowsFromWorkbook(workbook) {
+      const sheetName = workbook.SheetNames[0];
+      if (!sheetName) return [];
+      const worksheet = workbook.Sheets[sheetName];
+      return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+    }
+
+    function makeWorkbookBytes(aoa) {
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+      return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    }
+
+    function makeOutputName(prefix, sourceName) {
+      return `${prefix}_${baseName(sourceName)}.xlsx`;
+    }
+
+    function buildExportLookup(rows) {
+      const lookup = new Map();
+      let duplicateKeys = 0;
+
+      for (const row of rows) {
+        const key = normalizeKey(row[COL.J]);
+        if (!key) continue;
+        if (lookup.has(key)) duplicateKeys += 1;
+        if (!lookup.has(key)) lookup.set(key, row[COL.K]);
+      }
+
+      return { lookup, duplicateKeys };
+    }
+
+    function buildExportResult(firstRows, exportRows, sourceName) {
+      const { lookup, duplicateKeys } = buildExportLookup(exportRows);
+      const dataRows = [];
+      let matched = 0;
+      let removed = 0;
+
+      for (const row of firstRows) {
+        const item = normalizeKey(row[COL.K]);
+        if (!item) {
+          removed += 1;
+          continue;
+        }
+
+        if (!lookup.has(item)) {
+          removed += 1;
+          continue;
+        }
+
+        matched += 1;
+        dataRows.push([
+          row[COL.K] ?? '',
+          row[COL.M] ?? '',
+          normalizeStockValue(lookup.get(item))
+        ]);
+      }
+
+      const aoa = insertBlankSecondRow(dataRows);
+
+      return {
+        fileName: makeOutputName('Processed_From_Export', sourceName),
+        aoa,
+        bytes: makeWorkbookBytes(aoa),
+        stats: {
+          type: 'From Export',
+          source: sourceName,
+          inputRows: firstRows.length,
+          exportRows: exportRows.length,
+          outputRows: dataRows.length,
+          matched,
+          removed,
+          duplicateKeys
+        }
+      };
+    }
+
+    function buildSameExcelResult(rows, sourceName) {
+      const dataRows = rows.map(row => [
+        row[COL.K] ?? '',
+        row[COL.M] ?? '',
+        normalizeStockValue(row[COL.L])
+      ]);
+
+      const aoa = insertBlankSecondRow(dataRows);
+
+      return {
+        fileName: makeOutputName('Processed_From_Same_Excel', sourceName),
+        aoa,
+        bytes: makeWorkbookBytes(aoa),
+        stats: {
+          type: 'From the Same Excel',
+          source: sourceName,
+          inputRows: rows.length,
+          outputRows: dataRows.length
+        }
+      };
+    }
+
+    async function getExcelEntriesFromZip(file) {
+      const zip = await JSZip.loadAsync(file);
+      return Object.values(zip.files)
+        .filter(entry => !entry.dir && isExcelName(entry.name))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    async function processExportMode() {
+      const firstFile = els.firstExcel.files[0];
+      const secondFile = els.secondFile.files[0];
+
+      if (!firstFile) throw new Error('Upload the first Excel file.');
+      if (!secondFile) throw new Error('Upload the second Excel or ZIP file.');
+      if (!isExcelName(firstFile.name)) throw new Error('The first file must be an Excel file.');
+      if (!isExcelName(secondFile.name) && !isZipName(secondFile.name)) throw new Error('The second file must be Excel or ZIP.');
+
+      setStatus('Reading the first Excel file and preparing columns K and M...', 'warn');
+      const firstWorkbook = await readWorkbookFromFile(firstFile);
+      const firstRows = rowsFromWorkbook(firstWorkbook);
+
+      if (!firstRows.length) throw new Error('The first Excel file has no readable rows.');
+
+      const outputs = [];
+
+      if (isZipName(secondFile.name)) {
+        setStatus('Extracting the ZIP and processing each Excel file inside it...', 'warn');
+        const entries = await getExcelEntriesFromZip(secondFile);
+        if (!entries.length) throw new Error('The ZIP file does not contain any Excel files.');
+
+        for (const entry of entries) {
+          const buffer = await entry.async('arraybuffer');
+          const workbook = await readWorkbookFromArrayBuffer(buffer);
+          const exportRows = rowsFromWorkbook(workbook);
+          outputs.push(buildExportResult(firstRows, exportRows, entry.name));
+        }
+      } else {
+        setStatus('Matching File 1 column K with File 2 column J...', 'warn');
+        const secondWorkbook = await readWorkbookFromFile(secondFile);
+        const exportRows = rowsFromWorkbook(secondWorkbook);
+        outputs.push(buildExportResult(firstRows, exportRows, secondFile.name));
+      }
+
+      return outputs;
+    }
+
+    async function processSameMode() {
+      const sameFile = els.sameFile.files[0];
+
+      if (!sameFile) throw new Error('Upload an Excel or ZIP file.');
+      if (!isExcelName(sameFile.name) && !isZipName(sameFile.name)) throw new Error('The file must be Excel or ZIP.');
+
+      const outputs = [];
+
+      if (isZipName(sameFile.name)) {
+        setStatus('Extracting the ZIP and processing K, M, and L for each Excel file...', 'warn');
+        const entries = await getExcelEntriesFromZip(sameFile);
+        if (!entries.length) throw new Error('The ZIP file does not contain any Excel files.');
+
+        for (const entry of entries) {
+          const buffer = await entry.async('arraybuffer');
+          const workbook = await readWorkbookFromArrayBuffer(buffer);
+          const rows = rowsFromWorkbook(workbook);
+          outputs.push(buildSameExcelResult(rows, entry.name));
+        }
+      } else {
+        setStatus('Processing K, M, and L from the selected Excel file...', 'warn');
+        const workbook = await readWorkbookFromFile(sameFile);
+        const rows = rowsFromWorkbook(workbook);
+        outputs.push(buildSameExcelResult(rows, sameFile.name));
+      }
+
+      return outputs;
+    }
+
+    async function downloadOutputs(outputs, mode) {
+      if (!outputs.length) return;
+
+      if (outputs.length === 1) {
+        const blob = new Blob([outputs[0].bytes], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        saveAs(blob, outputs[0].fileName);
+        return;
+      }
+
+      const zip = new JSZip();
+      for (const output of outputs) {
+        zip.file(output.fileName, output.bytes);
+      }
+
+      const zipName = mode === 'export'
+        ? 'Processed_From_Export_Results.zip'
+        : 'Processed_From_Same_Excel_Results.zip';
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      saveAs(blob, zipName);
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderSinglePreviewTable(output, outputIndex) {
+      const rows = output?.aoa || [];
+      const maxRows = Math.min(rows.length, 60);
+      const stats = output?.stats || {};
+      const outputRows = stats.outputRows ?? Math.max(rows.length - 2, 0);
+
+      let bodyHTML = '';
+
+      if (!rows.length) {
+        bodyHTML = '<tr><td colspan="4" style="text-align:center; color:#64748b;">No data to preview.</td></tr>';
+      } else {
+        for (let i = 0; i < maxRows; i++) {
+          const row = rows[i] || [];
+          bodyHTML += '<tr>';
+          bodyHTML += `<td>${i + 1}</td>`;
+          for (let c = 0; c < 3; c++) {
+            const value = row[c] ?? '';
+            const isEmpty = String(value).trim() === '';
+            bodyHTML += `<td${isEmpty ? ' class="empty"' : ''}>${isEmpty ? '—' : escapeHTML(value)}</td>`;
+          }
+          bodyHTML += '</tr>';
+        }
+
+        if (rows.length > maxRows) {
+          bodyHTML += `<tr><td colspan="4" style="text-align:center; color:#64748b;">Showing the first ${maxRows} rows out of ${rows.length} rows.</td></tr>`;
+        }
+      }
+
+      return `
+        <section class="file-preview">
+          <div class="file-preview-head">
+            <div class="file-preview-title">${outputIndex + 1}. ${escapeHTML(output.fileName)}</div>
+            <div class="file-preview-meta">${escapeHTML(outputRows)} output rows</div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:70px;">Row</th>
+                  <th>A</th>
+                  <th>B</th>
+                  <th>C</th>
+                </tr>
+              </thead>
+              <tbody>${bodyHTML}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPreviews(outputs) {
+      const previewLimit = 10;
+      const visibleOutputs = (outputs || []).slice(0, previewLimit);
+
+      if (!visibleOutputs.length) {
+        els.previewArea.innerHTML = '<div class="empty-preview">No data to preview.</div>';
+        return;
+      }
+
+      els.previewArea.innerHTML = visibleOutputs
+        .map((output, index) => renderSinglePreviewTable(output, index))
+        .join('');
+
+      if (outputs.length > previewLimit) {
+        els.previewArea.innerHTML += `<div class="empty-preview">Preview is limited to the first ${previewLimit} files. All ${outputs.length} files were still processed and included in the download.</div>`;
+      }
+    }
+
+    function renderSummary(outputs) {
+      if (!outputs.length) {
+        els.summary.classList.add('hidden');
+        els.filesList.classList.add('hidden');
+        return;
+      }
+
+      const first = outputs[0].stats;
+      const totalOutputRows = outputs.reduce((sum, item) => sum + (item.stats.outputRows || 0), 0);
+      const totalRemoved = outputs.reduce((sum, item) => sum + (item.stats.removed || 0), 0);
+      const totalMatched = outputs.reduce((sum, item) => sum + (item.stats.matched || 0), 0);
+
+      const cards = [
+        ['Output Files', outputs.length],
+        ['Output Rows', totalOutputRows],
+        [first.type === 'From Export' ? 'Matched' : 'Input Rows', first.type === 'From Export' ? totalMatched : totalOutputRows],
+        [first.type === 'From Export' ? 'Removed' : 'Mode', first.type === 'From Export' ? totalRemoved : 'Same Excel']
+      ];
+
+      els.summary.innerHTML = cards.map(([label, value]) => `
+        <div class="stat">
+          <span>${escapeHTML(label)}</span>
+          <b>${escapeHTML(value)}</b>
+        </div>
+      `).join('');
+      els.summary.classList.remove('hidden');
+
+      els.filesList.innerHTML = outputs.map((output, index) => {
+        const s = output.stats;
+        const details = s.type === 'From Export'
+          ? `Matched: ${s.matched} | Removed: ${s.removed} | Duplicate J keys: ${s.duplicateKeys}`
+          : `Rows: ${s.outputRows}`;
+        return `<li><span>${index + 1}. ${escapeHTML(output.fileName)}</span><span>${escapeHTML(details)}</span></li>`;
+      }).join('');
+      els.filesList.classList.remove('hidden');
+
+      els.previewHint.textContent = outputs.length > 1
+        ? `Preview is showing all output files on this page: ${outputs.length} file(s).`
+        : `Preview is showing the output file: ${outputs[0].fileName}`;
+    }
+
+    function clearPreview() {
+      els.previewArea.innerHTML = '<div class="empty-preview">No preview yet.</div>';
+      els.summary.classList.add('hidden');
+      els.filesList.classList.add('hidden');
+      els.summary.innerHTML = '';
+      els.filesList.innerHTML = '';
+      els.previewHint.textContent = 'After processing, a preview for each output file will appear here. Row 1 stays in place, Row 2 is blank, and the rest shifts down.';
+    }
+
+    async function handleProcess() {
+      const mode = getMode();
+      if (!mode) {
+        setStatus('Choose From Export or From the Same Excel first.', 'error');
+        return;
+      }
+
+      latestOutputs = [];
+      latestMode = mode;
+      els.processBtn.disabled = true;
+      clearPreview();
+
+      try {
+        if (typeof XLSX === 'undefined' || typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
+          throw new Error('Libraries did not load. Make sure you are connected to the internet, then reopen the page.');
+        }
+
+        const outputs = mode === 'export'
+          ? await processExportMode()
+          : await processSameMode();
+
+        if (!outputs.length) throw new Error('No output file was created.');
+
+        latestOutputs = outputs;
+        renderSummary(outputs);
+        renderPreviews(outputs);
+        await downloadOutputs(outputs, mode);
+
+        setStatus(`Done. ${outputs.length} output file(s) prepared and downloaded.`, 'success');
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || 'An error happened while processing.', 'error');
+      } finally {
+        els.processBtn.disabled = false;
+      }
+    }
+
+    function resetAll() {
+      latestOutputs = [];
+      latestMode = '';
+      els.modeExport.checked = false;
+      els.modeSame.checked = false;
+      els.firstExcel.value = '';
+      els.secondFile.value = '';
+      els.sameFile.value = '';
+      updateModeUI();
+      clearPreview();
+      setStatus('Choose a mode, upload the required files, then click Process & Download.');
+    }
+
+    els.processBtn.addEventListener('click', handleProcess);
+    els.resetBtn.addEventListener('click', resetAll);
+    updateModeUI();
+  
+  </script>
 </body>
 </html>
