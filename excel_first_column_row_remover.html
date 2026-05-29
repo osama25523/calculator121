@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excel Row Delete Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+.back-btn{
+    display:inline-block;
+    margin-bottom:20px;
+    background:linear-gradient(135deg,#22d3ee,#a855f7);
+    color:#fff;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:14px;
+    font-weight:700;
+}
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --card2:#1e293b;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --accent:#22d3ee;
+      --accent2:#a855f7;
+      --danger:#fb7185;
+      --ok:#34d399;
+      --line:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34,211,238,.28), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(168,85,247,.28), transparent 35%),
+        linear-gradient(135deg,#020617,#0f172a 55%,#111827);
+      min-height:100vh;
+      padding:28px;
+    }
+    .wrap{max-width:1100px;margin:auto}
+    .hero{
+      padding:28px;
+      border:1px solid var(--line);
+      border-radius:28px;
+      background:rgba(15,23,42,.72);
+      box-shadow:0 24px 80px rgba(0,0,0,.35);
+      backdrop-filter:blur(16px);
+    }
+    h1{margin:0 0 8px;font-size:34px;letter-spacing:-.8px}
+    .sub{margin:0;color:var(--muted);line-height:1.7}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+    .box{
+      background:rgba(17,24,39,.82);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+    }
+    label{display:block;font-weight:800;margin-bottom:10px}
+    input[type=file]{
+      width:100%;
+      padding:14px;
+      border-radius:16px;
+      border:1px dashed rgba(34,211,238,.65);
+      color:var(--text);
+      background:rgba(2,6,23,.45);
+    }
+    textarea{
+      width:100%;
+      min-height:230px;
+      resize:vertical;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(2,6,23,.55);
+      color:var(--text);
+      outline:none;
+      font-size:15px;
+      line-height:1.6;
+    }
+    textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(34,211,238,.13)}
+    .hint{font-size:13px;color:var(--muted);line-height:1.6;margin-top:10px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+    button{
+      border:0;
+      border-radius:16px;
+      padding:14px 18px;
+      font-weight:900;
+      color:white;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      box-shadow:0 10px 28px rgba(34,211,238,.18);
+    }
+    button.secondary{background:#334155}
+    button.danger{background:linear-gradient(135deg,#fb7185,#f97316)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+    .stat{
+      padding:16px;
+      background:rgba(30,41,59,.72);
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+    .stat b{display:block;font-size:26px;margin-bottom:4px}
+    .stat span{font-size:13px;color:var(--muted)}
+    .preview{
+      margin-top:20px;
+      overflow:auto;
+      max-height:380px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(2,6,23,.35);
+    }
+    table{border-collapse:collapse;width:100%;min-width:720px}
+    th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:10px;text-align:left;white-space:nowrap}
+    th{position:sticky;top:0;background:#172033;color:#e2e8f0}
+    td{color:#cbd5e1}
+    .msg{margin-top:14px;color:var(--muted)}
+    .ok{color:var(--ok)} .bad{color:var(--danger)}
+    @media(max-width:850px){.grid,.stats{grid-template-columns:1fr} h1{font-size:28px}}
+  </style>
+</head>
+<body>
+<a href="Stores.html" class="back-btn">
+    <i class="fa fa-arrow-left"></i> Back To Market
+</a>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Excel First Column Row Remover</h1>
+      <p class="sub">
+الأداة تبحث عن هذه القيم في العمود الأول فقط، في اول عمود إذا وجدت قيمة مطابقة تحذف الصف بالكامل</p>
+
+      <div class="grid">
+        <div class="box">
+          <label>1) Upload Excel file</label>
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+          <div class="hint">Supported: XLSX, XLS, CSV. The first sheet will be processed.</div>
+        </div>
+
+        <div class="box">
+          <label>2) Numbers to delete</label>
+          <textarea id="numbersBox" placeholder="Paste numbers here, each number on a new line:
+625300530029KR
+886736005001KR
+6253005316049KR"></textarea>
+          <div class="hint">You can paste numbers separated by new lines, spaces, commas, or tabs.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="processBtn">Delete Matching Rows</button>
+        <button id="downloadBtn" disabled>Download Clean Excel</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="totalRows">0</b><span>Original Rows</span></div>
+        <div class="stat"><b id="deleteCount">0</b><span>Rows Deleted</span></div>
+        <div class="stat"><b id="remainRows">0</b><span>Rows Remaining</span></div>
+        <div class="stat"><b id="notFound">0</b><span>Numbers Not Found</span></div>
+      </div>
+
+      <div id="message" class="msg">Ready.</div>
+
+      <div class="preview" id="previewWrap" style="display:none;">
+        <table id="previewTable"></table>
+      </div>
+    </div>
+  </div>
+
+<script>
+let workbook = null;
+let sheetName = null;
+let cleanedData = null;
+
+const fileInput = document.getElementById("fileInput");
+const numbersBox = document.getElementById("numbersBox");
+const processBtn = document.getElementById("processBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const clearBtn = document.getElementById("clearBtn");
+const message = document.getElementById("message");
+
+fileInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const data = await file.arrayBuffer();
+  workbook = XLSX.read(data, { type: "array", cellDates: true });
+  sheetName = workbook.SheetNames[0];
+
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "" });
+  document.getElementById("totalRows").textContent = rows.length;
+  document.getElementById("remainRows").textContent = rows.length;
+  setMsg(`Loaded: ${file.name}`, true);
+  renderPreview(rows);
+});
+
+processBtn.addEventListener("click", () => {
+  if (!workbook) {
+    setMsg("Please upload an Excel file first.", false);
+    return;
+  }
+
+  const deleteSet = parseNumbers(numbersBox.value);
+  if (deleteSet.size === 0) {
+    setMsg("Please add numbers in the empty box first.", false);
+    return;
+  }
+
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "" });
+  const foundSet = new Set();
+
+  cleanedData = rows.filter(row => {
+    const firstCol = normalize(row[0]);
+    if (deleteSet.has(firstCol)) {
+      foundSet.add(firstCol);
+      return false;
+    }
+    return true;
+  });
+
+  const deleted = rows.length - cleanedData.length;
+  const notFoundCount = [...deleteSet].filter(x => !foundSet.has(x)).length;
+
+  document.getElementById("totalRows").textContent = rows.length;
+  document.getElementById("deleteCount").textContent = deleted;
+  document.getElementById("remainRows").textContent = cleanedData.length;
+  document.getElementById("notFound").textContent = notFoundCount;
+
+  downloadBtn.disabled = false;
+  setMsg(`Done. Deleted ${deleted} full row(s).`, true);
+  renderPreview(cleanedData);
+});
+
+downloadBtn.addEventListener("click", () => {
+  if (!cleanedData) return;
+
+  const newWb = XLSX.utils.book_new();
+  const newWs = XLSX.utils.aoa_to_sheet(cleanedData);
+  XLSX.utils.book_append_sheet(newWb, newWs, sheetName || "Cleaned");
+
+  const originalName = fileInput.files[0]?.name?.replace(/\.[^/.]+$/, "") || "cleaned_excel";
+  XLSX.writeFile(newWb, `${originalName}_rows_deleted.xlsx`);
+});
+
+clearBtn.addEventListener("click", () => {
+  workbook = null;
+  sheetName = null;
+  cleanedData = null;
+  fileInput.value = "";
+  numbersBox.value = "";
+  downloadBtn.disabled = true;
+  ["totalRows","deleteCount","remainRows","notFound"].forEach(id => document.getElementById(id).textContent = "0");
+  document.getElementById("previewWrap").style.display = "none";
+  document.getElementById("previewTable").innerHTML = "";
+  setMsg("Ready.", true);
+});
+
+function parseNumbers(text) {
+  return new Set(
+    text
+      .split(/[\s,;]+/g)
+      .map(normalize)
+      .filter(Boolean)
+  );
+}
+
+function normalize(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\u00A0/g, "")
+    .replace(/\.0$/, "");
+}
+
+function renderPreview(rows) {
+  const table = document.getElementById("previewTable");
+  const wrap = document.getElementById("previewWrap");
+  table.innerHTML = "";
+
+  if (!rows || rows.length === 0) {
+    wrap.style.display = "none";
+    return;
+  }
+
+  const maxRows = Math.min(rows.length, 10);
+  const maxCols = Math.min(Math.max(...rows.slice(0, maxRows).map(r => r.length)), 12);
+
+  let html = "<thead><tr>";
+  for (let c = 0; c < maxCols; c++) html += `<th>Column ${c + 1}</th>`;
+  html += "</tr></thead><tbody>";
+
+  for (let r = 0; r < maxRows; r++) {
+    html += "<tr>";
+    for (let c = 0; c < maxCols; c++) {
+      html += `<td>${escapeHtml(rows[r][c] ?? "")}</td>`;
+    }
+    html += "</tr>";
+  }
+  html += "</tbody>";
+
+  table.innerHTML = html;
+  wrap.style.display = "block";
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function setMsg(text, ok) {
+  message.textContent = text;
+  message.className = "msg " + (ok ? "ok" : "bad");
+}
+</script>
+</body>
+</html>
