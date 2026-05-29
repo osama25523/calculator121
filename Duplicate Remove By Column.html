@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Duplicate Remove By Column</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+.back-btn{
+    display:inline-block;
+    margin-bottom:20px;
+    background:linear-gradient(135deg,#22d3ee,#a855f7);
+    color:#fff;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:14px;
+    font-weight:700;
+}
+    :root{
+      --bg:#0f172a; --card:#111827; --card2:#1f2937; --text:#f8fafc; --muted:#94a3b8;
+      --accent:#38bdf8; --accent2:#22c55e; --danger:#ef4444; --border:#334155;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,Segoe UI,Arial,sans-serif; color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(34,197,94,.18), transparent 35%),
+        linear-gradient(135deg,#020617,#0f172a 55%,#111827);
+      min-height:100vh; padding:32px;
+    }
+    .wrap{max-width:1100px;margin:auto}
+    .hero{
+      padding:28px;border:1px solid var(--border);border-radius:28px;
+      background:rgba(17,24,39,.82);box-shadow:0 20px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+    h1{margin:0 0 10px;font-size:34px;letter-spacing:-.5px}
+    p{color:var(--muted);line-height:1.7}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+    .card{
+      background:rgba(31,41,55,.75);border:1px solid var(--border);
+      border-radius:22px;padding:20px;
+    }
+    label{display:block;margin-bottom:8px;font-weight:700}
+    input[type=file], select{
+      width:100%;padding:14px;border-radius:14px;border:1px solid var(--border);
+      background:#020617;color:var(--text);outline:none;
+    }
+    button{
+      border:0;border-radius:16px;padding:14px 18px;font-weight:800;cursor:pointer;
+      color:#001018;background:linear-gradient(135deg,var(--accent),#7dd3fc);
+      box-shadow:0 12px 25px rgba(56,189,248,.22);
+    }
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .btn2{background:linear-gradient(135deg,var(--accent2),#86efac);box-shadow:0 12px 25px rgba(34,197,94,.18)}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .stat{background:#020617;border:1px solid var(--border);border-radius:18px;padding:16px}
+    .stat b{display:block;font-size:26px;margin-top:6px}
+    .preview{margin-top:22px;overflow:auto;max-height:420px;border-radius:18px;border:1px solid var(--border)}
+    table{border-collapse:collapse;width:100%;min-width:700px;background:#020617}
+    th,td{border-bottom:1px solid #1e293b;padding:10px;text-align:left;white-space:nowrap}
+    th{position:sticky;top:0;background:#111827;color:#e2e8f0}
+    .removed{color:#fecaca}
+    .ok{color:#bbf7d0}
+    .note{font-size:13px;color:var(--muted);margin-top:10px}
+    @media(max-width:800px){.grid,.stats{grid-template-columns:1fr} body{padding:16px} h1{font-size:26px}}
+  </style>
+</head>
+<body>
+<a href="Market.html" class="back-btn">
+    <i class="fa fa-arrow-left"></i> Back To Market
+</a>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Excel Duplicate Row Cleaner</h1>
+      <p>
+       تختار العمود الذي تريد البحث فيه عن التكرار، يحتفظ بأول قيمة فقط، أي قيمة مكررة بعدها يحذف الصف كامل 
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <label>1) Upload Excel File</label>
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+          <div class="note">Supported: XLSX, XLS, CSV</div>
+        </div>
+
+        <div class="card">
+          <label>2) Choose Duplicate Search Column</label>
+          <select id="columnSelect" disabled>
+            <option value="">Upload file first</option>
+          </select>
+          <div class="note">The first occurrence stays. Next duplicates are removed with the row.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="processBtn" disabled>Clean Duplicates</button>
+        <button id="downloadBtn" class="btn2" disabled>Download Clean Excel</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">Original Rows <b id="originalCount">0</b></div>
+        <div class="stat">Removed Duplicate Rows <b id="removedCount">0</b></div>
+        <div class="stat">Final Rows <b id="finalCount">0</b></div>
+      </div>
+
+      <div class="preview" id="preview"></div>
+    </div>
+  </div>
+
+<script>
+let workbook, sheetName, rawRows = [], headers = [], cleanedRows = [];
+
+const fileInput = document.getElementById('fileInput');
+const columnSelect = document.getElementById('columnSelect');
+const processBtn = document.getElementById('processBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const preview = document.getElementById('preview');
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const data = await file.arrayBuffer();
+  workbook = XLSX.read(data, { type: 'array' });
+  sheetName = workbook.SheetNames[0];
+
+  const sheet = workbook.Sheets[sheetName];
+  rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+  if (!rawRows.length) {
+    alert("The sheet is empty.");
+    return;
+  }
+
+  headers = rawRows[0].map((h, i) => String(h || `Column ${i + 1}`));
+  columnSelect.innerHTML = headers.map((h, i) => `<option value="${i}">${i + 1} - ${escapeHtml(h)}</option>`).join("");
+  columnSelect.disabled = false;
+  processBtn.disabled = false;
+  downloadBtn.disabled = true;
+  cleanedRows = [];
+
+  setStats(rawRows.length - 1, 0, 0);
+  renderPreview(rawRows.slice(0, 51), "Original Preview");
+});
+
+processBtn.addEventListener('click', () => {
+  const colIndex = Number(columnSelect.value);
+  const seen = new Set();
+  const result = [rawRows[0]];
+  let removed = 0;
+
+  for (let i = 1; i < rawRows.length; i++) {
+    const row = rawRows[i] || [];
+    const key = normalizeValue(row[colIndex]);
+
+    // Empty cells are treated as values too:
+    // first empty stays, next empty rows are removed.
+    if (seen.has(key)) {
+      removed++;
+    } else {
+      seen.add(key);
+      result.push(row);
+    }
+  }
+
+  cleanedRows = result;
+  setStats(rawRows.length - 1, removed, cleanedRows.length - 1);
+  renderPreview(cleanedRows.slice(0, 101), "Cleaned Preview");
+  downloadBtn.disabled = false;
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!cleanedRows.length) return;
+  const ws = XLSX.utils.aoa_to_sheet(cleanedRows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Cleaned");
+  XLSX.writeFile(wb, "cleaned_duplicates_removed.xlsx");
+});
+
+function normalizeValue(v) {
+  return String(v ?? "").trim().toLowerCase();
+}
+
+function setStats(original, removed, finalRows) {
+  document.getElementById('originalCount').textContent = original;
+  document.getElementById('removedCount').textContent = removed;
+  document.getElementById('finalCount').textContent = finalRows;
+}
+
+function renderPreview(rows, title) {
+  if (!rows.length) { preview.innerHTML = ""; return; }
+
+  const maxCols = Math.max(...rows.map(r => r.length));
+  let html = `<table><thead><tr><th colspan="${maxCols}">${title}</th></tr><tr>`;
+  for (let c = 0; c < maxCols; c++) html += `<th>${escapeHtml(headers[c] || `Column ${c+1}`)}</th>`;
+  html += `</tr></thead><tbody>`;
+
+  for (let r = 1; r < rows.length; r++) {
+    html += "<tr>";
+    for (let c = 0; c < maxCols; c++) html += `<td>${escapeHtml(rows[r][c] ?? "")}</td>`;
+    html += "</tr>";
+  }
+
+  html += "</tbody></table>";
+  preview.innerHTML = html;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+</script>
+</body>
+</html>
