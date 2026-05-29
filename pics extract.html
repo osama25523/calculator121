@@ -78,12 +78,14 @@
   <button onclick="downloadAndZip()">Download</button>
 
   <p id="status"></p>
-
+<div id="failedList" style="margin-top:20px;color:red;font-weight:bold;"></div>
   <script>
     async function downloadAndZip() {
       const textarea = document.getElementById('links');
       const status = document.getElementById('status');
       const startNumInput = document.getElementById('startNum');
+      const failedImages = [];
+const failedList = document.getElementById('failedList');
       const urls = textarea.value.trim().split('\n').filter(Boolean);
       let startNum = parseInt(startNumInput.value) || 1;
 
@@ -114,16 +116,30 @@
             canvas.toBlob(resolve, "image/jpeg", 0.9)
           );
 
-          zip.file(`${startNum}.jpg`, jpgBlob);
-          startNum++;
+         zip.file(`${startNum + i}.jpg`, jpgBlob);
 
           status.textContent = `🔥 ${i + 1} / ${urls.length} 🔥`;
 
-        } catch (error) {
-          console.error(`Error: ${url}`, error);
-          status.textContent = `❌ Error in ${i + 1}`;
-        }
+       } catch (error) {
+  console.error(`Error: ${url}`, error);
+
+  failedImages.push({
+    number: startNum + i,
+    url: url
+  });
+
+  status.textContent = `❌ Error in ${i + 1}`;
+}
       }
+      if (failedImages.length > 0) {
+  failedList.innerHTML =
+    '<h3>❌ Failed Images</h3>' +
+    failedImages.map(img =>
+      `Image ${img.number}: ${img.url}`
+    ).join('<br>');
+} else {
+  failedList.innerHTML = '✅ No failed images';
+}
 
       status.textContent = '🔥Preparing the file... 🔥';
 
