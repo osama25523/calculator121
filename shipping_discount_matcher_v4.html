@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Excel Shipping Discount Matcher</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial,Tahoma,sans-serif;
+      background:#f4f7fb;
+      color:#172033;
+      padding:24px;
+    }
+    .container{
+      max-width:1300px;
+      margin:auto;
+      background:#fff;
+      border-radius:18px;
+      padding:24px;
+      box-shadow:0 10px 35px rgba(0,0,0,.08);
+    }
+    h1{margin:0 0 8px;font-size:26px}
+    .desc{color:#64748b;line-height:1.8;margin-bottom:20px}
+    .upload-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .box{
+      border:1px solid #e2e8f0;
+      background:#f8fafc;
+      border-radius:14px;
+      padding:16px;
+    }
+    label{
+      display:block;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+    input[type=file]{
+      width:100%;
+      padding:12px;
+      background:#fff;
+      border:1px dashed #94a3b8;
+      border-radius:12px;
+    }
+    button{
+      background:#2563eb;
+      color:#fff;
+      border:0;
+      border-radius:12px;
+      padding:13px 22px;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      margin-inline-end:8px;
+    }
+    button.secondary{background:#0f172a}
+    button:disabled{background:#94a3b8;cursor:not-allowed}
+    .status{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:12px;
+      background:#eef6ff;
+      color:#164e8b;
+      line-height:1.7;
+      white-space:pre-wrap;
+    }
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+      margin:18px 0;
+    }
+    .summary div{
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:14px;
+      font-weight:bold;
+    }
+    .summary span{
+      display:block;
+      color:#2563eb;
+      font-size:24px;
+      margin-top:6px;
+    }
+    .table-wrap{
+      overflow:auto;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      max-height:70vh;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:1900px;
+      direction:ltr;
+      font-size:13px;
+    }
+    th,td{
+      border-bottom:1px solid #e2e8f0;
+      border-inline-end:1px solid #e2e8f0;
+      padding:9px;
+      text-align:left;
+      white-space:nowrap;
+    }
+    th{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#1e293b;
+      color:white;
+    }
+    th.first-file{background:#2563eb}
+    th.second-file{background:#16a34a}
+    tr:nth-child(even) td{background:#f8fafc}
+    td.match-num{
+      background:#dcfce7 !important;
+      color:#166534;
+      font-weight:bold;
+    }
+    td.diff-num{
+      background:#fee2e2 !important;
+      color:#991b1b;
+      font-weight:bold;
+    }
+    .no-data{
+      text-align:center;
+      color:#64748b;
+      padding:22px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>مقارنة Shipping Discount بين ملفين Excel</h1>
+    <div class="desc">
+      ارفع الملف الأول والملف الثاني، والصفحة رح تعرض النتائج مباشرة بدون Export.
+      <br>
+      الملف الأول: الشيت الثالثة، فلترة عمود T = <b>Shipping Discount</b>، وعمود I يكون <b>UnderQA</b> أو <b>Solved</b>، والمقارنة الأساسية من عمود M، ومعها مقارنة اختيارية من عمود N.
+      <br>
+      الملف الثاني: المقارنة الأساسية على عمود E، والمقارنة الاختيارية على عمود J، وعمود G لازم يكون واحد من القيم المطلوبة.
+    </div>
+
+    <div class="upload-grid">
+      <div class="box">
+        <label>الملف الأول Excel</label>
+        <input type="file" id="file1" accept=".xlsx,.xls,.csv"/>
+      </div>
+      <div class="box">
+        <label>الملف الثاني Excel</label>
+        <input type="file" id="file2" accept=".xlsx,.xls,.csv"/>
+      </div>
+    </div>
+
+    <button onclick="processFiles()">اعرض المقارنة</button>
+    <button class="secondary" onclick="clearResults()">مسح النتائج</button>
+
+    <div id="status" class="status">جاهز.</div>
+
+    <div class="summary">
+      <div>صفوف Shipping Discount من الملف الأول <span id="c1">0</span></div>
+      <div>مطابقات صحيحة من الملف الثاني <span id="c2">0</span></div>
+      <div>غير موجود / غير مطابق الشرط <span id="c3">0</span></div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="resultTable">
+        <thead></thead>
+        <tbody>
+          <tr><td class="no-data">لا توجد نتائج بعد</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+const allowedG = new Set([
+  "Free Delivery - Two Segments",
+  "RDF",
+  "Free Delivery Only"
+]);
+
+const allowedFirstI = new Set([
+  "UnderQA",
+  "Solved"
+]);
+
+const firstCols = ["M","T","AO","AP","AQ","AR","AS","AT","AU","AV","AW","AX"];
+const secondCols = ["G","H","I","W","X","AB","AE","AF"];
+
+function colToIndex(col){
+  let n = 0;
+  for(let i=0;i<col.length;i++){
+    n = n * 26 + (col.charCodeAt(i) - 64);
+  }
+  return n - 1;
+}
+
+function cell(row, col){
+  const v = row[colToIndex(col)];
+  return v === undefined || v === null ? "" : String(v).trim();
+}
+
+function normalize(v){
+  return String(v ?? "")
+    .trim()
+    .replace(/\s+/g," ")
+    .toLowerCase();
+}
+
+function readWorkbook(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data,{type:"array"});
+        resolve(wb);
+      }catch(err){ reject(err); }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function sheetToRows(wb, sheetIndex){
+  const sheetName = wb.SheetNames[sheetIndex];
+  if(!sheetName) throw new Error("الشيت المطلوبة غير موجودة");
+  const ws = wb.Sheets[sheetName];
+  return XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+}
+
+async function processFiles(){
+  const f1 = document.getElementById("file1").files[0];
+  const f2 = document.getElementById("file2").files[0];
+  const status = document.getElementById("status");
+
+  if(!f1 || !f2){
+    status.textContent = "ارفع الملف الأول والملف الثاني.";
+    return;
+  }
+
+  try{
+    status.textContent = "جاري قراءة الملفات...";
+    const [wb1, wb2] = await Promise.all([readWorkbook(f1), readWorkbook(f2)]);
+
+    // الملف الأول: الشيت الثالثة = index 2
+    const rows1 = sheetToRows(wb1, 2);
+
+    // الملف الثاني: أول شيت افتراضياً
+    const rows2 = sheetToRows(wb2, 0);
+
+    const map2 = new Map();
+
+    // الملف الثاني: E للمقارنة الأساسية، و J للمقارنة الإضافية الاختيارية
+    for(const r of rows2){
+      const key = normalize(cell(r,"E"));
+      const g = cell(r,"G");
+      if(key && allowedG.has(g)){
+        if(!map2.has(key)) map2.set(key, []);
+        map2.get(key).push(r);
+      }
+    }
+
+    const results = [];
+    let shippingCount = 0;
+    let matchedCount = 0;
+    let notMatchedCount = 0;
+
+    for(const r1 of rows1){
+      const t = cell(r1,"T");
+      const iStatus = cell(r1,"I");
+      if(t !== "Shipping Discount") continue;
+      if(!allowedFirstI.has(iStatus)) continue;
+
+      shippingCount++;
+      const key = normalize(cell(r1,"M"));
+      const optionalN = normalize(cell(r1,"N"));
+      let matches = map2.get(key);
+
+      if(matches && matches.length){
+        // مقارنة إضافية اختيارية: First N مع Second J
+        // إذا لقى صفوف مطابقة على N/J، يعرضها. إذا ما لقى، يكمل عادي على مطابقة M/E.
+        const exactNJ = optionalN
+          ? matches.filter(r2 => normalize(cell(r2,"J")) === optionalN)
+          : [];
+
+        if(exactNJ.length){
+          matches = exactNJ;
+        }
+
+        for(const r2 of matches){
+          matchedCount++;
+          results.push({
+            r1,
+            r2,
+            matched:true,
+            optionalMatch: optionalN && normalize(cell(r2,"J")) === optionalN
+          });
+        }
+      }else{
+        notMatchedCount++;
+        results.push({r1, r2:null, matched:false, optionalMatch:false});
+      }
+    }
+
+    renderTable(results);
+    document.getElementById("c1").textContent = shippingCount;
+    document.getElementById("c2").textContent = matchedCount;
+    document.getElementById("c3").textContent = notMatchedCount;
+
+    status.textContent =
+      "تمت المعالجة بنجاح.\n" +
+      "ملاحظة: المقارنة الأساسية M/E، والمقارنة الإضافية الاختيارية N/J إذا توفرت.\n" +
+      "تم عرض النتائج على نفس الصفحة بدون Export.";
+
+  }catch(err){
+    status.textContent = "صار خطأ: " + err.message;
+  }
+}
+
+function renderTable(results){
+  const table = document.getElementById("resultTable");
+  const thead = table.querySelector("thead");
+  const tbody = table.querySelector("tbody");
+
+  const firstHeaders = {
+    M:"Vendor Name",
+    T:"Type",
+    AO:"Date From",
+    AP:"Date To",
+    AQ:"MOV 1",
+    AR:"MOV 2",
+    AS:"Discount Vendor 1",
+    AT:"Discount Vendor 2",
+    AU:"Discount Start Date 1",
+    AV:"Discount End Date 1",
+    AW:"Discount Start Date 2",
+    AX:"Discount End Date 2"
+  };
+
+  const secondHeaders = {
+    G:"Type",
+    H:"MOV 1",
+    I:"MOV 2",
+    W:"Bearing Amount By MyThings",
+    X:"Bearing Amount By Service Provider",
+    AB:"Segment Amount",
+    AE:"Seg Bearing Amount By MyThings",
+    AF:"Seg Bearing Amount By Service Provider"
+  };
+
+  const headers = [
+    ...firstCols.map(c => firstHeaders[c] || c),
+    ...secondCols.map(c => secondHeaders[c] || c),
+    "Status"
+  ];
+
+  thead.innerHTML = "<tr>" + headers.map((h,i)=>{
+    const cls = i < firstCols.length ? "first-file" : (i < firstCols.length + secondCols.length ? "second-file" : "");
+    return `<th class="${cls}">${h}</th>`;
+  }).join("") + "</tr>";
+
+  if(!results.length){
+    tbody.innerHTML = `<tr><td class="no-data" colspan="${headers.length}">لا توجد نتائج مطابقة للفلتر</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = results.map(item=>{
+    const dateCols = new Set(["AU","AV","AW","AX"]);
+
+    const firstValues = firstCols.map(c => {
+      let v = cell(item.r1,c);
+      if(dateCols.has(c)) v = excelDateToString(v);
+      return {side:"first", col:c, value:v};
+    });
+
+    const secondValues = secondCols.map(c => {
+      let v = item.r2 ? cell(item.r2,c) : "";
+      return {side:"second", col:c, value:v};
+    });
+
+    const allValues = [...firstValues, ...secondValues];
+    const firstNums = new Set(firstValues.map(x => numKey(x.value)).filter(Boolean));
+    const secondNums = new Set(secondValues.map(x => numKey(x.value)).filter(Boolean));
+
+    function tdFor(x){
+      const nk = numKey(x.value);
+      let cls = "";
+      if(nk){
+        const oppositeHas = x.side === "first" ? secondNums.has(nk) : firstNums.has(nk);
+        cls = oppositeHas ? "match-num" : "diff-num";
+      }
+      return `<td class="${cls}">${escapeHtml(x.value)}</td>`;
+    }
+
+    const firstData = firstValues.map(tdFor).join("");
+    const secondData = secondValues.map(tdFor).join("");
+    const status = item.matched ? (item.optionalMatch ? "Matched + N/J" : "Matched") : "Not Found / G Not Allowed";
+    return `<tr>${firstData}${secondData}<td>${status}</td></tr>`;
+  }).join("");
+}
+
+function clearResults(){
+  document.getElementById("resultTable").querySelector("thead").innerHTML = "";
+  document.getElementById("resultTable").querySelector("tbody").innerHTML =
+    `<tr><td class="no-data">لا توجد نتائج بعد</td></tr>`;
+  document.getElementById("status").textContent = "تم مسح النتائج.";
+  document.getElementById("c1").textContent = "0";
+  document.getElementById("c2").textContent = "0";
+  document.getElementById("c3").textContent = "0";
+}
+
+
+
+function numKey(value){
+  if(value === "" || value === null || value === undefined) return null;
+  let s = String(value).trim();
+  if(!s) return null;
+
+  // remove commas and percent signs, keep only normal numeric values
+  s = s.replace(/,/g,"").replace(/%/g,"").trim();
+
+  // ignore date-looking strings
+  if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) return null;
+
+  if(!/^-?\d+(\.\d+)?$/.test(s)) return null;
+
+  const n = Number(s);
+  if(!Number.isFinite(n)) return null;
+
+  // normalize 5 and 5.00 as same
+  return String(Math.round(n * 1000000) / 1000000);
+}
+
+function excelDateToString(serial){
+  if(serial === "" || serial === null || serial === undefined || isNaN(Number(serial))) return serial;
+  const d = XLSX.SSF.parse_date_code(Number(serial));
+  if(!d) return serial;
+  return `${String(d.d).padStart(2,'0')}/${String(d.m).padStart(2,'0')}/${d.y}`;
+}
+
+function escapeHtml(v){
+  return String(v ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+</script>
+</body>
+</html>
