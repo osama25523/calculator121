@@ -134,46 +134,53 @@
       color:#64748b;
       padding:22px;
     }
+.back-btn{
+  position:absolute;
+  top:24px;
+  left:24px; /* أو right:24px إذا بدك على اليمين */
+  background:#0f172a;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>مقارنة Shipping Discount بين ملفين Excel</h1>
-    <div class="desc">
-      ارفع الملف الأول والملف الثاني، والصفحة رح تعرض النتائج مباشرة بدون Export.
-      <br>
-      الملف الأول: الشيت الثالثة، فلترة عمود T = <b>Shipping Discount</b>، وعمود I يكون <b>UnderQA</b> أو <b>Solved</b>، والمقارنة الأساسية من عمود M، ومعها مقارنة اختيارية من عمود N.
-      <br>
-      الملف الثاني: المقارنة الأساسية على عمود E، والمقارنة الاختيارية على عمود J، وعمود G لازم يكون واحد من القيم المطلوبة.
-    </div>
-
+    <h1>Shipping Discount</h1>
+<button class="back-btn" onclick="window.location.href='index.html'">
+    Back
+  </button>
     <div class="upload-grid">
       <div class="box">
-        <label>الملف الأول Excel</label>
+        <label>Ticket Export</label>
         <input type="file" id="file1" accept=".xlsx,.xls,.csv"/>
       </div>
       <div class="box">
-        <label>الملف الثاني Excel</label>
+        <label>Discount Export</label>
         <input type="file" id="file2" accept=".xlsx,.xls,.csv"/>
       </div>
     </div>
 
-    <button onclick="processFiles()">اعرض المقارنة</button>
-    <button class="secondary" onclick="clearResults()">مسح النتائج</button>
+    <button onclick="processFiles()">Compare</button>
+    <button class="secondary" onclick="clearResults()">Delete Data</button>
 
-    <div id="status" class="status">جاهز.</div>
+    <div id="status" class="status">Done</div>
 
     <div class="summary">
-      <div>صفوف Shipping Discount من الملف الأول <span id="c1">0</span></div>
-      <div>مطابقات صحيحة من الملف الثاني <span id="c2">0</span></div>
-      <div>غير موجود / غير مطابق الشرط <span id="c3">0</span></div>
+      <div>Shipping Discount rows from the first file<span id="c1">0</span></div>
+      <div>Correct matches from the second file<span id="c2">0</span></div>
+      <div>Not found / Does not Meet the Criteria<span id="c3">0</span></div>
     </div>
 
     <div class="table-wrap">
       <table id="resultTable">
         <thead></thead>
         <tbody>
-          <tr><td class="no-data">لا توجد نتائج بعد</td></tr>
+          <tr><td class="no-data">no Results</td></tr>
         </tbody>
       </table>
     </div>
@@ -410,7 +417,7 @@ function renderTable(results){
 function clearResults(){
   document.getElementById("resultTable").querySelector("thead").innerHTML = "";
   document.getElementById("resultTable").querySelector("tbody").innerHTML =
-    `<tr><td class="no-data">لا توجد نتائج بعد</td></tr>`;
+    `<tr><td class="no-data">no Results</td></tr>`;
   document.getElementById("status").textContent = "تم مسح النتائج.";
   document.getElementById("c1").textContent = "0";
   document.getElementById("c2").textContent = "0";
