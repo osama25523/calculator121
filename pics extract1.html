@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Pics Extractor</title>
+
+  <a href="index.html" style="position:fixed; top:15px; right:20px; color:#6d3b00; font-weight:bold;">⬅ Back</a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+
+  <style>
+    body {
+      direction: rtl;
+      font-family: Arial;
+      padding: 20px;
+      background: radial-gradient(circle at center, #fff3b0, #ffd54f 45%, #ffb300 75%, #8a4b00 100%);
+      color: #2b1600;
+      text-align: center;
+    }
+
+    h2 {
+      color: #8a4b00;
+      text-shadow: 0 0 10px #fff176, 0 0 20px #ffca28;
+    }
+
+    textarea {
+      width: 90%;
+      height: 150px;
+      background: #ffffff;
+      color: #2b1600;
+      border: 2px solid #ffd54f;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    input {
+      background: #ffffff;
+      color: #2b1600;
+      border: 2px solid #ffca28;
+      border-radius: 8px;
+      padding: 5px;
+    }
+
+    button {
+      background: #ffd54f;
+      color: #2b1600;
+      border: 1px solid #c58b00;
+      padding: 10px 25px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: none;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+      box-shadow: none;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #6d3b00;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Pics Links</h2>
+
+  <textarea id="links" placeholder="https://example.com/image1.png"></textarea><br><br>
+
+  <label>Start From</label>
+  <input type="number" id="startNum" value="1"><br><br>
+
+  <button onclick="downloadAndZip()">Download</button>
+
+  <p id="status"></p>
+<div id="failedList" style="margin-top:20px;color:red;font-weight:bold;"></div>
+  <script>
+    async function downloadAndZip() {
+      const textarea = document.getElementById('links');
+      const status = document.getElementById('status');
+      const startNumInput = document.getElementById('startNum');
+      const failedImages = [];
+const failedList = document.getElementById('failedList');
+      const urls = textarea.value.trim().split('\n').filter(Boolean);
+      let startNum = parseInt(startNumInput.value) || 1;
+
+      if (urls.length === 0) {
+        status.textContent = '';
+        return;
+      }
+
+      status.textContent = 'Downloading';
+
+      const zip = new JSZip();
+
+      for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+
+          const img = await createImageBitmap(blob);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+
+          const jpgBlob = await new Promise(resolve =>
+            canvas.toBlob(resolve, "image/jpeg", 0.9)
+          );
+
+         zip.file(`${startNum + i}.jpg`, jpgBlob);
+
+          status.textContent = `🔥 ${i + 1} / ${urls.length} 🔥`;
+
+       } catch (error) {
+  console.error(`Error: ${url}`, error);
+
+  failedImages.push({
+    number: startNum + i,
+    url: url
+  });
+
+  status.textContent = `❌ Error in ${i + 1}`;
+}
+      }
+      if (failedImages.length > 0) {
+  failedList.innerHTML =
+    '<h3>❌ Failed Images</h3>' +
+    failedImages.map(img =>
+      `Image ${img.number}: ${img.url}`
+    ).join('<br>');
+} else {
+  failedList.innerHTML = '✅ No failed images';
+}
+
+      status.textContent = '🔥Preparing the file... 🔥';
+
+      const zipFile = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipFile);
+      link.download = "fire_images.zip";
+      link.click();
+
+      status.textContent = '✅ Done 🔥';
+    }
+  </script>
+
+</body>
+</html>
