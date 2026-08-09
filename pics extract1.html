@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Pics Extractor</title>
@@ -10,7 +10,7 @@
 
   <style>
     body {
-      direction: rtl;
+      direction: ltr;
       font-family: Arial;
       padding: 20px;
       background: radial-gradient(circle at center, #fff3b0, #ffd54f 45%, #ffb300 75%, #8a4b00 100%);
@@ -31,6 +31,11 @@
       border: 2px solid #ffd54f;
       border-radius: 10px;
       padding: 10px;
+    }
+
+    #names {
+      width: 60%;
+      height: 70px;
     }
 
     input {
@@ -75,6 +80,13 @@
   <label>Start From</label>
   <input type="number" id="startNum" value="1"><br><br>
 
+  <label>
+    <input type="checkbox" id="useNames">
+    Use names instead of numbering
+  </label><br><br>
+
+  <textarea id="names" placeholder="Enter each name on a separate line" style="height:70px;"></textarea><br><br>
+
   <button onclick="downloadAndZip()">Download</button>
 
   <p id="status"></p>
@@ -88,6 +100,8 @@
 const failedList = document.getElementById('failedList');
       const urls = textarea.value.trim().split('\n').filter(Boolean);
       let startNum = parseInt(startNumInput.value) || 1;
+      const useNames = document.getElementById('useNames').checked;
+      const namesText = document.getElementById('names').value.trim().split('\n').filter(Boolean);
 
       if (urls.length === 0) {
         status.textContent = '';
@@ -116,7 +130,11 @@ const failedList = document.getElementById('failedList');
             canvas.toBlob(resolve, "image/jpeg", 0.9)
           );
 
-         zip.file(`${startNum + i}.jpg`, jpgBlob);
+          const fileName = useNames && namesText[i]
+            ? namesText[i].trim()
+            : startNum + i;
+
+         zip.file(`${fileName}.jpg`, jpgBlob);
 
           status.textContent = `🔥 ${i + 1} / ${urls.length} 🔥`;
 
