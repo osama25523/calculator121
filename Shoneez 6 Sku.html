@@ -271,7 +271,7 @@
         <div class="card">
           <h3>Applied Changes</h3>
           <div class="small">
-            Swap column B with C + insert a blank second row + keep only first 3 columns + clear 1 in column 3
+            Swap column B with C + insert a blank second row + keep only first 3 columns + clear 1 in column 3 + insert a blank column before C
           </div>
         </div>
       </div>
@@ -411,17 +411,8 @@
         data[r] = row;
       }
 
-      const maxCols = Math.max(
-        3,
-        ...data.map(row => Array.isArray(row) ? row.length : 0)
-      );
-
-      const blankRow = new Array(maxCols).fill('');
-      if (data.length === 0) {
-        data.push([]);
-      }
-
-      data.splice(1, 0, blankRow);
+      const maxCols = Math.max(3, ...data.map(row => Array.isArray(row) ? row.length : 0));
+      data.splice(1, 0, new Array(maxCols).fill(''));
 
       const newSheet = XLSX.utils.aoa_to_sheet(data);
 
@@ -433,45 +424,35 @@
     }
 
     function finalCleanupSheet(sheet) {
-      const data = XLSX.utils.sheet_to_json(sheet, {
-        header: 1,
-        raw: true,
-        defval: ''
-      });
-
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
       const cleanedData = [];
 
       data.forEach((row, rowIndex) => {
         const col1 = row[0] ?? '';
         const col2 = row[1] ?? '';
         const col3 = row[2] ?? '';
-
         const col1Digits = String(col1).replace(/\D/g, '');
-        const isShortId = rowIndex > 1 && col1Digits.length > 0 && col1Digits.length < 6;
 
-        if (isShortId) {
-          return;
-        }
+        if (rowIndex > 1 && col1Digits.length > 0 && col1Digits.length < 6) return;
 
-        let newCol3;
-
-        if (rowIndex === 1) {
-          newCol3 = String(col3).trim() === '1' ? '' : col3;
-        } else if (Number(col2) === 0) {
-          newCol3 = 0;
-        } else {
-          newCol3 = String(col3).trim() === '1' ? '' : col3;
-        }
-
+        const newCol3 = Number(col2) === 0 && rowIndex !== 1
+          ? 0
+          : (String(col3).trim() === '1' ? '' : col3);
         cleanedData.push([col1, col2, newCol3]);
       });
 
       const finalSheet = XLSX.utils.aoa_to_sheet(cleanedData);
-
       if (sheet['!cols']) finalSheet['!cols'] = sheet['!cols'].slice(0, 3);
       if (sheet['!rows']) finalSheet['!rows'] = sheet['!rows'];
-
       return finalSheet;
+    }
+
+    function insertBlankColumnBeforeC(sheet) {
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
+      const newSheet = XLSX.utils.aoa_to_sheet(data.map(row => [row[0] ?? '', row[1] ?? '', '', ...row.slice(2)]));
+      if (sheet['!cols']) newSheet['!cols'] = [sheet['!cols'][0], sheet['!cols'][1], { wch: 10 }, ...sheet['!cols'].slice(2)];
+      if (sheet['!rows']) newSheet['!rows'] = sheet['!rows'];
+      return newSheet;
     }
 
     async function buildQuickPreviews() {
@@ -485,7 +466,7 @@
           for (const sheetName of workbook.SheetNames) {
             const originalSheet = workbook.Sheets[sheetName];
             const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
-            const finalSheet = finalCleanupSheet(updatedSheet);
+            const finalSheet = insertBlankColumnBeforeC(finalCleanupSheet(updatedSheet));
 
             const beforeRows = getPreviewRows(originalSheet);
             const afterRows = getPreviewRows(finalSheet);
@@ -578,7 +559,7 @@
             workbook.SheetNames.forEach(sheetName => {
               const originalSheet = workbook.Sheets[sheetName];
               const updatedSheet = swapSecondAndThirdColumnsAndInsertBlankSecondRow(originalSheet);
-              const finalSheet = finalCleanupSheet(updatedSheet);
+              const finalSheet = insertBlankColumnBeforeC(finalCleanupSheet(updatedSheet));
               XLSX.utils.book_append_sheet(newWorkbook, finalSheet, sheetName);
             });
 
