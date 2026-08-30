@@ -1,187 +1,1603 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Excel Matcher</title>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sale Price</title>
   <style>
-    body{font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;margin:0;padding:24px}
-    .box{max-width:960px;margin:auto;background:#111827;border:1px solid #334155;border-radius:18px;padding:24px}
-    h1{margin:0 0 12px;font-size:28px}
-    p{line-height:1.8;color:#cbd5e1}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
-    .card{background:#0b1220;border:1px solid #334155;border-radius:14px;padding:16px}
-    input[type=file]{width:100%;margin-top:10px;padding:10px;border-radius:10px;background:#fff;color:#000}
-    button{border:none;border-radius:12px;padding:12px 18px;font-size:16px;cursor:pointer;margin-left:8px}
-    #run{background:#22c55e;color:#fff}
-    #download{background:#3b82f6;color:#fff}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    pre{background:#020617;border:1px solid #334155;border-radius:14px;padding:16px;white-space:pre-wrap;color:#cbd5e1;min-height:120px}
+    :root {
+      --bg: #f2f5f7;
+      --panel: #ffffff;
+      --ink: #17212b;
+      --muted: #687684;
+      --line: #dfe6eb;
+      --navy: #12324a;
+      --teal: #0b8f83;
+      --teal-dark: #08756c;
+      --teal-soft: #e8f7f5;
+      --amber: #f5b846;
+      --amber-soft: #fff7e5;
+      --red: #c83e4d;
+      --red-soft: #fff0f2;
+      --shadow: 0 22px 60px rgba(23, 33, 43, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 7%, rgba(11, 143, 131, .12), transparent 28rem),
+        radial-gradient(circle at 94% 92%, rgba(245, 184, 70, .13), transparent 28rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .shell {
+      width: min(1020px, calc(100% - 28px));
+      margin: 34px auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: -.8px;
+      box-shadow: 0 12px 26px rgba(18, 50, 74, .22);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(25px, 4vw, 38px);
+      letter-spacing: -.7px;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .privacy-pill {
+      color: var(--teal-dark);
+      background: var(--teal-soft);
+      border: 1px solid #c9ece8;
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 7px;
+      margin: 0 0 14px;
+    }
+
+    .step-dot {
+      height: 8px;
+      border-radius: 99px;
+      background: #d7dfe4;
+      transition: .25s ease;
+    }
+
+    .step-dot.done { background: #92d8d1; }
+    .step-dot.active { background: var(--teal); transform: scaleY(1.35); }
+
+    .panel {
+      background: rgba(255, 255, 255, .96);
+      border: 1px solid rgba(255, 255, 255, .88);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 30px 34px 22px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #fff, #fbfdfd);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--teal-dark);
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 11px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 0 5px var(--teal-soft);
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: clamp(23px, 3.3vw, 34px);
+      letter-spacing: -.4px;
+    }
+
+    .panel-head p {
+      color: var(--muted);
+      margin: 10px 0 0;
+      line-height: 1.8;
+    }
+
+    .panel-body { padding: 30px 34px 34px; }
+
+    .step { display: none; animation: enter .28s ease; }
+    .step.active { display: block; }
+
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .big-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      border: 1px solid #f0d797;
+      background: var(--amber-soft);
+      border-radius: 17px;
+      line-height: 1.75;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .big-note .icon {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: var(--amber);
+      color: #4d3607;
+    }
+
+    .column-guide {
+      direction: ltr;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .column-guide span {
+      display: block;
+      padding: 9px 12px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(183, 132, 22, .2);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .dropzone {
+      position: relative;
+      min-height: 206px;
+      border: 2px dashed #bfcbd3;
+      background: #fbfcfd;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .dropzone:hover, .dropzone.dragging {
+      border-color: var(--teal);
+      background: var(--teal-soft);
+      transform: translateY(-1px);
+    }
+
+    .dropzone.ready {
+      border-style: solid;
+      border-color: #8ccfc8;
+      background: #f5fcfb;
+    }
+
+    .dropzone input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-symbol {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 14px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--teal), #14ad9f);
+      font-size: 27px;
+      box-shadow: 0 13px 28px rgba(11, 143, 131, .24);
+    }
+
+    .dropzone h3 { margin: 0 0 8px; font-size: 19px; }
+    .dropzone p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    .file-card {
+      display: none;
+      align-items: center;
+      gap: 13px;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .file-card.show { display: flex; }
+    .file-badge { padding: 8px 10px; border-radius: 9px; background: var(--teal-soft); color: var(--teal-dark); font-weight: 800; }
+    .file-info { min-width: 0; flex: 1; }
+    .file-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-info small { color: var(--muted); }
+
+    textarea {
+      width: 100%;
+      min-height: 245px;
+      resize: vertical;
+      border: 1px solid #cfd8de;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 17px;
+      direction: ltr;
+      text-align: left;
+      line-height: 1.8;
+      outline: none;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.025);
+    }
+
+    textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(11,143,131,.1); }
+
+    .helper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .mini-count {
+      background: #edf1f4;
+      border-radius: 99px;
+      padding: 6px 10px;
+      color: #455461;
+      white-space: nowrap;
+    }
+
+    .instruction {
+      padding: 24px;
+      border-radius: 18px;
+      background: var(--navy);
+      color: #fff;
+      line-height: 1.9;
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .instruction small {
+      display: block;
+      color: #c9d7e0;
+      font-size: 14px;
+      font-weight: 400;
+      margin-top: 7px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 15px;
+      background: #fafcfd;
+    }
+
+    .stat b { display: block; font-size: 22px; margin-bottom: 5px; }
+    .stat span { color: var(--muted); font-size: 13px; }
+
+    .downloads {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .download-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .download-card .label strong { display: block; margin-bottom: 5px; }
+    .download-card .label small { color: var(--muted); }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+
+    .actions-right { display: flex; gap: 10px; }
+
+    .btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: .18s ease;
+      font-weight: 700;
+      min-height: 46px;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--teal); color: #fff; box-shadow: 0 9px 20px rgba(11,143,131,.2); }
+    .btn-primary:hover { background: var(--teal-dark); }
+    .btn-secondary { color: var(--navy); background: #edf2f5; }
+    .btn-outline { color: var(--teal-dark); background: #fff; border: 1px solid #9bd5cf; }
+    .btn-danger-soft { color: var(--red); background: var(--red-soft); }
+
+    .status {
+      min-height: 25px;
+      margin-top: 15px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status:not(:empty) { padding: 11px 13px; }
+    .status.ok { background: var(--teal-soft); color: #086b63; }
+    .status.warn { background: var(--amber-soft); color: #78570e; }
+    .status.error { background: var(--red-soft); color: #a52f3d; }
+
+    .busy {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(242,245,247,.78);
+      backdrop-filter: blur(5px);
+      display: none;
+      place-items: center;
+    }
+
+    .busy.show { display: grid; }
+
+    .busy-card {
+      min-width: min(360px, calc(100vw - 36px));
+      background: #fff;
+      border-radius: 20px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      border: 4px solid #dcebe9;
+      border-top-color: var(--teal);
+      animation: spin .75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 700px) {
+      .shell { margin: 18px auto; }
+      .topbar { align-items: flex-start; }
+      .privacy-pill { display: none; }
+      .panel-head, .panel-body { padding-right: 20px; padding-left: 20px; }
+      .column-guide, .summary-grid { grid-template-columns: 1fr; }
+      .actions { align-items: stretch; flex-direction: column; }
+      .actions-right { width: 100%; }
+      .actions .btn { flex: 1; }
+      .download-card { align-items: flex-start; flex-direction: column; }
+      .download-card .btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">SP</div>
+        <div>
+          <h1>Sale Price</h1>
+          <p>تجهيز ملفات السعر والعروض لـ Tacos</p>
+        </div>
+      </div>
+      <div class="privacy-pill">تتم المعالجة داخل جهازك</div>
+    </header>
 
-<!-- زر الرجوع في زاوية الصفحة -->
-<button onclick="goBack()" style="
-position:fixed;
-top:20px;
-right:20px;
-background:#111;
-color:#fff;
-padding:10px 16px;
-border-radius:10px;
-border:none;
-cursor:pointer;
-z-index:999;
-">⬅ Back</button>
-
-<div class="box">
-  <h1>Sale Price</h1>
-
-  <div class="grid">
-    <div class="card">
-      <b>From Export (Dont do anything with it )</b>
-      <input id="file1" type="file" accept=".xlsx,.xls,.csv">
+    <div class="stepper" aria-label="تقدم الخطوات">
+      <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
+      <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
     </div>
-    <div class="card">
-      <b>Sale Price (First Coloum Sku + Second Coloum Price)</b>
-      <input id="file2" type="file" accept=".xlsx,.xls,.csv">
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="eyebrow" id="stepCounter">الخطوة 1 من 6</div>
+        <h2 id="stepTitle">ارفع ملف الداتا</h2>
+        <p id="stepSubtitle">ابدأ بملف Excel الأصلي الذي يحتوي على الأعمدة الثلاثة.</p>
+      </div>
+
+      <div class="panel-body">
+        <section class="step active" data-step="1">
+          <div class="big-note">
+            <div class="icon">!</div>
+            <div>
+              لازم يكون ترتيب أول ثلاثة أعمدة بهذا الشكل:
+              <div class="column-guide">
+                <span><b>A</b> — SKU</span>
+                <span><b>B</b> — Price / السعر</span>
+                <span><b>C</b> — Sale Price</span>
+              </div>
+            </div>
+          </div>
+
+          <label class="dropzone" id="sourceDrop">
+            <input id="sourceFile" type="file" accept=".xlsx,.xlsm">
+            <div>
+              <div class="upload-symbol">⇧</div>
+              <h3>اضغط أو اسحب ملف Excel هنا</h3>
+              <p>يدعم XLSX وXLSM — أول ورقة في الملف هي التي ستتم معالجتها</p>
+            </div>
+          </label>
+          <div class="file-card" id="sourceCard">
+            <span class="file-badge">XLSX</span>
+            <div class="file-info"><strong id="sourceName"></strong><small id="sourceMeta"></small></div>
+          </div>
+          <div class="status" id="status1"></div>
+        </section>
+
+        <section class="step" data-step="2">
+          <div class="instruction">
+            ارفع الملف الذي نزل على Tacos، وبعدها انسخ الـ Decline والصقه في المربع الأبيض.
+            <small>تقدر تلصق الباركود وحده أو رسالة الخطأ كاملة؛ الصفحة تأخذ أول SKU طويل من كل سطر.</small>
+          </div>
+          <textarea id="declineBox" placeholder="مثال:&#10;6253501790: Sale Price (...)&#10;6253501790299&#10;6221048185588"></textarea>
+          <div class="helper">
+            <span>سيتم حذف الـSKU من العمود الأول مع الصف كاملًا.</span>
+            <span class="mini-count" id="declineCount">0 SKU</span>
+          </div>
+          <div class="status" id="status2"></div>
+        </section>
+
+        <section class="step" data-step="3">
+          <div class="instruction">
+            تم حذف العمود الثالث من الملف الذي نزل. احذف الداتا من الفرع.
+            <small>العمود الثاني Price يبقى كما هو؛ المحذوف هو العمود الثالث Sale Price.</small>
+          </div>
+          <div class="summary-grid">
+            <div class="stat"><b id="removedStat">0</b><span>صف Decline تم حذفه</span></div>
+            <div class="stat"><b id="remainingStat">0</b><span>SKU بقي في الملف</span></div>
+            <div class="stat"><b>2</b><span>عمود في الملف الذي نزل</span></div>
+          </div>
+          <div class="status" id="status3"></div>
+        </section>
+
+        <section class="step" data-step="4">
+          <div class="big-note">
+            <div class="icon">H</div>
+            <div>أرفق ملف Excel من Tacos. سيتم إدخال عمود جديد مكان <b>H</b> وعمل Shift لكل الأعمدة بعده: H يصير I، وI يصير J، وJ يصير K… إلى آخر عمود. بعدها يتم اكتشاف عمود <b>Image 1</b> تلقائيًا وتنزيل صوره من الصف الثالث.</div>
+          </div>
+          <label class="dropzone" id="tacosDrop">
+            <input id="tacosFile" type="file" accept=".xlsx,.xlsm">
+            <div>
+              <div class="upload-symbol">⇧</div>
+              <h3>أرفق Excel من Tacos</h3>
+              <p>بعد الـShift: Sale Price في H، وسيتم اكتشاف عمود Image 1 تلقائيًا</p>
+            </div>
+          </label>
+          <div class="file-card" id="tacosCard">
+            <span class="file-badge">TACOS</span>
+            <div class="file-info"><strong id="tacosName"></strong><small id="tacosMeta"></small></div>
+          </div>
+          <div class="status" id="status4"></div>
+        </section>
+
+        <section class="step" data-step="5">
+          <div class="instruction">
+            ارفع هذا الملف للمحل.
+            <small>الملف يحتوي على الصور بأسماء 1.jpg إلى آخر صورة، ومعه Excel بعد الـShift وقد تم تغيير أسماء عمود Image 1 لتطابق الصور.</small>
+          </div>
+          <div class="summary-grid">
+            <div class="stat"><b id="insertedStat">0</b><span>Sale Price تم إدخاله</span></div>
+            <div class="stat"><b id="imagesStat">0</b><span>صورة من عمود Image 1</span></div>
+            <div class="stat"><b id="renamedStat">0</b><span>اسم صورة تم تحديثه في Excel</span></div>
+          </div>
+          <div class="downloads">
+            <div class="download-card">
+              <div class="label"><strong>ملف المحل الجاهز</strong><small>الصور المرقمة + Excel المعدّل داخل ZIP</small></div>
+              <button class="btn btn-primary" id="downloadPackage">تنزيل ZIP</button>
+            </div>
+          </div>
+          <div class="status" id="status5"></div>
+        </section>
+
+        <section class="step" data-step="6">
+          <div class="instruction">
+            رجّع الملف المبعوث أول إشي بعد حذف الـDecline مع صفوفهم.
+            <small>يبقى الملف الأصلي بثلاثة أعمدة: SKU والعمود الثاني Price والعمود الثالث Sale Price لكل الصفوف المتبقية.</small>
+          </div>
+          <div class="summary-grid">
+            <div class="stat"><b id="finalRemovedStat">0</b><span>صف Decline تم حذفه</span></div>
+            <div class="stat"><b id="finalRowsStat">0</b><span>SKU في الملف الأصلي النهائي</span></div>
+            <div class="stat"><b>3</b><span>أعمدة باقية في الملف</span></div>
+          </div>
+          <div class="downloads">
+            <div class="download-card">
+              <div class="label"><strong>الملف الأصلي بعد حذف Decline</strong><small>مع إبقاء العمودين الثاني والثالث لكل الصفوف المتبقية</small></div>
+              <button class="btn btn-primary" id="downloadFinalOriginal">تنزيل Excel</button>
+            </div>
+          </div>
+          <div class="status ok" id="status6">الملف الأصلي النهائي جاهز.</div>
+        </section>
+
+        <div class="actions">
+          <div class="actions-right">
+            <button class="btn btn-primary" id="nextBtn">Next ←</button>
+            <button class="btn btn-secondary" id="backBtn" disabled>رجوع</button>
+          </div>
+          <button class="btn btn-danger-soft" id="resetBtn">بدء من جديد</button>
+        </div>
+      </div>
+    </section>
+    <div class="footer-note">Sale Price · الملفات لا تُرفع إلى أي خادم</div>
+  </main>
+
+  <div class="busy" id="busy">
+    <div class="busy-card">
+      <div class="spinner"></div>
+      <strong id="busyText">جاري تجهيز الملف...</strong>
     </div>
   </div>
 
-  <button id="run" disabled>Process</button>
-  <button id="download" disabled>Download</button>
+  <script>
+    'use strict';
 
-  <pre id="log"></pre>
-</div>
-
-<script>
-let wb1 = null, wb2 = null, outWb = null;
-const FIRST_COL_PREFIX = 'A';
-
-const f1 = document.getElementById('file1');
-const f2 = document.getElementById('file2');
-const runBtn = document.getElementById('run');
-const downloadBtn = document.getElementById('download');
-const logBox = document.getElementById('log');
-
-function log(t){ logBox.textContent = t; }
-function norm(v){ return v == null ? '' : String(v).trim(); }
-
-function readWorkbook(file){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        resolve(XLSX.read(data,{type:'array'}));
-      } catch(err){ reject(err); }
+    const state = {
+      step: 1,
+      sourceFile: null,
+      sourceBook: null,
+      sourceName: '',
+      sourceRows: 0,
+      salePrices: new Map(),
+      declineSkus: new Set(),
+      cleanedBook: null,
+      cleanedBlob: null,
+      cleanedRows: 0,
+      removedRows: 0,
+      tacosFile: null,
+      tacosBook: null,
+      tacosName: '',
+      modifiedTacos: null,
+      modifiedTacosBlob: null,
+      insertedPrices: 0,
+      imageColumn: 0,
+      imageRecords: [],
+      downloadedImages: [],
+      renamedImages: 0,
+      packageBlob: null,
+      packageName: '',
+      packagedImages: 0,
+      warnings: []
     };
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
 
-async function loadFile(input, which){
-  const file = input.files[0];
-  if(!file) return;
-  try{
-    if(which === 1) wb1 = await readWorkbook(file);
-    else wb2 = await readWorkbook(file);
-    runBtn.disabled = !(wb1 && wb2);
-    log('تم تحميل الملف' + (which === 1 ? ' الأول' : ' الثاني') + ' بنجاح.');
-  }catch(err){
-    log('خطأ في القراءة: ' + err.message);
-  }
-}
+    const titles = [
+      ['ارفع ملف الداتا', 'ابدأ بملف Excel الأصلي الذي يحتوي على الأعمدة الثلاثة.'],
+      ['ألصق الـDecline', 'احذف العناصر المرفوضة قبل تجهيز ملف Sale Price.'],
+      ['احذف العمود الثالث والداتا من الفرع', 'الملف المنزّل يحتفظ بالعمود الثاني Price ويحذف العمود الثالث Sale Price.'],
+      ['أرفق Excel من Tacos', 'سنضيف Sale Price في H ونكتشف Image 1 بعد الـShift ونحمّل صوره من الصف الثالث.'],
+      ['ملف المحل جاهز', 'نزّل ZIP الذي يحتوي على الصور المرقمة وExcel المعدّل.'],
+      ['رجّع الملف الأصلي', 'نزّل الملف الأول بعد حذف صفوف Decline مع إبقاء العمودين الثاني والثالث.']
+    ];
 
-f1.addEventListener('change',()=>loadFile(f1,1));
-f2.addEventListener('change',()=>loadFile(f2,2));
+    const $ = (id) => document.getElementById(id);
+    const textEncoder = new TextEncoder();
+    const textDecoder = new TextDecoder('utf-8');
 
-runBtn.addEventListener('click', ()=>{
-  try{
-    const ws1 = wb1.Sheets[wb1.SheetNames[0]];
-    const ws2 = wb2.Sheets[wb2.SheetNames[0]];
-
-    const data1 = XLSX.utils.sheet_to_json(ws1, {header:1, defval:'', raw:false});
-    const data2 = XLSX.utils.sheet_to_json(ws2, {header:1, defval:'', raw:false});
-
-    const secondColMap = new Map();
-    for(let i = 0; i < data2.length; i++){
-      const key = norm(data2[i][0]);
-      const val = data2[i][1];
-      if(key !== '') secondColMap.set(key, val);
+    function setBusy(show, message = 'جاري تجهيز الملف...') {
+      $('busyText').textContent = message;
+      $('busy').classList.toggle('show', show);
     }
 
-    const out = [];
-
-    if(data1.length > 0){
-      const row0 = [...(data1[0] || [])];
-      while(row0.length < 2) row0.push('');
-      row0.splice(2, 0, '');
-      out.push(row0);
+    function setStatus(step, message = '', type = '') {
+      const el = $('status' + step);
+      el.textContent = message;
+      el.className = 'status' + (type ? ' ' + type : '');
     }
 
-    if(data1.length > 1){
-      const row1 = [...(data1[1] || [])];
-      while(row1.length < 2) row1.push('');
-      row1.splice(2, 0, '');
-      out.push(row1);
+    function humanSize(bytes) {
+      if (!Number.isFinite(bytes)) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let n = bytes, i = 0;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return (i ? n.toFixed(n >= 10 ? 1 : 2) : n.toFixed(0)) + ' ' + units[i];
     }
 
-    let kept = 0, removed = 0;
+    function safeBaseName(filename) {
+      return (filename || 'sale_price').replace(/\.[^.]+$/, '').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'sale_price';
+    }
 
-    for(let r = 2; r < data1.length; r++){
-      const row = [...(data1[r] || [])];
-      const compareValue = norm(row[9]);
+    function excelExtension(filename) {
+      return /\.xlsm$/i.test(filename || '') ? '.xlsm' : '.xlsx';
+    }
 
-      if(compareValue === '' || !secondColMap.has(compareValue)){
-        removed++;
-        continue;
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2500);
+    }
+
+    function updateUi() {
+      document.querySelectorAll('.step').forEach(el => el.classList.toggle('active', Number(el.dataset.step) === state.step));
+      document.querySelectorAll('.step-dot').forEach((el, i) => {
+        el.classList.toggle('active', i + 1 === state.step);
+        el.classList.toggle('done', i + 1 < state.step);
+      });
+      $('stepCounter').textContent = `الخطوة ${state.step} من 6`;
+      $('stepTitle').textContent = titles[state.step - 1][0];
+      $('stepSubtitle').textContent = titles[state.step - 1][1];
+      $('backBtn').disabled = state.step === 1;
+      $('nextBtn').style.display = state.step === 6 ? 'none' : '';
+      $('nextBtn').textContent = state.step === 4 ? 'تحميل الصور وتجهيز ZIP ←' : 'Next ←';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goTo(step) {
+      state.step = Math.max(1, Math.min(6, step));
+      updateUi();
+    }
+
+    function resetAll() {
+      if (!confirm('هل تريد حذف الملفات الحالية والبدء من جديد؟')) return;
+      location.reload();
+    }
+
+    function normalizeSku(value) {
+      if (value == null) return '';
+      let s = String(value).trim().replace(/^['\u200e\u200f]+/, '').replace(/[\u200e\u200f]/g, '');
+      if (/^\d+\.0+$/.test(s)) s = s.replace(/\.0+$/, '');
+      if (/^\d+(?:\.\d+)?e[+\-]?\d+$/i.test(s)) {
+        const n = Number(s);
+        if (Number.isSafeInteger(n)) s = String(n);
+      }
+      return s.replace(/\s+/g, '');
+    }
+
+    function parseDeclines(text) {
+      const values = new Set();
+      const lines = String(text || '').split(/[\r\n,;\t]+/);
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) continue;
+        const longNumber = line.match(/\d{4,}/);
+        const candidate = normalizeSku(longNumber ? longNumber[0] : line.split(':')[0]);
+        if (candidate) values.add(candidate);
+      }
+      return values;
+    }
+
+    function localName(el) { return el ? (el.localName || el.nodeName.split(':').pop()) : ''; }
+
+    function elements(root, name) {
+      return Array.from(root.getElementsByTagName('*')).filter(el => localName(el) === name);
+    }
+
+    function firstElement(root, name) {
+      return elements(root, name)[0] || null;
+    }
+
+    function parseXml(text, path) {
+      const doc = new DOMParser().parseFromString(text, 'application/xml');
+      const error = firstElement(doc, 'parsererror');
+      if (error) throw new Error(`تعذر قراءة ${path || 'XML'} داخل ملف Excel.`);
+      return doc;
+    }
+
+    function serializeXml(doc) {
+      return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' + new XMLSerializer().serializeToString(doc.documentElement);
+    }
+
+    function joinPath(baseFile, target) {
+      if (target.startsWith('/')) return target.replace(/^\/+/, '');
+      const parts = baseFile.split('/');
+      parts.pop();
+      for (const part of target.replace(/\\/g, '/').split('/')) {
+        if (!part || part === '.') continue;
+        if (part === '..') parts.pop(); else parts.push(part);
+      }
+      return parts.join('/');
+    }
+
+    function columnName(index) {
+      let n = index, out = '';
+      while (n > 0) { n--; out = String.fromCharCode(65 + (n % 26)) + out; n = Math.floor(n / 26); }
+      return out;
+    }
+
+    function columnIndex(name) {
+      let n = 0;
+      for (const ch of name.toUpperCase()) n = n * 26 + ch.charCodeAt(0) - 64;
+      return n;
+    }
+
+    function parseCellRef(ref) {
+      const m = String(ref || '').match(/^\$?([A-Z]+)\$?(\d+)$/i);
+      return m ? { col: columnIndex(m[1]), row: Number(m[2]) } : null;
+    }
+
+    function parseRangeRef(ref) {
+      const clean = String(ref || '').split('!').pop().replace(/\$/g, '');
+      const parts = clean.split(':');
+      const a = parseCellRef(parts[0]);
+      const b = parseCellRef(parts[1] || parts[0]);
+      return a && b ? { a, b } : null;
+    }
+
+    function formatRange(range) {
+      const a = columnName(range.a.col) + range.a.row;
+      const b = columnName(range.b.col) + range.b.row;
+      return a === b ? a : a + ':' + b;
+    }
+
+    function transformRangeForColumn(range, at, delta) {
+      const out = { a: { ...range.a }, b: { ...range.b } };
+      if (delta > 0) {
+        if (out.a.col >= at) { out.a.col += delta; out.b.col += delta; }
+        else if (out.b.col >= at) out.b.col += delta;
+      } else {
+        if (out.a.col === at && out.b.col === at) return null;
+        if (out.a.col > at) { out.a.col += delta; out.b.col += delta; }
+        else if (out.b.col >= at) out.b.col += delta;
+      }
+      return out;
+    }
+
+    function transformRangeForDeletedRows(range, deletedRows) {
+      const sorted = Array.from(deletedRows).sort((a, b) => a - b);
+      const before = n => sorted.filter(x => x < n).length;
+      const atOrBefore = n => sorted.filter(x => x <= n).length;
+      const out = { a: { ...range.a }, b: { ...range.b } };
+      out.a.row -= before(out.a.row);
+      out.b.row -= atOrBefore(out.b.row);
+      if (out.b.row < out.a.row) return null;
+      return out;
+    }
+
+    function shiftFormulaColumns(formula, at, delta) {
+      return String(formula || '').replace(/(\$?)([A-Z]{1,3})(\$?\d+)/g, (all, abs, col, row) => {
+        const idx = columnIndex(col);
+        if (delta > 0 && idx >= at) return abs + columnName(idx + delta) + row;
+        if (delta < 0 && idx > at) return abs + columnName(idx + delta) + row;
+        if (delta < 0 && idx === at) return '#REF!';
+        return all;
+      });
+    }
+
+    const CRC_TABLE = (() => {
+      const table = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+        table[n] = c >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(bytes) {
+      let c = 0xffffffff;
+      for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+      return (c ^ 0xffffffff) >>> 0;
+    }
+
+    function u16(view, offset, value) { view.setUint16(offset, value, true); }
+    function u32(view, offset, value) { view.setUint32(offset, value >>> 0, true); }
+
+    function concatBytes(chunks) {
+      const size = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const out = new Uint8Array(size);
+      let offset = 0;
+      for (const chunk of chunks) { out.set(chunk, offset); offset += chunk.length; }
+      return out;
+    }
+
+    async function inflateRaw(bytes) {
+      if (typeof DecompressionStream === 'undefined') throw new Error('المتصفح لا يدعم فك ضغط XLSX. استخدم Chrome أو Edge حديث.');
+      let stream;
+      try { stream = new DecompressionStream('deflate-raw'); }
+      catch (_) { throw new Error('تعذر فك ضغط XLSX في هذا المتصفح. استخدم Chrome أو Edge حديث.'); }
+      const response = new Response(new Blob([bytes]).stream().pipeThrough(stream));
+      return new Uint8Array(await response.arrayBuffer());
+    }
+
+    class ZipArchive {
+      constructor(buffer) {
+        this.bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+        this.entries = [];
+        this.byName = new Map();
+        this.parse();
       }
 
-      while(row.length < 12) row.push('');
-      row.splice(7, 0, '');
-      row[8] = secondColMap.get(compareValue);
+      parse() {
+        const b = this.bytes;
+        const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
+        let eocd = -1;
+        const min = Math.max(0, b.length - 65557);
+        for (let i = b.length - 22; i >= min; i--) {
+          if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+        }
+        if (eocd < 0) throw new Error('الملف ليس ZIP/XLSX صالحًا.');
+        const count = view.getUint16(eocd + 10, true);
+        let offset = view.getUint32(eocd + 16, true);
+        for (let i = 0; i < count; i++) {
+          if (view.getUint32(offset, true) !== 0x02014b50) throw new Error('بنية الملف المضغوط غير صالحة.');
+          const flags = view.getUint16(offset + 8, true);
+          const method = view.getUint16(offset + 10, true);
+          const compressedSize = view.getUint32(offset + 20, true);
+          const size = view.getUint32(offset + 24, true);
+          const nameLength = view.getUint16(offset + 28, true);
+          const extraLength = view.getUint16(offset + 30, true);
+          const commentLength = view.getUint16(offset + 32, true);
+          const localOffset = view.getUint32(offset + 42, true);
+          const nameBytes = b.slice(offset + 46, offset + 46 + nameLength);
+          const name = textDecoder.decode(nameBytes);
+          const entry = { name, flags, method, compressedSize, size, localOffset, directory: name.endsWith('/') };
+          this.entries.push(entry);
+          this.byName.set(name, entry);
+          offset += 46 + nameLength + extraLength + commentLength;
+        }
+      }
 
-      out.push(row);
-      kept++;
+      names() { return this.entries.map(e => e.name); }
+
+      async get(name) {
+        const entry = this.byName.get(name);
+        if (!entry) throw new Error('الملف الداخلي غير موجود: ' + name);
+        if (entry.directory) return new Uint8Array();
+        const view = new DataView(this.bytes.buffer, this.bytes.byteOffset, this.bytes.byteLength);
+        const off = entry.localOffset;
+        if (view.getUint32(off, true) !== 0x04034b50) throw new Error('تعذر قراءة ملف داخل ZIP.');
+        const nameLength = view.getUint16(off + 26, true);
+        const extraLength = view.getUint16(off + 28, true);
+        const start = off + 30 + nameLength + extraLength;
+        const compressed = this.bytes.slice(start, start + entry.compressedSize);
+        if (entry.method === 0) return compressed;
+        if (entry.method === 8) return inflateRaw(compressed);
+        throw new Error('نوع ضغط غير مدعوم داخل ZIP: ' + entry.method);
+      }
     }
 
-    for(let r = 2; r < out.length; r++){
-      if(!out[r]) out[r] = [];
-      out[r][0] = `${FIRST_COL_PREFIX}${r - 1}`;
+    async function buildZip(entryList) {
+      const localChunks = [];
+      const centralChunks = [];
+      let localOffset = 0;
+      for (const item of entryList) {
+        const name = String(item.name).replace(/^\/+/, '').replace(/\\/g, '/');
+        const nameBytes = textEncoder.encode(name);
+        const data = item.data instanceof Uint8Array ? item.data : new Uint8Array(item.data);
+        const crc = crc32(data);
+        const local = new Uint8Array(30 + nameBytes.length + data.length);
+        const lv = new DataView(local.buffer);
+        u32(lv, 0, 0x04034b50); u16(lv, 4, 20); u16(lv, 6, 0x0800); u16(lv, 8, 0);
+        u16(lv, 10, 0); u16(lv, 12, 0); u32(lv, 14, crc); u32(lv, 18, data.length); u32(lv, 22, data.length);
+        u16(lv, 26, nameBytes.length); u16(lv, 28, 0);
+        local.set(nameBytes, 30); local.set(data, 30 + nameBytes.length);
+        localChunks.push(local);
+
+        const central = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(central.buffer);
+        u32(cv, 0, 0x02014b50); u16(cv, 4, 20); u16(cv, 6, 20); u16(cv, 8, 0x0800); u16(cv, 10, 0);
+        u16(cv, 12, 0); u16(cv, 14, 0); u32(cv, 16, crc); u32(cv, 20, data.length); u32(cv, 24, data.length);
+        u16(cv, 28, nameBytes.length); u16(cv, 30, 0); u16(cv, 32, 0); u16(cv, 34, 0); u16(cv, 36, 0);
+        u32(cv, 38, name.endsWith('/') ? 0x10 : 0); u32(cv, 42, localOffset);
+        central.set(nameBytes, 46);
+        centralChunks.push(central);
+        localOffset += local.length;
+      }
+      const centralOffset = localOffset;
+      const centralSize = centralChunks.reduce((s, c) => s + c.length, 0);
+      const end = new Uint8Array(22);
+      const ev = new DataView(end.buffer);
+      u32(ev, 0, 0x06054b50); u16(ev, 4, 0); u16(ev, 6, 0); u16(ev, 8, entryList.length); u16(ev, 10, entryList.length);
+      u32(ev, 12, centralSize); u32(ev, 16, centralOffset); u16(ev, 20, 0);
+      return new Blob([...localChunks, ...centralChunks, end], { type: 'application/zip' });
     }
 
-    
-// إضافة Special Offers للعمود الرابع والخامس من الصف الثالث
-for(let r = 2; r < out.length; r++){
-  if(!out[r]) out[r] = [];
-  while(out[r].length < 5) out[r].push('');
-  out[r][3] = "Special Offers";
-  out[r][4] = "Special Offers";
-}
+    class XlsxBook {
+      constructor(archive, overrides = new Map()) {
+        this.archive = archive;
+        this.overrides = overrides;
+        this._sharedStrings = null;
+        this._sheetPath = null;
+      }
 
-const newWs = XLSX.utils.aoa_to_sheet(out);
-    outWb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(outWb, newWs, 'Result');
+      static async fromFile(file) { return new XlsxBook(new ZipArchive(await file.arrayBuffer())); }
 
-    downloadBtn.disabled = false;
-    log('تم التنفيذ بنجاح');
-  } catch(err) {
-    log('صار خطأ: ' + err.message);
-  }
-});
+      clone() { return new XlsxBook(this.archive, new Map(this.overrides)); }
 
-downloadBtn.addEventListener('click', ()=>{
-  if(!outWb) return;
-  XLSX.writeFile(outWb, 'final_result.xlsx');
-});
+      has(path) { return this.overrides.has(path) || this.archive.byName.has(path); }
 
-function goBack(){
-  window.location.href = "Market.html";
-}
-</script>
+      async bytes(path) {
+        if (this.overrides.has(path)) return this.overrides.get(path);
+        return this.archive.get(path);
+      }
+
+      async text(path) { return textDecoder.decode(await this.bytes(path)); }
+
+      setText(path, text) { this.overrides.set(path, textEncoder.encode(text)); }
+
+      async sharedStrings() {
+        if (this._sharedStrings) return this._sharedStrings;
+        if (!this.has('xl/sharedStrings.xml')) return (this._sharedStrings = []);
+        const doc = parseXml(await this.text('xl/sharedStrings.xml'), 'sharedStrings.xml');
+        this._sharedStrings = elements(doc, 'si').map(si => elements(si, 't').map(t => t.textContent || '').join(''));
+        return this._sharedStrings;
+      }
+
+      async firstSheetPath() {
+        if (this._sheetPath) return this._sheetPath;
+        const wb = parseXml(await this.text('xl/workbook.xml'), 'workbook.xml');
+        const firstSheet = firstElement(wb, 'sheet');
+        if (!firstSheet) throw new Error('ملف Excel لا يحتوي على ورقة.');
+        const rid = firstSheet.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || firstSheet.getAttribute('r:id');
+        const rels = parseXml(await this.text('xl/_rels/workbook.xml.rels'), 'workbook.xml.rels');
+        const rel = elements(rels, 'Relationship').find(x => x.getAttribute('Id') === rid);
+        if (!rel) throw new Error('تعذر تحديد أول ورقة في Excel.');
+        return (this._sheetPath = joinPath('xl/workbook.xml', rel.getAttribute('Target')));
+      }
+
+      async sheetDoc() {
+        const path = await this.firstSheetPath();
+        return { path, doc: parseXml(await this.text(path), path) };
+      }
+
+      async cellValue(cell) {
+        if (!cell) return '';
+        const type = cell.getAttribute('t') || '';
+        if (type === 'inlineStr') return elements(cell, 't').map(t => t.textContent || '').join('');
+        const v = firstElement(cell, 'v');
+        const raw = v ? (v.textContent || '') : '';
+        if (type === 's') return (await this.sharedStrings())[Number(raw)] ?? '';
+        if (type === 'b') return raw === '1' ? 'TRUE' : 'FALSE';
+        return raw;
+      }
+
+      rows(doc) { return elements(firstElement(doc, 'sheetData') || doc, 'row'); }
+
+      cells(row) { return Array.from(row.childNodes).filter(node => node.nodeType === 1 && localName(node) === 'c'); }
+
+      findCell(row, col) {
+        return this.cells(row).find(cell => {
+          const parsed = parseCellRef(cell.getAttribute('r'));
+          return parsed && parsed.col === col;
+        }) || null;
+      }
+
+      async countDataRows() {
+        const { doc } = await this.sheetDoc();
+        let count = 0;
+        for (const row of this.rows(doc)) {
+          const sku = normalizeSku(await this.cellValue(this.findCell(row, 1)));
+          if (/\d{4,}/.test(sku)) count++;
+        }
+        return count;
+      }
+
+      async salePriceMap() {
+        const { doc } = await this.sheetDoc();
+        const map = new Map();
+        for (const row of this.rows(doc)) {
+          const sku = normalizeSku(await this.cellValue(this.findCell(row, 1)));
+          const sale = await this.cellValue(this.findCell(row, 3));
+          if (sku && /\d{4,}/.test(sku) && String(sale).trim() !== '') map.set(sku, String(sale).trim());
+        }
+        return map;
+      }
+
+      transformRefs(doc, transform) {
+        const refAttributes = ['ref', 'sqref', 'activeCell', 'topLeftCell'];
+        for (const el of Array.from(doc.getElementsByTagName('*'))) {
+          for (const attr of refAttributes) {
+            const raw = el.getAttribute(attr);
+            if (!raw) continue;
+            const parts = raw.split(/\s+/).filter(Boolean);
+            const next = parts.map(part => {
+              const range = parseRangeRef(part);
+              const changed = range ? transform(range) : range;
+              return changed ? formatRange(changed) : '';
+            }).filter(Boolean);
+            if (next.length) el.setAttribute(attr, next.join(' ')); else el.removeAttribute(attr);
+          }
+        }
+      }
+
+      recomputeDimension(doc) {
+        const coords = [];
+        for (const cell of elements(doc, 'c')) {
+          const parsed = parseCellRef(cell.getAttribute('r'));
+          if (parsed) coords.push(parsed);
+        }
+        if (!coords.length) return;
+        const minCol = Math.min(...coords.map(c => c.col)), maxCol = Math.max(...coords.map(c => c.col));
+        const minRow = Math.min(...coords.map(c => c.row)), maxRow = Math.max(...coords.map(c => c.row));
+        const dim = firstElement(doc, 'dimension');
+        if (dim) dim.setAttribute('ref', formatRange({ a: { col: minCol, row: minRow }, b: { col: maxCol, row: maxRow } }));
+      }
+
+      shiftColumnDefinitions(doc, at, delta) {
+        for (const col of elements(doc, 'col')) {
+          let min = Number(col.getAttribute('min')), max = Number(col.getAttribute('max'));
+          if (!min || !max) continue;
+          if (delta > 0) {
+            if (min >= at) { min += delta; max += delta; }
+            else if (max >= at) max += delta;
+          } else {
+            if (min === at && max === at) { col.remove(); continue; }
+            if (min > at) { min += delta; max += delta; }
+            else if (max >= at) max += delta;
+          }
+          col.setAttribute('min', min); col.setAttribute('max', max);
+        }
+      }
+
+      async deleteColumn(at) {
+        const { path, doc } = await this.sheetDoc();
+        for (const row of this.rows(doc)) {
+          for (const cell of this.cells(row)) {
+            const ref = parseCellRef(cell.getAttribute('r'));
+            if (!ref) continue;
+            if (ref.col === at) { cell.remove(); continue; }
+            if (ref.col > at) cell.setAttribute('r', columnName(ref.col - 1) + ref.row);
+            const formula = firstElement(cell, 'f');
+            if (formula) formula.textContent = shiftFormulaColumns(formula.textContent, at, -1);
+          }
+        }
+        this.transformRefs(doc, range => transformRangeForColumn(range, at, -1));
+        this.shiftColumnDefinitions(doc, at, -1);
+        this.recomputeDimension(doc);
+        this.setText(path, serializeXml(doc));
+      }
+
+      async deleteRowsBySkus(skus) {
+        const { path, doc } = await this.sheetDoc();
+        const deleted = new Set();
+        const matched = new Set();
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          const sku = normalizeSku(await this.cellValue(this.findCell(row, 1)));
+          if (sku && skus.has(sku)) { deleted.add(rowNum); matched.add(sku); row.remove(); }
+        }
+        if (deleted.size) {
+          const sorted = Array.from(deleted).sort((a, b) => a - b);
+          for (const row of this.rows(doc)) {
+            const oldRow = Number(row.getAttribute('r'));
+            const shift = sorted.filter(x => x < oldRow).length;
+            const newRow = oldRow - shift;
+            row.setAttribute('r', newRow);
+            for (const cell of this.cells(row)) {
+              const ref = parseCellRef(cell.getAttribute('r'));
+              if (ref) cell.setAttribute('r', columnName(ref.col) + newRow);
+            }
+          }
+          this.transformRefs(doc, range => transformRangeForDeletedRows(range, deleted));
+        }
+        this.recomputeDimension(doc);
+        this.setText(path, serializeXml(doc));
+        return { deletedRows: deleted.size, matched };
+      }
+
+      async detectSkuHeader(doc) {
+        let best = { col: 1, headerRow: 0 };
+        for (const row of this.rows(doc).slice(0, 12)) {
+          const rowNum = Number(row.getAttribute('r'));
+          for (const cell of this.cells(row)) {
+            const ref = parseCellRef(cell.getAttribute('r'));
+            const value = String(await this.cellValue(cell)).trim().toLowerCase().replace(/[ _-]+/g, '');
+            if (['sku', 'barcode', 'barcodes', 'productsku', 'itemsku', 'باركود', 'الباركود'].includes(value)) return { col: ref ? ref.col : 1, headerRow: rowNum };
+          }
+        }
+        return best;
+      }
+
+      createCell(doc, row, col, rowNum, value, style) {
+        const ns = doc.documentElement.namespaceURI;
+        const cell = doc.createElementNS(ns, 'c');
+        cell.setAttribute('r', columnName(col) + rowNum);
+        if (style != null && style !== '') cell.setAttribute('s', style);
+        const numeric = typeof value === 'number' || (/^-?\d+(?:\.\d+)?$/.test(String(value)) && !/^0\d+/.test(String(value)));
+        if (numeric) {
+          const v = doc.createElementNS(ns, 'v');
+          v.textContent = String(value);
+          cell.appendChild(v);
+        } else {
+          cell.setAttribute('t', 'inlineStr');
+          const is = doc.createElementNS(ns, 'is');
+          const t = doc.createElementNS(ns, 't');
+          t.textContent = String(value);
+          is.appendChild(t); cell.appendChild(is);
+        }
+        const cells = this.cells(row);
+        const before = cells.find(existing => {
+          const ref = parseCellRef(existing.getAttribute('r'));
+          return ref && ref.col > col;
+        });
+        row.insertBefore(cell, before || null);
+        return cell;
+      }
+
+      async insertSalePriceColumn(salePrices, at = 8) {
+        const { path, doc } = await this.sheetDoc();
+        const header = await this.detectSkuHeader(doc);
+        const oldStyles = new Map();
+        let shiftedCells = 0;
+        let lastColumnBefore = 0;
+        for (const row of this.rows(doc)) {
+          const oldCell = this.findCell(row, at);
+          if (oldCell) oldStyles.set(Number(row.getAttribute('r')), oldCell.getAttribute('s') || '');
+        }
+        for (const row of this.rows(doc)) {
+          for (const cell of this.cells(row).slice().reverse()) {
+            const ref = parseCellRef(cell.getAttribute('r'));
+            if (!ref) continue;
+            lastColumnBefore = Math.max(lastColumnBefore, ref.col);
+            if (ref.col >= at) {
+              cell.setAttribute('r', columnName(ref.col + 1) + ref.row);
+              shiftedCells++;
+            }
+            const formula = firstElement(cell, 'f');
+            if (formula) formula.textContent = shiftFormulaColumns(formula.textContent, at, 1);
+          }
+        }
+        this.transformRefs(doc, range => transformRangeForColumn(range, at, 1));
+        this.shiftColumnDefinitions(doc, at, 1);
+        let inserted = 0;
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          if (header.headerRow && rowNum === header.headerRow) {
+            this.createCell(doc, row, at, rowNum, 'Sale Price', oldStyles.get(rowNum));
+            continue;
+          }
+          const sku = normalizeSku(await this.cellValue(this.findCell(row, header.col)));
+          if (sku && salePrices.has(sku)) {
+            this.createCell(doc, row, at, rowNum, salePrices.get(sku), oldStyles.get(rowNum));
+            inserted++;
+          }
+        }
+        this.recomputeDimension(doc);
+        this.setText(path, serializeXml(doc));
+        return {
+          inserted,
+          skuColumn: header.col,
+          headerRow: header.headerRow,
+          shiftedCells,
+          lastColumnBefore,
+          lastColumnAfter: lastColumnBefore >= at ? lastColumnBefore + 1 : lastColumnBefore
+        };
+      }
+
+      async detectImageColumn(maxHeaderRow = 5, dataStartRow = 3) {
+        const { doc } = await this.sheetDoc();
+        const candidates = [];
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          if (rowNum > maxHeaderRow) continue;
+          for (const cell of this.cells(row)) {
+            const ref = parseCellRef(cell.getAttribute('r'));
+            if (!ref) continue;
+            const raw = String(await this.cellValue(cell)).trim().toLowerCase();
+            const compact = raw.replace(/[\s_\-]+/g, '');
+            let score = 0;
+            if (['image1', 'mainimage', 'صورة1', 'الصورة1'].includes(compact)) score = 100;
+            else if (/^image0?1$/.test(compact)) score = 95;
+            else if (compact.includes('image1')) score = 80;
+            else if ((compact.includes('image') || compact.includes('صورة')) && compact.includes('1')) score = 70;
+            if (score) candidates.push({ col: ref.col, row: rowNum, score });
+          }
+        }
+        if (candidates.length) {
+          candidates.sort((a, b) => b.score - a.score || a.row - b.row || a.col - b.col);
+          return candidates[0].col;
+        }
+        const urlCounts = new Map();
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          if (rowNum < dataStartRow) continue;
+          for (const cell of this.cells(row)) {
+            const ref = parseCellRef(cell.getAttribute('r'));
+            if (!ref) continue;
+            const value = String(await this.cellValue(cell)).trim();
+            if (/^(https?:\/\/|\/\/|data:image\/)/i.test(value)) {
+              urlCounts.set(ref.col, (urlCounts.get(ref.col) || 0) + 1);
+            }
+          }
+        }
+        const fallback = Array.from(urlCounts.entries()).sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+        return fallback.length ? fallback[0][0] : 0;
+      }
+
+      async columnReferenceRecords(col, startRow = 1) {
+        const { path, doc } = await this.sheetDoc();
+        const records = new Map();
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          if (rowNum < startRow) continue;
+          const value = String(await this.cellValue(this.findCell(row, col))).trim();
+          if (value) records.set(rowNum, { row: rowNum, url: value });
+        }
+        const relPath = path.replace(/\/([^/]+)$/, '/_rels/$1.rels');
+        if (this.has(relPath)) {
+          const rels = parseXml(await this.text(relPath), relPath);
+          const targets = new Map(elements(rels, 'Relationship').map(rel => [rel.getAttribute('Id'), rel.getAttribute('Target') || '']));
+          for (const link of elements(doc, 'hyperlink')) {
+            const range = parseRangeRef(link.getAttribute('ref'));
+            if (!range || range.a.col !== col || range.a.row < startRow) continue;
+            const rid = link.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || link.getAttribute('r:id');
+            const target = rid && targets.get(rid) ? targets.get(rid) : link.getAttribute('location');
+            if (target) records.set(range.a.row, { row: range.a.row, url: target });
+          }
+        }
+        return Array.from(records.values()).sort((a, b) => a.row - b.row);
+      }
+
+      async setColumnFilenames(col, rowNames) {
+        const { path, doc } = await this.sheetDoc();
+        const ns = doc.documentElement.namespaceURI;
+        for (const row of this.rows(doc)) {
+          const rowNum = Number(row.getAttribute('r'));
+          if (!rowNames.has(rowNum)) continue;
+          const filename = rowNames.get(rowNum);
+          let cell = this.findCell(row, col);
+          if (!cell) {
+            this.createCell(doc, row, col, rowNum, filename, '');
+            continue;
+          }
+          while (cell.firstChild) cell.removeChild(cell.firstChild);
+          cell.setAttribute('t', 'inlineStr');
+          const inline = doc.createElementNS(ns, 'is');
+          const text = doc.createElementNS(ns, 't');
+          text.textContent = filename;
+          inline.appendChild(text);
+          cell.appendChild(inline);
+        }
+        for (const link of elements(doc, 'hyperlink')) {
+          const range = parseRangeRef(link.getAttribute('ref'));
+          if (range && range.a.col === col && rowNames.has(range.a.row)) link.remove();
+        }
+        this.setText(path, serializeXml(doc));
+      }
+
+      async toBlob() {
+        const output = [];
+        for (const entry of this.archive.entries) {
+          if (entry.directory) continue;
+          output.push({ name: entry.name, data: this.overrides.has(entry.name) ? this.overrides.get(entry.name) : await this.archive.get(entry.name) });
+        }
+        for (const [name, data] of this.overrides) {
+          if (!this.archive.byName.has(name)) output.push({ name, data });
+        }
+        const blob = await buildZip(output);
+        return new Blob([blob], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      }
+    }
+
+    function normalizeImageUrl(raw) {
+      let url = String(raw || '').trim();
+      if (url.startsWith('//')) url = 'https:' + url;
+      if (/^www\./i.test(url)) url = 'https://' + url;
+      if (!/^(https?:|data:image\/)/i.test(url)) throw new Error('القيمة ليست رابط صورة صالحًا');
+      return url;
+    }
+
+    async function decodeImage(blob) {
+      if (typeof createImageBitmap === 'function') return createImageBitmap(blob);
+      const objectUrl = URL.createObjectURL(blob);
+      try {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = objectUrl;
+        await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error('تعذر فتح الصورة')); });
+        return image;
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      }
+    }
+
+    async function imageBlobToJpeg(blob) {
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const isJpeg = /image\/jpe?g/i.test(blob.type || '') || (bytes[0] === 0xff && bytes[1] === 0xd8);
+      if (isJpeg) return bytes;
+      const image = await decodeImage(blob);
+      const width = image.width || image.naturalWidth;
+      const height = image.height || image.naturalHeight;
+      if (!width || !height) throw new Error('أبعاد الصورة غير صالحة');
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d', { alpha: false });
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(image, 0, 0, width, height);
+      if (typeof image.close === 'function') image.close();
+      const jpeg = await new Promise((resolve, reject) => canvas.toBlob(
+        value => value ? resolve(value) : reject(new Error('تعذر تحويل الصورة إلى JPG')),
+        'image/jpeg',
+        0.92
+      ));
+      return new Uint8Array(await jpeg.arrayBuffer());
+    }
+
+    async function fetchImageAsJpeg(rawUrl) {
+      const url = normalizeImageUrl(rawUrl);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000);
+      try {
+        const response = await fetch(url, { mode: 'cors', credentials: 'omit', cache: 'force-cache', signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await imageBlobToJpeg(await response.blob());
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function mapConcurrent(items, limit, worker, onProgress) {
+      const results = new Array(items.length);
+      let cursor = 0;
+      let completed = 0;
+      const run = async () => {
+        while (true) {
+          const index = cursor++;
+          if (index >= items.length) return;
+          try { results[index] = await worker(items[index], index); }
+          catch (error) { results[index] = { error, record: items[index], index }; }
+          completed++;
+          onProgress(completed, items.length);
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(limit, items.length) }, run));
+      return results;
+    }
+
+    async function preparePackageFromImageColumn() {
+      const imageColumnName = state.imageColumn ? columnName(state.imageColumn) : 'Image 1';
+      if (!state.imageRecords.length) throw new Error(`لم أجد روابط صور في عمود Image 1 (${imageColumnName}) من الصف الثالث إلى آخر صف.`);
+      const downloaded = await mapConcurrent(
+        state.imageRecords,
+        6,
+        async (record, index) => ({ row: record.row, name: `${index + 1}.jpg`, data: await fetchImageAsJpeg(record.url) }),
+        (done, total) => setBusy(true, `جاري تنزيل الصور من العمود ${imageColumnName}: ${done} من ${total}`)
+      );
+      const failures = downloaded.filter(item => item && item.error);
+      if (failures.length) {
+        const rows = failures.slice(0, 12).map(item => item.record.row).join(', ');
+        throw new Error(`تعذر تنزيل ${failures.length} صورة. الصفوف: ${rows}${failures.length > 12 ? '...' : ''}. تأكد أن روابط Image 1 تعمل ثم حاول مرة ثانية.`);
+      }
+      state.downloadedImages = downloaded;
+      const rowNames = new Map(downloaded.map(item => [item.row, item.name]));
+      await state.modifiedTacos.setColumnFilenames(state.imageColumn, rowNames);
+      state.modifiedTacosBlob = await state.modifiedTacos.toBlob();
+      state.renamedImages = rowNames.size;
+      state.packagedImages = downloaded.length;
+      const entries = downloaded.map(item => ({ name: item.name, data: item.data }));
+      const excelName = safeBaseName(state.tacosName) + '_with_sale_price_and_images' + excelExtension(state.tacosName);
+      entries.push({ name: excelName, data: new Uint8Array(await state.modifiedTacosBlob.arrayBuffer()) });
+      state.packageName = safeBaseName(state.tacosName) + '_store_upload.zip';
+      state.packageBlob = await buildZip(entries);
+    }
+
+    async function onSourceFile(file) {
+      if (!file) return;
+      setBusy(true, 'جاري قراءة ملف الداتا...');
+      setStatus(1);
+      try {
+        const book = await XlsxBook.fromFile(file);
+        const map = await book.salePriceMap();
+        const rows = await book.countDataRows();
+        if (!map.size) throw new Error('لم أجد SKU في العمود A مع Sale Price في العمود C. تأكد من ترتيب الأعمدة.');
+        state.sourceFile = file;
+        state.sourceBook = book;
+        state.sourceName = file.name;
+        state.sourceRows = rows;
+        state.salePrices = map;
+        $('sourceName').textContent = file.name;
+        $('sourceMeta').textContent = `${humanSize(file.size)} · ${rows} SKU · ${map.size} Sale Price`;
+        $('sourceCard').classList.add('show');
+        $('sourceDrop').classList.add('ready');
+        setStatus(1, 'تمت قراءة الملف بنجاح. اضغط Next لتنزيل نسخة بدون العمود الثالث.', 'ok');
+      } catch (error) {
+        state.sourceFile = null; state.sourceBook = null;
+        setStatus(1, error.message || String(error), 'error');
+      } finally { setBusy(false); }
+    }
+
+    async function onTacosFile(file) {
+      if (!file) return;
+      setBusy(true, 'جاري إدخال Sale Price في العمود H...');
+      setStatus(4);
+      try {
+        const book = await XlsxBook.fromFile(file);
+        const modified = book.clone();
+        const activePrices = new Map(state.salePrices);
+        for (const sku of state.declineSkus) activePrices.delete(sku);
+        const result = await modified.insertSalePriceColumn(activePrices, 8);
+        const imageColumn = await modified.detectImageColumn(5, 3);
+        const imageRecords = imageColumn ? await modified.columnReferenceRecords(imageColumn, 3) : [];
+        state.tacosFile = file;
+        state.tacosBook = book;
+        state.tacosName = file.name;
+        state.modifiedTacos = modified;
+        state.modifiedTacosBlob = null;
+        state.insertedPrices = result.inserted;
+        state.imageColumn = imageColumn;
+        state.imageRecords = imageRecords;
+        state.downloadedImages = [];
+        state.packageBlob = null;
+        const shiftRange = result.lastColumnBefore >= 8
+          ? `H→I وحتى ${columnName(result.lastColumnBefore)}→${columnName(result.lastColumnAfter)}`
+          : 'لا توجد أعمدة بعد H لتحريكها';
+        const detectedImageColumn = imageColumn ? columnName(imageColumn) : 'غير موجود';
+        $('tacosName').textContent = file.name;
+        $('tacosMeta').textContent = `${humanSize(file.size)} · ${result.inserted} سعر · ${result.shiftedCells} خلية Shift · Image 1 في ${detectedImageColumn} · ${imageRecords.length} صورة`;
+        $('tacosCard').classList.add('show');
+        $('tacosDrop').classList.add('ready');
+        setStatus(4, `تم عمل Shift لكل الأعمدة: ${shiftRange}. تم اكتشاف Image 1 في العمود ${detectedImageColumn} والعثور على ${imageRecords.length} صورة من الصف الثالث.`, imageRecords.length ? 'ok' : 'warn');
+      } catch (error) {
+        state.tacosFile = null; state.modifiedTacos = null; state.modifiedTacosBlob = null;
+        setStatus(4, error.message || String(error), 'error');
+      } finally { setBusy(false); }
+    }
+
+    async function nextStep() {
+      try {
+        if (state.step === 1) {
+          if (!state.sourceBook) return setStatus(1, 'ارفع ملف الداتا أولًا.', 'error');
+          setBusy(true, 'جاري حذف العمود الثالث وتجهيز الملف...');
+          const noSale = state.sourceBook.clone();
+          await noSale.deleteColumn(3);
+          const blob = await noSale.toBlob();
+          downloadBlob(blob, safeBaseName(state.sourceName) + '_without_sale_price' + excelExtension(state.sourceName));
+          goTo(2);
+        } else if (state.step === 2) {
+          const declines = parseDeclines($('declineBox').value);
+          if (!declines.size && !confirm('المربع فارغ. هل تريد المتابعة بدون أي Decline؟')) return;
+          setBusy(true, 'جاري حذف صفوف Decline وتجهيز الملف...');
+          state.declineSkus = declines;
+          const cleaned = state.sourceBook.clone();
+          const result = await cleaned.deleteRowsBySkus(declines);
+          state.cleanedBook = cleaned;
+          state.removedRows = result.deletedRows;
+          state.cleanedRows = await cleaned.countDataRows();
+          state.cleanedBlob = await cleaned.toBlob();
+          const priceOnly = cleaned.clone();
+          await priceOnly.deleteColumn(3);
+          const priceOnlyBlob = await priceOnly.toBlob();
+          downloadBlob(priceOnlyBlob, safeBaseName(state.sourceName) + '_after_declines_without_sale_price' + excelExtension(state.sourceName));
+          $('removedStat').textContent = result.deletedRows;
+          $('remainingStat').textContent = state.cleanedRows;
+          setStatus(3, declines.size === result.matched.size
+            ? `تم حذف ${result.deletedRows} صف وتنزيل الملف بدون العمود الثالث، مع إبقاء العمود الثاني Price.`
+            : `تم حذف ${result.deletedRows} صف. لم يُعثر على ${declines.size - result.matched.size} SKU داخل العمود الأول.`,
+            declines.size === result.matched.size ? 'ok' : 'warn');
+          goTo(3);
+        } else if (state.step === 3) {
+          goTo(4);
+        } else if (state.step === 4) {
+          if (!state.modifiedTacos) return setStatus(4, 'أرفق ملف Excel من Tacos أولًا.', 'error');
+          if (!state.imageColumn || !state.imageRecords.length) return setStatus(4, 'لم أجد عمود Image 1 أو روابطه من الصف الثالث بعد الـShift.', 'error');
+          setBusy(true, `جاري تنزيل صور العمود ${columnName(state.imageColumn)} وتجهيز ZIP...`);
+          await preparePackageFromImageColumn();
+          $('insertedStat').textContent = state.insertedPrices;
+          $('imagesStat').textContent = state.packagedImages;
+          $('renamedStat').textContent = state.renamedImages;
+          setStatus(5, `تم تنزيل ${state.packagedImages} صورة وتسميتها من 1.jpg إلى ${state.packagedImages}.jpg، وتحديث عمود Image 1 (${columnName(state.imageColumn)}) داخل Excel.`, 'ok');
+          downloadBlob(state.packageBlob, state.packageName);
+          goTo(5);
+        } else if (state.step === 5) {
+          if (!state.packageBlob || !state.cleanedBlob) throw new Error('الملفات السابقة غير مكتملة. ارجع وتأكد من الخطوات.');
+          $('finalRemovedStat').textContent = state.removedRows;
+          $('finalRowsStat').textContent = state.cleanedRows;
+          downloadBlob(state.cleanedBlob, safeBaseName(state.sourceName) + '_without_declines' + excelExtension(state.sourceName));
+          goTo(6);
+        }
+      } catch (error) {
+        setStatus(state.step, error.message || String(error), 'error');
+      } finally { setBusy(false); }
+    }
+
+    function bindDropZone(dropId, inputId, handler) {
+      const zone = $(dropId), input = $(inputId);
+      input.addEventListener('change', () => handler(input.files[0]));
+      ['dragenter', 'dragover'].forEach(type => zone.addEventListener(type, event => { event.preventDefault(); zone.classList.add('dragging'); }));
+      ['dragleave', 'drop'].forEach(type => zone.addEventListener(type, event => { event.preventDefault(); zone.classList.remove('dragging'); }));
+      zone.addEventListener('drop', event => {
+        const file = event.dataTransfer.files[0];
+        if (file) handler(file);
+      });
+    }
+
+    bindDropZone('sourceDrop', 'sourceFile', onSourceFile);
+    bindDropZone('tacosDrop', 'tacosFile', onTacosFile);
+    $('declineBox').addEventListener('input', () => { $('declineCount').textContent = parseDeclines($('declineBox').value).size + ' SKU'; });
+    $('nextBtn').addEventListener('click', nextStep);
+    $('backBtn').addEventListener('click', () => goTo(state.step - 1));
+    $('resetBtn').addEventListener('click', resetAll);
+    $('downloadPackage').addEventListener('click', () => state.packageBlob && downloadBlob(state.packageBlob, state.packageName));
+    $('downloadFinalOriginal').addEventListener('click', () => state.cleanedBlob && downloadBlob(state.cleanedBlob, safeBaseName(state.sourceName) + '_without_declines' + excelExtension(state.sourceName)));
+    updateUi();
+  </script>
 </body>
 </html>
