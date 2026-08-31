@@ -275,6 +275,15 @@ button:disabled {
       return newRow;
     }
 
+    // Inserts one blank column immediately before column C.
+    // Existing column C and every column after it move one place to the right.
+    function insertBlankColumnBeforeC(row) {
+      const newRow = Array.isArray(row) ? [...row] : [];
+      while (newRow.length < 2) newRow.push('');
+      newRow.splice(2, 0, '');
+      return newRow;
+    }
+
     function splitArray(arr, size) {
       const chunks = [];
       for (let i = 0; i < arr.length; i += size) {
@@ -318,8 +327,10 @@ button:disabled {
           throw new Error('First sheet is empty.');
         }
 
-        const headerRow = Array.isArray(allRows[0]) ? [...allRows[0]] : [];
-        const dataRows = allRows.slice(1).map(normalizeThirdColumn);
+        const headerRow = insertBlankColumnBeforeC(allRows[0]);
+        const dataRows = allRows.slice(1)
+          .map(normalizeThirdColumn)
+          .map(insertBlankColumnBeforeC);
         const chunks = splitArray(dataRows, CHUNK_SIZE);
 
         if (!chunks.length) {
@@ -369,7 +380,8 @@ button:disabled {
             <li>Generated files: ${generatedNames.length}</li>
             <li>Rows per file: ${CHUNK_SIZE.toLocaleString()} صف بيانات</li>
             <li>Header kept, second row empty in each file</li>
-            <li>Any '1' in column 3 replaced with empty</li>
+            <li>Blank column inserted before column C in every output file</li>
+            <li>Any '1' in original column 3 replaced with empty</li>
           </ul>
           <strong>Generated files:</strong>
           <ul>${generatedNames.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>
