@@ -298,6 +298,22 @@
       return XLSX.utils.aoa_to_sheet(data);
     }
 
+    function insertBlankColumnBeforeC(sheet) {
+      const data = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: true,
+        defval: ''
+      });
+
+      const shiftedData = data.map(row => {
+        const currentRow = Array.isArray(row) ? [...row] : [];
+        currentRow.splice(2, 0, '');
+        return currentRow;
+      });
+
+      return XLSX.utils.aoa_to_sheet(shiftedData);
+    }
+
     function downloadWorkbook(workbook, filename, bookType) {
       const output = XLSX.write(workbook, {
         bookType,
@@ -367,7 +383,9 @@
         const newWorkbook = XLSX.utils.book_new();
 
         workbook.SheetNames.forEach(sheetName => {
-          const processedSheet = processBaseSheet(workbook.Sheets[sheetName]);
+          const processedSheet = insertBlankColumnBeforeC(
+            processBaseSheet(workbook.Sheets[sheetName])
+          );
           XLSX.utils.book_append_sheet(newWorkbook, processedSheet, sheetName);
         });
 
@@ -388,7 +406,9 @@
         const newWorkbook = XLSX.utils.book_new();
 
         workbook.SheetNames.forEach(sheetName => {
-          const processedSheet = processFreshSheet(workbook.Sheets[sheetName]);
+          const processedSheet = insertBlankColumnBeforeC(
+            processFreshSheet(workbook.Sheets[sheetName])
+          );
           XLSX.utils.book_append_sheet(newWorkbook, processedSheet, sheetName);
         });
 
