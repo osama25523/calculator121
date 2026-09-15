@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Showroom</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg-1: #0f172a;
+      --bg-2: #111827;
+      --glass: rgba(255,255,255,.08);
+      --glass-2: rgba(255,255,255,.12);
+      --line: rgba(255,255,255,.14);
+      --text: #f8fafc;
+      --muted: #a9b1bf;
+      --accent: #7c3aed;
+      --accent-2: #22d3ee;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --shadow: 0 25px 70px rgba(0,0,0,.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(124,58,237,.18), transparent 28%),
+        radial-gradient(circle at 85% 25%, rgba(34,211,238,.14), transparent 26%),
+        radial-gradient(circle at 50% 90%, rgba(236,72,153,.10), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 360px;
+      height: 360px;
+      border-radius: 999px;
+      filter: blur(90px);
+      opacity: .28;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatGlow 10s ease-in-out infinite alternate;
+    }
+
+    body::before {
+      top: -80px;
+      right: -90px;
+      background: #7c3aed;
+    }
+
+    body::after {
+      bottom: -120px;
+      left: -70px;
+      background: #22d3ee;
+      animation-delay: -4s;
+    }
+
+    @keyframes floatGlow {
+      from { transform: translate3d(0,0,0) scale(1); }
+      to { transform: translate3d(35px,25px,0) scale(1.12); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 26px 22px 36px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.07);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+      font-size: 13px;
+      color: #dbeafe;
+      white-space: nowrap;
+    }
+
+    .badge-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 12px rgba(34,197,94,.8);
+    }
+
+    .panel {
+      background: rgba(17,24,39,.72);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .upload-panel {
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(260px,1fr));
+      gap: 14px;
+    }
+
+    .upload-box {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.11);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+      padding: 17px;
+    }
+
+    .upload-box::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
+      transform: translateX(-110%);
+      transition: .5s;
+      pointer-events: none;
+    }
+
+    .upload-box:hover::before {
+      transform: translateX(110%);
+    }
+
+    .upload-box label {
+      display: block;
+      font-weight: 750;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    input[type=file] {
+      width: 100%;
+      color: #dbeafe;
+    }
+
+    input[type=file]::file-selector-button {
+      border: 0;
+      margin-right: 10px;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      background: rgba(255,255,255,.13);
+      color: #fff;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      margin-top: 9px;
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(90px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .setting {
+      padding: 10px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+    }
+
+    .setting label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .setting input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 10px;
+      padding: 9px 8px;
+      color: white;
+      background: rgba(255,255,255,.06);
+      outline: none;
+      text-align: center;
+    }
+
+    .setting input:focus {
+      border-color: rgba(34,211,238,.6);
+      box-shadow: 0 0 0 3px rgba(34,211,238,.08);
+    }
+
+    .load-row {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .load-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 20px;
+      color: white;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      box-shadow: 0 12px 28px rgba(124,58,237,.26);
+      transition: .2s ease;
+    }
+
+    .load-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 34px rgba(124,58,237,.35);
+    }
+
+    .status {
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .viewer {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    .viewer::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(115deg, rgba(255,255,255,.02), transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(124,58,237,.10), transparent 35%);
+      pointer-events: none;
+    }
+
+    .image-side {
+      position: relative;
+      min-height: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      border-left: 1px solid rgba(255,255,255,.09);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+    }
+
+    .image-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255,255,255,.11), rgba(255,255,255,.035) 60%, rgba(255,255,255,.02));
+      box-shadow: inset 0 0 60px rgba(255,255,255,.02);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-frame::after {
+      content: "";
+      position: absolute;
+      width: 70%;
+      height: 22%;
+      bottom: 3%;
+      left: 15%;
+      border-radius: 50%;
+      background: rgba(0,0,0,.22);
+      filter: blur(24px);
+      pointer-events: none;
+    }
+
+    .image-frame img {
+      position: relative;
+      z-index: 2;
+      max-width: 88%;
+      max-height: 470px;
+      object-fit: contain;
+      border-radius: 18px;
+      filter: drop-shadow(0 24px 28px rgba(0,0,0,.28));
+      animation: productIn .35s ease both;
+    }
+
+    @keyframes productIn {
+      from { opacity: 0; transform: scale(.96) translateY(7px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .no-image {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: #9ca3af;
+      line-height: 1.9;
+      font-size: 14px;
+      padding: 24px;
+    }
+
+    .info-side {
+      position: relative;
+      z-index: 2;
+      padding: 34px 34px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      direction: ltr;
+    }
+
+    .counter-pill {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      margin-bottom: 24px;
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    .field-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .field-value {
+      font-size: 20px;
+      line-height: 1.6;
+      font-weight: 700;
+      color: white;
+      word-break: break-word;
+    }
+
+    .english {
+      direction: ltr;
+      text-align: left;
+      font-size: 30px;
+      font-weight: 850;
+      letter-spacing: -.5px;
+      line-height: 1.28;
+      background: linear-gradient(90deg, #fff, #c7d2fe);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .description {
+      font-size: 19px;
+      color: #dbe4f0;
+      font-weight: 550;
+      white-space: pre-wrap;
+    }
+
+    .category-boxes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+      margin-top: 3px;
+    }
+
+    .tag {
+      position: relative;
+      overflow: hidden;
+      padding: 16px;
+      min-height: 86px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+
+    .tag::before {
+      content: "";
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      border-radius: 999px;
+      background: rgba(124,58,237,.12);
+      top: -48px;
+      left: -25px;
+    }
+
+    .tag .field-value {
+      font-size: 17px;
+    }
+
+    .file-box {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      background: rgba(0,0,0,.15);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .file-name {
+      direction: ltr;
+      text-align: left;
+      font-size: 12px;
+      color: #94a3b8;
+      word-break: break-all;
+    }
+
+    .timer-wrap {
+      margin-top: 24px;
+    }
+
+    .timer-labels {
+      display: flex;
+      justify-content: space-between;
+      color: #94a3b8;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .timer {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .timer-bar {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(34,211,238,.35);
+    }
+
+    .controls-panel {
+      margin-top: 18px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      min-width: 145px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      color: white;
+      background: rgba(255,255,255,.07);
+      transition: .2s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .control-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.11);
+    }
+
+    .control-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .control-btn.primary {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      box-shadow: 0 10px 26px rgba(124,58,237,.25);
+    }
+
+    .control-btn.stop {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      box-shadow: 0 10px 26px rgba(239,68,68,.20);
+    }
+
+    .control-btn.start {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      box-shadow: 0 10px 26px rgba(34,197,94,.20);
+    }
+
+    .control-btn.edit {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      box-shadow: 0 10px 26px rgba(245,158,11,.20);
+    }
+
+    .control-btn.edit.active {
+      background: linear-gradient(135deg, #059669, #10b981);
+      box-shadow: 0 10px 26px rgba(16,185,129,.25);
+    }
+
+    .control-btn.export {
+      background: linear-gradient(135deg, #0f766e, #06b6d4);
+      box-shadow: 0 10px 26px rgba(6,182,212,.20);
+    }
+
+    .field-value[contenteditable="true"],
+    .file-name[contenteditable="true"] {
+      outline: 2px solid rgba(16,185,129,.55);
+      background: rgba(16,185,129,.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: text;
+      min-height: 42px;
+    }
+
+    .edit-note {
+      display: none;
+      margin: 0 0 16px;
+      padding: 10px 12px;
+      border: 1px solid rgba(16,185,129,.3);
+      border-radius: 12px;
+      background: rgba(16,185,129,.08);
+      color: #a7f3d0;
+      font-size: 13px;
+    }
+
+    .edit-note.show { display: block; }
+
+    .kbd {
+      opacity: .65;
+      font-size: 11px;
+      font-weight: 500;
+      margin-left: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .settings {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .viewer {
+        grid-template-columns: 1fr;
+      }
+      .image-side {
+        border-left: none;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .page { padding: 16px 12px 24px; }
+      .topbar { align-items: flex-start; }
+      .brand h1 { font-size: 24px; }
+      .badge { display: none; }
+      .upload-grid,
+      .settings,
+      .category-boxes {
+        grid-template-columns: 1fr;
+      }
+      .info-side { padding: 24px 20px; }
+      .english { font-size: 24px; }
+      .image-side { padding: 16px; min-height: 380px; }
+      .image-frame { min-height: 350px; }
+      .control-btn { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="brand">
+        <h1>Product Showroom</h1>
+        <p>Browse products from Excel with images and automatic slideshow</p>
+      </div>
+
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Auto Slide • 5 sec
+      </div>
+    </div>
+
+    <div class="panel upload-panel">
+      <div class="upload-grid">
+        <div class="upload-box">
+          <label>📄 Excel File</label>
+          <input id="excelFile" type="file" accept=".xlsx,.xls,.xlsm,.csv">
+          <div class="hint">يبدأ العرض افتراضيًا من الصف 3.</div>
+        </div>
+
+        <div class="upload-box">
+          <label>🖼️ Images Folder</label>
+          <input id="imageFolder" type="file" accept="image/*" multiple webkitdirectory directory>
+          <div class="hint">
+            Choose the folder that contains the images. The image name in column P will be matched to the corresponding file in the selected folder.
+          </div>
+        </div>
+      </div>
+
+      <div class="settings">
+        <div class="setting">
+          <label>Start Row</label>
+          <input id="startRow" type="number" min="1" value="3">
+        </div>
+
+        <div class="setting">
+          <label>English</label>
+          <input id="colEnglish" value="B">
+        </div>
+
+        <div class="setting">
+          <label>Arabic Description</label>
+          <input id="colArabic" value="C">
+        </div>
+
+        <div class="setting">
+          <label>Category</label>
+          <input id="colCategory" value="D">
+        </div>
+
+        <div class="setting">
+          <label>Sub Category</label>
+          <input id="colSubCategory" value="E">
+        </div>
+
+        <div class="setting">
+          <label>Image</label>
+          <input id="colImage" value="P">
+        </div>
+      </div>
+
+      <div class="load-row">
+        <button id="loadBtn" class="load-btn">Start Slideshow</button>
+        <div id="status" class="status">Upload the Excel file and images folder, then start the slideshow.</div>
+      </div>
+    </div>
+
+    <div class="panel viewer">
+      <div class="image-side">
+        <div id="imageContainer" class="image-frame">
+          <div class="no-image">Upload your data to start the slideshow ✨</div>
+        </div>
+      </div>
+
+      <div class="info-side">
+        <div id="counter" class="counter-pill">0 / 0</div>
+        <div id="editNote" class="edit-note">✏️ Edit Mode is ON — edit any product and move to the next one. Edit Mode will stay enabled.</div>
+
+        <div class="field">
+          <div class="field-title">English Name</div>
+          <div id="englishName" class="field-value english">—</div>
+        </div>
+
+        <div class="field">
+          <div class="field-title">Arabic Description</div>
+          <div id="arabicDesc" class="field-value description">—</div>
+        </div>
+
+        <div class="category-boxes">
+          <div class="tag">
+            <div class="field-title">Category</div>
+            <div id="category" class="field-value">—</div>
+          </div>
+
+          <div class="tag">
+            <div class="field-title">Sub Category</div>
+            <div id="subCategory" class="field-value">—</div>
+          </div>
+        </div>
+
+        <div class="file-box">
+          <div class="field-title">Image Source</div>
+          <div id="imageValue" class="file-name">—</div>
+        </div>
+
+        <div class="timer-wrap">
+          <div class="timer-labels">
+            <span>Auto Slide</span>
+            <span>5 seconds</span>
+          </div>
+          <div class="timer">
+            <div id="timerBar" class="timer-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons are now BELOW the product card -->
+    <div class="panel controls-panel">
+      <button id="prevBtn" class="control-btn" disabled>
+        ⟵ Previous
+      </button>
+
+      <button id="toggleBtn" class="control-btn stop" disabled>
+        ⏸ Pause
+      </button>
+
+      <button id="nextBtn" class="control-btn primary" disabled>
+        Next ⟶
+      </button>
+
+      <button id="editBtn" class="control-btn edit" disabled>
+        ✏️ Edit
+      </button>
+
+      <button id="exportBtn" class="control-btn export" disabled>
+        📤 Export Excel
+      </button>
+    </div>
+
+  </div>
+
+<script>
+  let items = [];
+  let currentIndex = 0;
+  let autoTimer = null;
+  let progressTimer = null;
+  let running = true;
+  const intervalMs = 5000;
+  let imageFiles = new Map();
+  let editMode = false;
+  let originalRows = [];
+  let sourceFileName = "products.xlsx";
+  let columnIndexes = {};
+
+  const $ = id => document.getElementById(id);
+
+  function normalizeFileName(value) {
+    if (value === null || value === undefined) return "";
+    let s = String(value).trim().replace(/\\/g, "/");
+    s = s.split("/").pop() || s;
+    try { s = decodeURIComponent(s); } catch(e) {}
+    return s.trim().toLowerCase();
+  }
+
+  function baseNameWithoutExt(name) {
+    return normalizeFileName(name).replace(/\.[^.]+$/, "");
+  }
+
+  function buildImageMap(fileList) {
+    imageFiles.clear();
+
+    for (const file of fileList) {
+      const full = normalizeFileName(file.name);
+      const base = baseNameWithoutExt(file.name);
+
+      imageFiles.set(full, file);
+
+      if (!imageFiles.has(base)) {
+        imageFiles.set(base, file);
+      }
+
+      if (file.webkitRelativePath) {
+        imageFiles.set(
+          file.webkitRelativePath.replace(/\\/g, "/").toLowerCase(),
+          file
+        );
+      }
+    }
+  }
+
+  function colToIndex(col) {
+    col = String(col).trim().toUpperCase();
+    let n = 0;
+
+    for (let i = 0; i < col.length; i++) {
+      const c = col.charCodeAt(i);
+      if (c >= 65 && c <= 90) {
+        n = n * 26 + (c - 64);
+      }
+    }
+
+    return Math.max(0, n - 1);
+  }
+
+  function displayValue(v) {
+    if (v === null || v === undefined) return "";
+    return String(v).trim();
+  }
+
+  function findImage(imageCell) {
+    const raw = displayValue(imageCell);
+    if (!raw) return null;
+
+    const normalized = normalizeFileName(raw);
+
+    if (imageFiles.has(normalized)) {
+      return imageFiles.get(normalized);
+    }
+
+    const base = baseNameWithoutExt(normalized);
+
+    if (imageFiles.has(base)) {
+      return imageFiles.get(base);
+    }
+
+    const match = raw.match(/([^\/\\"'()=,\s]+\.(?:png|jpe?g|webp|gif|bmp))/i);
+
+    if (match) {
+      const candidate = normalizeFileName(match[1]);
+
+      if (imageFiles.has(candidate)) {
+        return imageFiles.get(candidate);
+      }
+
+      const candidateBase = baseNameWithoutExt(candidate);
+
+      if (imageFiles.has(candidateBase)) {
+        return imageFiles.get(candidateBase);
+      }
+    }
+
+    return null;
+  }
+
+  function revokeOldImage() {
+    const oldImg = $("imageContainer").querySelector("img");
+
+    if (oldImg && oldImg.dataset.objectUrl) {
+      URL.revokeObjectURL(oldImg.dataset.objectUrl);
+    }
+  }
+
+  function escapeHtml(text) {
+    return String(text ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function setEditableState() {
+    const editableIds = ["englishName", "arabicDesc", "category", "subCategory", "imageValue"];
+    editableIds.forEach(id => {
+      const el = $(id);
+      el.contentEditable = editMode ? "true" : "false";
+      el.spellcheck = false;
+    });
+
+    $("editBtn").textContent = editMode ? "✅ Editing ON" : "✏️ Edit";
+    $("editBtn").className = editMode ? "control-btn edit active" : "control-btn edit";
+    $("editNote").classList.toggle("show", editMode);
+  }
+
+  function saveCurrentEdits() {
+    if (!editMode || !items.length) return;
+    const item = items[currentIndex];
+    item.english = $("englishName").textContent.trim().replace(/^—$/, "");
+    item.arabic = $("arabicDesc").textContent.trim().replace(/^—$/, "");
+    item.category = $("category").textContent.trim().replace(/^—$/, "");
+    item.subCategory = $("subCategory").textContent.trim().replace(/^—$/, "");
+    item.image = $("imageValue").textContent.trim().replace(/^—$/, "");
+
+    const r = item.rowNumber - 1;
+    if (originalRows[r]) {
+      originalRows[r][columnIndexes.english] = item.english;
+      originalRows[r][columnIndexes.arabic] = item.arabic;
+      originalRows[r][columnIndexes.category] = item.category;
+      originalRows[r][columnIndexes.subCategory] = item.subCategory;
+      originalRows[r][columnIndexes.image] = item.image;
+    }
+  }
+
+  function exportExcel() {
+    if (!items.length || !originalRows.length) {
+      alert("Load an Excel file first.");
+      return;
+    }
+
+    saveCurrentEdits();
+    const ws = XLSX.utils.aoa_to_sheet(originalRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+    const base = sourceFileName.replace(/\.[^.]+$/, "") || "products";
+    XLSX.writeFile(wb, `${base}_edited.xlsx`);
+  }
+
+  ["englishName", "arabicDesc", "category", "subCategory", "imageValue"].forEach(id => {
+    $(id).addEventListener("input", saveCurrentEdits);
+  });
+
+  function showItem(index) {
+    if (!items.length) return;
+
+    saveCurrentEdits();
+    currentIndex = (index + items.length) % items.length;
+    const item = items[currentIndex];
+
+    $("counter").textContent =
+      `${currentIndex + 1} / ${items.length}  •  Excel Row ${item.rowNumber}`;
+
+    $("englishName").textContent = item.english || "—";
+    $("arabicDesc").textContent = item.arabic || "—";
+    $("category").textContent = item.category || "—";
+    $("subCategory").textContent = item.subCategory || "—";
+    $("imageValue").textContent = item.image || "—";
+
+    revokeOldImage();
+
+    const container = $("imageContainer");
+    container.innerHTML = "";
+
+    const file = findImage(item.image);
+
+    if (file) {
+      const img = document.createElement("img");
+      const objectUrl = URL.createObjectURL(file);
+
+      img.src = objectUrl;
+      img.dataset.objectUrl = objectUrl;
+      img.alt = item.english || "Product image";
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        container.innerHTML =
+          `<div class="no-image">تعذر فتح Image<br>${escapeHtml(item.image)}</div>`;
+      };
+
+      container.appendChild(img);
+
+    } else if (/^https?:\/\//i.test(item.image || "")) {
+
+      const img = document.createElement("img");
+      img.src = item.image;
+      img.alt = item.english || "Product image";
+
+      img.onerror = () => {
+        container.innerHTML =
+          `<div class="no-image">Image غير موجودة في المجلد أو الرابط لا يسمح بالعرض<br>${escapeHtml(item.image)}</div>`;
+      };
+
+      container.appendChild(img);
+
+    } else {
+
+      container.innerHTML =
+        `<div class="no-image">لم أجد Image داخل المجلد المختار<br>${escapeHtml(item.image || "No image name found in column P")}</div>`;
+    }
+
+    setEditableState();
+    resetProgress();
+  }
+
+  function nextItem() {
+    if (!items.length) return;
+    showItem(currentIndex + 1);
+  }
+
+  function prevItem() {
+    if (!items.length) return;
+    showItem(currentIndex - 1);
+  }
+
+  function stopAuto() {
+    running = false;
+
+    clearInterval(autoTimer);
+    clearInterval(progressTimer);
+
+    autoTimer = null;
+    progressTimer = null;
+
+    $("toggleBtn").textContent = "▶ Play";
+    $("toggleBtn").className = "control-btn start";
+    $("timerBar").style.width = "0%";
+  }
+
+  function startAuto() {
+    if (!items.length) return;
+
+    running = true;
+
+    clearInterval(autoTimer);
+
+    autoTimer = setInterval(nextItem, intervalMs);
+
+    $("toggleBtn").textContent = "⏸ Pause";
+    $("toggleBtn").className = "control-btn stop";
+
+    resetProgress();
+  }
+
+  function resetProgress() {
+    clearInterval(progressTimer);
+
+    const bar = $("timerBar");
+    bar.style.width = "0%";
+
+    if (!running || !items.length) return;
+
+    let elapsed = 0;
+    const tick = 50;
+
+    progressTimer = setInterval(() => {
+      elapsed += tick;
+
+      const pct = Math.min(100, elapsed / intervalMs * 100);
+      bar.style.width = pct + "%";
+
+      if (elapsed >= intervalMs) {
+        clearInterval(progressTimer);
+      }
+
+    }, tick);
+  }
+
+  $("toggleBtn").addEventListener("click", () => {
+    if (running) stopAuto();
+    else startAuto();
+  });
+
+  $("nextBtn").addEventListener("click", () => {
+    nextItem();
+
+    if (running) {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(nextItem, intervalMs);
+    }
+  });
+
+  $("prevBtn").addEventListener("click", () => {
+    prevItem();
+
+    if (running) {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(nextItem, intervalMs);
+    }
+  });
+
+  $("editBtn").addEventListener("click", () => {
+    editMode = !editMode;
+    if (editMode && running) stopAuto();
+    setEditableState();
+    if (editMode) $("englishName").focus();
+  });
+
+  $("exportBtn").addEventListener("click", exportExcel);
+
+  document.addEventListener("keydown", (e) => {
+    if (!items.length) return;
+
+    if (e.key === "ArrowLeft") {
+      prevItem();
+    }
+
+    if (e.key === "ArrowRight") {
+      nextItem();
+    }
+
+    if (e.code === "Space") {
+      e.preventDefault();
+
+      if (running) stopAuto();
+      else startAuto();
+    }
+  });
+
+  $("loadBtn").addEventListener("click", async () => {
+    const excel = $("excelFile").files[0];
+
+    if (!excel) {
+      alert("Choose an Excel file first.");
+      return;
+    }
+
+    buildImageMap($("imageFolder").files);
+    sourceFileName = excel.name || "products.xlsx";
+
+    try {
+      const buffer = await excel.arrayBuffer();
+
+      const workbook = XLSX.read(buffer, {
+        type: "array",
+        cellDates: false
+      });
+
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+      const rows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        raw: false,
+        defval: "",
+        blankrows: true
+      });
+
+      originalRows = rows.map(row => Array.isArray(row) ? [...row] : []);
+
+      const startRow =
+        Math.max(1, parseInt($("startRow").value || "3", 10));
+
+      const idxEnglish =
+        colToIndex($("colEnglish").value);
+
+      const idxArabic =
+        colToIndex($("colArabic").value);
+
+      const idxCategory =
+        colToIndex($("colCategory").value);
+
+      const idxSubCategory =
+        colToIndex($("colSubCategory").value);
+
+      const idxImage =
+        colToIndex($("colImage").value);
+
+      columnIndexes = {
+        english: idxEnglish,
+        arabic: idxArabic,
+        category: idxCategory,
+        subCategory: idxSubCategory,
+        image: idxImage
+      };
+
+      items = [];
+
+      for (let r = startRow - 1; r < rows.length; r++) {
+
+        const row = rows[r] || [];
+
+        const item = {
+          rowNumber: r + 1,
+          english: displayValue(row[idxEnglish]),
+          arabic: displayValue(row[idxArabic]),
+          category: displayValue(row[idxCategory]),
+          subCategory: displayValue(row[idxSubCategory]),
+          image: displayValue(row[idxImage])
+        };
+
+        if (
+          item.english ||
+          item.arabic ||
+          item.category ||
+          item.subCategory ||
+          item.image
+        ) {
+          items.push(item);
+        }
+      }
+
+      if (!items.length) {
+
+        $("status").textContent =
+          "No data was found starting from the selected row.";
+
+        $("prevBtn").disabled = true;
+        $("nextBtn").disabled = true;
+        $("toggleBtn").disabled = true;
+        $("editBtn").disabled = true;
+        $("exportBtn").disabled = true;
+
+        stopAuto();
+        return;
+      }
+
+      currentIndex = 0;
+
+      $("prevBtn").disabled = false;
+      $("nextBtn").disabled = false;
+      $("toggleBtn").disabled = false;
+      $("editBtn").disabled = false;
+      $("exportBtn").disabled = false;
+
+      editMode = false;
+      setEditableState();
+      running = true;
+
+      $("status").textContent =
+        `تم تحميل ${items.length} منتج • الصور المختارة: ${$("imageFolder").files.length} • الانتقال كل 5 seconds`;
+
+      showItem(0);
+      startAuto();
+
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while reading the Excel file: " + err.message);
+    }
+  });
+
+  window.addEventListener("beforeunload", revokeOldImage);
+</script>
+</body>
+</html>
