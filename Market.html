@@ -1,225 +1,259 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>Stores</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Stores</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #fff1c4; /* ✅ الخلفية الجديدة */
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #111;
-    }
+<style>
+body {
+margin: 0;
+font-family: 'Segoe UI', sans-serif;
+background: #fff1c4; /* ✅ الخلفية الجديدة */
+min-height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+color: #111;
+}
 
-    .container {
-      text-align: center;
-      width: 90%;
-      max-width: 1000px;
-      animation: fadeIn 1s ease;
-    }
+.container {
+text-align: center;
+width: 90%;
+max-width: 1000px;
+animation: fadeIn 1s ease;
+}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(30px); }
+to { opacity: 1; transform: translateY(0); }
+}
 
-    h1 {
-      font-size: 45px;
-      margin-bottom: 30px;
-      text-shadow: 0 0 10px #fff, 0 0 25px #ffcc00;
-    }
+h1 {
+font-size: 45px;
+margin-bottom: 30px;
+text-shadow: 0 0 10px #fff, 0 0 25px #ffcc00;
+}
 
-    .back-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #111;
-      padding: 10px 20px;
-      border-radius: 12px;
-      color: #ffcc00;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
-      box-shadow: 0 0 10px #ffcc00;
-      z-index: 2;
-    }
+.back-btn {
+position: fixed;
+top: 20px;
+right: 20px;
+background: #111;
+padding: 10px 20px;
+border-radius: 12px;
+color: #ffcc00;
+text-decoration: none;
+font-weight: bold;
+transition: 0.3s;
+box-shadow: 0 0 10px #ffcc00;
+z-index: 2;
+}
 
-    .back-btn:hover {
-      background: #ffcc00;
-      color: #000;
-      transform: scale(1.1);
-    }
+.back-btn:hover {
+background: #ffcc00;
+color: #000;
+transform: scale(1.1);
+}
 
+.left-buttons {
+position: fixed;
+left: 20px;
+top: 50%;
+transform: translateY(-50%);
+display: flex;
+flex-direction: column;
+gap: 15px;
+z-index: 2;
+}
+
+.sale-btn {
+background: #111;
+color: #ffcc00;
+padding: 16px 26px;
+border-radius: 18px;
+text-decoration: none;
+font-weight: bold;
+font-size: 18px;
+box-shadow: 0 0 15px #ffcc00;
+transition: 0.3s;
+animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+0% { box-shadow: 0 0 10px #ffcc00; }
+50% { box-shadow: 0 0 25px #ffcc00, 0 0 50px #ff9900; }
+100% { box-shadow: 0 0 10px #ffcc00; }
+}
+
+.sale-btn:hover {
+background: #ffcc00;
+color: #000;
+transform: scale(1.1);
+animation: none;
+}
+
+.excel-btn {
+background: #111;
+color: #00ff88;
+padding: 14px 22px;
+border-radius: 15px;
+text-decoration: none;
+font-weight: bold;
+box-shadow: 0 0 12px #00ff88;
+transition: 0.3s;
+}
+
+.excel-btn:hover {
+background: #00ff88;
+color: #000;
+transform: scale(1.1);
+box-shadow: 0 0 20px #00ff88, 0 0 40px #00cc66;
+}
+
+.grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+gap: 20px;
+}
+
+.card {
+height: 120px;
+background: #fff;
+border-radius: 20px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-decoration: none;
+color: #111;
+font-size: 16px;
+font-weight: bold;
+transition: 0.3s;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+position: relative;
+overflow: hidden;
+}
+
+.card i {
+font-size: 26px;
+margin-bottom: 6px;
+}
+
+.card::before {
+content: "";
+position: absolute;
+width: 0%;
+height: 100%;
+background: linear-gradient(90deg, #ffcc00, #ff9900);
+left: 0;
+top: 0;
+transition: 0.4s;
+z-index: 0;
+}
+
+.card:hover::before {
+width: 100%;
+}
+
+.card:hover {
+color: #000;
+transform: translateY(-10px) scale(1.08);
+box-shadow: 0 0 20px #ffcc00, 0 0 40px #ff9900;
+}
+
+.card span, .card i {
+position: relative;
+z-index: 1;
+}
+
+    
+    /* Left buttons: keep text/icons same size, shrink rectangle width only */
     .left-buttons {
-      position: fixed;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 2;
+      align-items: flex-start;
     }
 
-    .sale-btn {
-      background: #111;
-      color: #ffcc00;
-      padding: 16px 26px;
-      border-radius: 18px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 18px;
-      box-shadow: 0 0 15px #ffcc00;
-      transition: 0.3s;
-      animation: pulse 1.5s infinite;
+    .left-buttons .sale-btn,
+    .left-buttons .excel-btn {
+      width: fit-content;
+      max-width: none;
+      white-space: nowrap;
     }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px #ffcc00; }
-      50% { box-shadow: 0 0 25px #ffcc00, 0 0 50px #ff9900; }
-      100% { box-shadow: 0 0 10px #ffcc00; }
+    .left-buttons .sale-btn {
+      padding: 10px 10px;
+      border-radius: 14px;
     }
 
-    .sale-btn:hover {
-      background: #ffcc00;
-      color: #000;
-      transform: scale(1.1);
-      animation: none;
+    .left-buttons .excel-btn {
+      padding: 8px 10px;
+      border-radius: 12px;
     }
 
-    .excel-btn {
-      background: #111;
-      color: #00ff88;
-      padding: 14px 22px;
-      border-radius: 15px;
-      text-decoration: none;
-      font-weight: bold;
-      box-shadow: 0 0 12px #00ff88;
-      transition: 0.3s;
+  
+    /* Only Duplicate Remove By Column: smaller rectangle, same text size */
+    .left-buttons .duplicate-btn {
+      width: 205px;
+      white-space: normal;
+      line-height: 1.15;
+      text-align: left;
+      padding: 8px 10px;
     }
 
-    .excel-btn:hover {
-      background: #00ff88;
-      color: #000;
-      transform: scale(1.1);
-      box-shadow: 0 0 20px #00ff88, 0 0 40px #00cc66;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      height: 120px;
-      background: #fff;
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-decoration: none;
-      color: #111;
-      font-size: 16px;
-      font-weight: bold;
-      transition: 0.3s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card i {
-      font-size: 26px;
-      margin-bottom: 6px;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #ffcc00, #ff9900);
-      left: 0;
-      top: 0;
-      transition: 0.4s;
-      z-index: 0;
-    }
-
-    .card:hover::before {
-      width: 100%;
-    }
-
-    .card:hover {
-      color: #000;
-      transform: translateY(-10px) scale(1.08);
-      box-shadow: 0 0 20px #ffcc00, 0 0 40px #ff9900;
-    }
-
-    .card span, .card i {
-      position: relative;
-      z-index: 1;
-    }
   </style>
 </head>
 
 <body>
 
-<a href="index.html" class="back-btn">
-  <i class="fa fa-arrow-right"></i> Back
+<a href="https://osama25523.github.io/calculator121/index.html" class="back-btn">
+<i class="fa fa-arrow-right"></i> Back
 </a>
 
 <div class="left-buttons">
-  <a href="Sale Price.html" class="sale-btn">
-    <i class="fa fa-fire"></i> Sale Price 
-  </a>
+<a href="https://osama25523.github.io/calculator121/Sale%20Price.html" class="sale-btn">
+<i class="fa fa-fire"></i> Sale Price
+</a>
 
-  <a href="Useful Excel.html" class="excel-btn">
-    <i class="fa-solid fa-table"></i> Useful Excel
-  </a>
-    <a href="1st Column Remover.html" class="excel-btn">
-    <i class="fa-solid fa-copy"></i> 1st Column Remover
-  </a>
+<a href="https://osama25523.github.io/calculator121/Useful%20Excel.html" class="excel-btn">
+<i class="fa-solid fa-table"></i> Useful Excel
+</a>
+<a href="https://osama25523.github.io/calculator121/1st%20Column%20Remover.html" class="excel-btn">
+<i class="fa-solid fa-copy"></i> 1st Column Remover
+</a>
 
-  <a href="Duplicate Remove By Column.html" class="excel-btn">
-    <i class="fa-solid fa-tags"></i> Duplicate Remove By Column
-  </a>
+<a href="https://osama25523.github.io/calculator121/Duplicate%20Remove%20By%20Column.html" class="excel-btn">
+<i class="fa-solid fa-tags"></i> Duplicate Remove By Column
+</a>
 </div>
 
 <div class="container">
-  <h1>Stores</h1>
+<h1>Stores</h1>
 
-  <div class="grid">
-    <a href="Karmel Fresh.html" class="card karmel"><i class="fa fa-carrot"></i><span>Karmel Fresh</span></a>
-    <a href="Karmel.html" class="card"><i class="fa fa-box"></i><span>Karmel Sku</span></a>
-    <a href="Shoneez Fresh.html" class="card"><i class="fa fa-store"></i><span>Shoneez Fresh</span></a>
-    <a href="Shoneez new.html" class="card"><i class="fa fa-layer-group"></i><span>Shoneez</span></a>
-    <a href="City Store.html" class="card"><i class="fa fa-city"></i><span>City Store</span></a>
-    <a href="Al Mutasaweq.html" class="card"><i class="fa fa-user"></i><span>Al Mutasaweq</span></a>
-    <a href="best shop.html" class="card"><i class="fa fa-shop"></i><span>Best Shop</span></a>
-    <a href="Abu Odeh Split.html" class="card"><i class="fa fa-shop"></i><span>Abu Odeh Split</span></a>
-    <a href="https://script.google.com/macros/s/AKfycbz78ZVUQV9SYF6b2A3axrJ4dBL7flbB4yMnfpkJzrsEciNjh8LzMFXKx0cw50g6qpR02g/exec" class="card"><i class="fa fa-shop"></i><span>Unit and Weight</span></a>
-    <a href="Dada Group.html" class="card"><i class="fa fa-shop"></i><span>Dada</span></a>
-    <a href="store12.html" class="card"><i class="fa fa-shop"></i><span>Store 12</span></a>
-    <a href="store13.html" class="card"><i class="fa fa-shop"></i><span>Store 13</span></a>
-    <a href="store14.html" class="card"><i class="fa fa-shop"></i><span>Store 14</span></a>
-    <a href="store15.html" class="card"><i class="fa fa-shop"></i><span>Store 15</span></a>
-    <a href="store16.html" class="card"><i class="fa fa-shop"></i><span>Store 16</span></a>
-    <a href="store17.html" class="card"><i class="fa fa-shop"></i><span>Store 17</span></a>
-    <a href="store18.html" class="card"><i class="fa fa-shop"></i><span>Store 18</span></a>
-    <a href="store19.html" class="card"><i class="fa fa-shop"></i><span>Store 19</span></a>
-    <a href="store20.html" class="card"><i class="fa fa-shop"></i><span>Store 20</span></a>
-    <a href="store21.html" class="card"><i class="fa fa-shop"></i><span>Store 21</span></a>
-  </div>
+<div class="grid">
+<a href="https://osama25523.github.io/calculator121/Karmel%20Fresh.html" class="card karmel"><i class="fa fa-carrot"></i><span>Karmel Fresh</span></a>
+<a href="https://osama25523.github.io/calculator121/Karmel.html" class="card"><i class="fa fa-box"></i><span>Karmel Sku</span></a>
+<a href="https://osama25523.github.io/calculator121/Shoneez%20Fresh.html" class="card"><i class="fa fa-store"></i><span>Shoneez Fresh</span></a>
+<a href="https://osama25523.github.io/calculator121/Shoneez%20new.html" class="card"><i class="fa fa-layer-group"></i><span>Shoneez 6 Sku</span></a>
+<a href="https://osama25523.github.io/calculator121/City%20Store.html" class="card"><i class="fa fa-city"></i><span>City Store</span></a>
+<a href="https://osama25523.github.io/calculator121/Al%20Mutasaweq.html" class="card"><i class="fa fa-user"></i><span>Al Mutasaweq</span></a>
+<a href="https://osama25523.github.io/calculator121/best%20shop.html" class="card"><i class="fa fa-shop"></i><span>Best Shop</span></a>
+<a href="https://osama25523.github.io/calculator121/Abu%20Odeh%20Split.html" class="card"><i class="fa fa-shop"></i><span>Abu Odeh Split</span></a>
+<a href="https://script.google.com/macros/s/AKfycbz78ZVUQV9SYF6b2A3axrJ4dBL7flbB4yMnfpkJzrsEciNjh8LzMFXKx0cw50g6qpR02g/exec" class="card"><i class="fa fa-shop"></i><span>Unit and Weight</span></a>
+<a href="https://osama25523.github.io/calculator121/Dada%20Group.html" class="card"><i class="fa fa-shop"></i><span>Dada</span></a>
+<a href="https://osama25523.github.io/calculator121/store12.html" class="card"><i class="fa fa-shop"></i><span>Store 12</span></a>
+<a href="https://osama25523.github.io/calculator121/store13.html" class="card"><i class="fa fa-shop"></i><span>Store 13</span></a>
+<a href="https://osama25523.github.io/calculator121/store14.html" class="card"><i class="fa fa-shop"></i><span>Store 14</span></a>
+<a href="https://osama25523.github.io/calculator121/store15.html" class="card"><i class="fa fa-shop"></i><span>Store 15</span></a>
+<a href="https://osama25523.github.io/calculator121/store16.html" class="card"><i class="fa fa-shop"></i><span>Store 16</span></a>
+<a href="https://osama25523.github.io/calculator121/store17.html" class="card"><i class="fa fa-shop"></i><span>Store 17</span></a>
+<a href="https://osama25523.github.io/calculator121/store18.html" class="card"><i class="fa fa-shop"></i><span>Store 18</span></a>
+<a href="https://osama25523.github.io/calculator121/store19.html" class="card"><i class="fa fa-shop"></i><span>Store 19</span></a>
+<a href="https://osama25523.github.io/calculator121/store20.html" class="card"><i class="fa fa-shop"></i><span>Store 20</span></a>
+<a href="https://osama25523.github.io/calculator121/store21.html" class="card"><i class="fa fa-shop"></i><span>Store 21</span></a>
+</div>
 
 </div>
 
