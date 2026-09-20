@@ -63,11 +63,27 @@
     .download-btn:hover:not(:disabled){filter:brightness(1.06);transform:translateY(-1px)}
     .download-btn:disabled{opacity:.38;cursor:not-allowed}
     .note{margin-top:4px;text-align:center;font-size:13px;color:#9fb3c8}
+    .back-btn{
+      width:100%;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:14px;
+      border:1px solid #31516f;
+      background:#0b1724;
+      color:#dbeafe;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      transition:.18s ease;
+    }
+    .back-btn:hover{background:#132a42;transform:translateY(-1px)}
   </style>
 </head>
 <body>
   <main class="app">
-    <h1>Dada Group</h1>
+    <h1>Dada</h1>
     <div class="stack">
       <label class="file-btn" id="priceLabel" for="priceFile">Upload Price File</label>
       <input id="priceFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb" />
@@ -77,6 +93,7 @@
 
       <button class="download-btn" id="downloadBtn" disabled>Download File</button>
       <div class="note">Note: Upload the downloaded file to UPDATE PRODUCT.</div>
+      <a class="back-btn" href="https://github.com/osama25523/calculator121/blob/main/Market.html">← Back</a>
     </div>
   </main>
 
