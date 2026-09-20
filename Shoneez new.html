@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shoneez</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#0f172a;
+      --card:#111827;
+      --line:#263244;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --accent:#3b82f6;
+      --accent2:#2563eb;
+      --ok:#22c55e;
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%,rgba(59,130,246,.16),transparent 28%),
+        radial-gradient(circle at 80% 80%,rgba(37,99,235,.12),transparent 30%),
+        var(--bg);
+      color:var(--text);
+    }
+    .shell{
+      width:min(720px,100%);
+    }
+    .title{
+      text-align:center;
+      margin-bottom:20px;
+    }
+    .title h1{
+      margin:0 0 8px;
+      font-size:30px;
+      letter-spacing:-.5px;
+    }
+    .title p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .card{
+      background:rgba(17,24,39,.96);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:26px;
+      box-shadow:0 22px 60px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
+    }
+    .drop{
+      display:block;
+      border:2px dashed #3a475c;
+      border-radius:18px;
+      padding:38px 20px;
+      text-align:center;
+      cursor:pointer;
+      background:#0b1220;
+      transition:.2s ease;
+    }
+    .drop:hover,.drop.drag{
+      border-color:var(--accent);
+      background:#101a2d;
+      transform:translateY(-1px);
+    }
+    input[type=file]{display:none}
+    .icon{
+      width:58px;
+      height:58px;
+      margin:0 auto 14px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(59,130,246,.15);
+      font-size:28px;
+    }
+    .choose{
+      display:inline-block;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+      padding:11px 18px;
+      border-radius:11px;
+      font-weight:700;
+      margin-top:4px;
+    }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .files{
+      margin-top:16px;
+      max-height:210px;
+      overflow:auto;
+    }
+    .file{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      margin-top:8px;
+      background:#0b1220;
+      border:1px solid #202b3c;
+      border-radius:10px;
+      color:#dbe4f0;
+      font-size:13px;
+    }
+    .file span:first-child{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .tag{
+      flex:none;
+      color:#93c5fd;
+      font-size:11px;
+      font-weight:700;
+    }
+    button{
+      width:100%;
+      border:0;
+      border-radius:12px;
+      padding:14px 18px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      margin-top:20px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#fff;
+      transition:.18s ease;
+    }
+    button:hover:not(:disabled){
+      transform:translateY(-1px);
+      box-shadow:0 10px 28px rgba(37,99,235,.25);
+    }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .status{
+      margin-top:14px;
+      min-height:20px;
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+    }
+    .note{
+      margin-top:16px;
+      padding:10px 12px;
+      border:1px solid #203047;
+      border-radius:10px;
+      background:#0b1220;
+      color:#8fa4bd;
+      font-size:12px;
+      text-align:center;
+    }
+
+    .back-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:14px;
+      color:#cbd5e1;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      padding:9px 12px;
+      border:1px solid #263244;
+      border-radius:10px;
+      background:#0b1220;
+      transition:.18s ease;
+    }
+    .back-btn:hover{
+      background:#111c30;
+      border-color:#3b82f6;
+      color:#fff;
+    }
+
+    @media(max-width:560px){
+      body{padding:16px}
+      .card{padding:18px}
+      .title h1{font-size:24px}
+      .drop{padding:30px 14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <a class="back-btn" href="Market.html">← Back</a>
+    <div class="title">
+      <h1>Batch CSV / Excel Formatter</h1>
+      <p>Upload CSV, Excel files, or one ZIP containing multiple files.</p>
+    </div>
+
+    <div class="card">
+      <label class="drop" id="dropZone">
+        <input id="fileInput" type="file" multiple accept=".csv,.xlsx,.xls,.zip" />
+        <div class="icon">📁</div>
+        <div class="choose">Select Files or ZIP</div>
+        <div class="hint">CSV, XLSX, XLS or ZIP</div>
+      </label>
+
+      <div class="files" id="fileList"></div>
+
+      <button id="processBtn" disabled>Process & Download</button>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+<script>
+const input = document.getElementById('fileInput');
+const list = document.getElementById('fileList');
+const btn = document.getElementById('processBtn');
+const statusEl = document.getElementById('status');
+const dropZone = document.getElementById('dropZone');
+
+let selectedFiles = [];
+
+input.addEventListener('change', () => {
+  selectedFiles = [...input.files];
+  renderFiles();
+});
+
+['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
+  e.preventDefault();
+  dropZone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag');
+}));
+dropZone.addEventListener('drop', e => {
+  selectedFiles = [...e.dataTransfer.files].filter(f => /\.(csv|xlsx|xls|zip)$/i.test(f.name));
+  renderFiles();
+});
+
+function renderFiles(){
+  list.innerHTML = selectedFiles.map(f => {
+    const ex = ext(f.name).toUpperCase();
+    return `<div class="file"><span>${escapeHtml(f.name)}</span><span class="tag">${ex}</span></div>`;
+  }).join('');
+  btn.disabled = selectedFiles.length === 0;
+  statusEl.textContent = selectedFiles.length ? `${selectedFiles.length} file(s) selected` : '';
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function ext(name){
+  const m = name.toLowerCase().match(/\.([^.]+)$/);
+  return m ? m[1] : '';
+}
+
+function baseName(name){
+  return name.replace(/\.[^.]+$/,'');
+}
+
+/* Expand ordinary scientific notation to full decimal text without
+   relying on Excel formatting. This works on the textual representation. */
+function expandScientificString(value){
+  if(value === null || value === undefined) return '';
+  let s = String(value).trim();
+  if(!/^[+-]?\d+(?:\.\d+)?[eE][+-]?\d+$/.test(s)) return s;
+
+  let sign = '';
+  if(s[0] === '-' || s[0] === '+'){
+    sign = s[0] === '-' ? '-' : '';
+    s = s.slice(1);
+  }
+
+  const parts = s.toLowerCase().split('e');
+  const coeff = parts[0];
+  const exp = parseInt(parts[1], 10);
+  const dot = coeff.indexOf('.');
+  const digits = coeff.replace('.', '');
+  const decimalPos = (dot === -1 ? coeff.length : dot) + exp;
+
+  if(decimalPos <= 0){
+    return sign + '0.' + '0'.repeat(-decimalPos) + digits;
+  }
+  if(decimalPos >= digits.length){
+    return sign + digits + '0'.repeat(decimalPos - digits.length);
+  }
+  return sign + digits.slice(0, decimalPos) + '.' + digits.slice(decimalPos);
+}
+
+function plainText(v){
+  if(v === null || v === undefined) return '';
+
+  // For numeric Excel cells, convert integer IDs to full non-scientific text.
+  if(typeof v === 'number'){
+    if(Number.isInteger(v)){
+      return v.toLocaleString('en-US', {
+        useGrouping:false,
+        maximumFractionDigits:0
+      });
+    }
+    return expandScientificString(String(v));
+  }
+
+  return expandScientificString(String(v).trim());
+}
+
+function cleanSku(v){
+  let s = plainText(v);
+
+  // Remove leading zeros from numeric SKUs only.
+  // Examples:
+  // 050000170166 -> 50000170166
+  // 000123 -> 123
+  // 0 -> 0
+  if(/^\d+$/.test(s)){
+    s = s.replace(/^0+(?=\d)/, '');
+  }
+
+  return s;
+}
+
+function transformRows(rows){
+  return rows.map((row, index) => {
+    // Keep header exactly as text.
+    const oldA = index === 0 ? plainText(row[0] ?? '') : cleanSku(row[0] ?? '');
+    const oldC = plainText(row[2] ?? '');
+    const oldD = plainText(row[3] ?? '');
+
+    // Final layout:
+    // A = old A, full number, no scientific notation, no leading zero
+    // B = old D
+    // C = blank
+    // D = old C, but value 1 becomes blank
+    const newD = oldC === '1' ? '' : oldC;
+
+    return [oldA, oldD, '', newD];
+  });
+}
+
+function createTextSafeSheet(rows){
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  if(ws['!ref']){
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    for(let r = range.s.r; r <= range.e.r; r++){
+      for(let c = 0; c <= 3; c++){
+        const addr = XLSX.utils.encode_cell({r,c});
+        const cell = ws[addr];
+        if(!cell) continue;
+
+        // Force every output cell to string so Excel will not auto-convert
+        // SKU/barcode values to scientific notation.
+        cell.t = 's';
+        cell.v = plainText(cell.v);
+        cell.z = '@';
+      }
+    }
+  }
+
+  // Useful widths so full IDs are visible immediately.
+  ws['!cols'] = [
+    {wch:24},
+    {wch:16},
+    {wch:8},
+    {wch:14}
+  ];
+
+  return ws;
+}
+
+function workbookToXlsxBytes(sheetName, worksheet){
+  const outWb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(outWb, worksheet, sheetName || 'Sheet1');
+
+  return XLSX.write(outWb, {
+    bookType:'xlsx',
+    type:'array',
+    cellStyles:true
+  });
+}
+
+function decodeCsvBytes(bytes){
+  // Handle UTF-8 BOM and common UTF-8 CSV safely.
+  return new TextDecoder('utf-8').decode(bytes).replace(/^\uFEFF/, '');
+}
+
+function parseCsvAsPureText(bytes){
+  const text = decodeCsvBytes(bytes);
+
+  const parsed = Papa.parse(text, {
+    header:false,
+    dynamicTyping:false,
+    skipEmptyLines:false
+  });
+
+  if(parsed.errors && parsed.errors.length){
+    // Most parse warnings are harmless; only fail if nothing was parsed.
+    if(!parsed.data || !parsed.data.length){
+      throw new Error(parsed.errors[0].message || 'Could not parse CSV.');
+    }
+  }
+
+  // PapaParse keeps all values as strings when dynamicTyping=false.
+  return parsed.data;
+}
+
+function parseExcelRows(bytes){
+  const wb = XLSX.read(bytes, {
+    type:'array',
+    raw:true,
+    cellText:false
+  });
+
+  const sname = wb.SheetNames[0];
+  if(!sname) throw new Error('Workbook has no sheets.');
+
+  const ws = wb.Sheets[sname];
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+  const rows = [];
+
+  for(let r = range.s.r; r <= range.e.r; r++){
+    const row = [];
+    for(let c = range.s.c; c <= range.e.c; c++){
+      const addr = XLSX.utils.encode_cell({r,c});
+      const cell = ws[addr];
+
+      if(!cell){
+        row.push('');
+      } else if(cell.t === 's' || cell.t === 'str'){
+        row.push(cell.v ?? '');
+      } else if(cell.t === 'n'){
+        row.push(plainText(cell.v));
+      } else {
+        row.push(cell.v ?? '');
+      }
+    }
+    rows.push(row);
+  }
+
+  return {rows, sheetName:sname};
+}
+
+function downloadBlob(blob, filename){
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+async function processRawFile(name, bytes){
+  const extension = ext(name);
+  let rows;
+  let sheetName = 'Sheet1';
+
+  if(extension === 'csv'){
+    rows = parseCsvAsPureText(bytes);
+  } else if(extension === 'xlsx' || extension === 'xls'){
+    const parsed = parseExcelRows(bytes);
+    rows = parsed.rows;
+    sheetName = parsed.sheetName;
+  } else {
+    return null;
+  }
+
+  const transformed = transformRows(rows);
+  const outWs = createTextSafeSheet(transformed);
+  const arr = workbookToXlsxBytes(sheetName, outWs);
+
+  // IMPORTANT: Always output XLSX, even when the source was CSV.
+  // This prevents Excel from re-interpreting long IDs as scientific notation.
+  return {
+    name: baseName(name) + '_processed.xlsx',
+    blob: new Blob([arr], {
+      type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+  };
+}
+
+async function collectFiles(){
+  const collected = [];
+  let zipWasUploaded = false;
+
+  for(const file of selectedFiles){
+    if(ext(file.name) === 'zip'){
+      zipWasUploaded = true;
+      const zip = await JSZip.loadAsync(await file.arrayBuffer());
+
+      for(const [path, entry] of Object.entries(zip.files)){
+        if(entry.dir) continue;
+        if(!/\.(csv|xlsx|xls)$/i.test(path)) continue;
+
+        const bytes = await entry.async('arraybuffer');
+        collected.push({name:path, bytes});
+      }
+    } else if(/\.(csv|xlsx|xls)$/i.test(file.name)){
+      collected.push({
+        name:file.name,
+        bytes:await file.arrayBuffer()
+      });
+    }
+  }
+
+  return {collected, zipWasUploaded};
+}
+
+btn.addEventListener('click', async () => {
+  btn.disabled = true;
+  statusEl.textContent = 'Processing...';
+
+  try{
+    const {collected, zipWasUploaded} = await collectFiles();
+
+    if(!collected.length){
+      throw new Error('No supported CSV or Excel files found.');
+    }
+
+    const results = [];
+
+    for(let i=0; i<collected.length; i++){
+      statusEl.textContent = `Processing ${i+1} of ${collected.length}...`;
+      const r = await processRawFile(collected[i].name, collected[i].bytes);
+      if(r) results.push(r);
+    }
+
+    if(results.length === 1 && !zipWasUploaded && selectedFiles.length === 1){
+      downloadBlob(results[0].blob, results[0].name);
+    } else {
+      const outZip = new JSZip();
+
+      for(const r of results){
+        outZip.file(r.name, r.blob);
+      }
+
+      const zipBlob = await outZip.generateAsync({
+        type:'blob',
+        compression:'DEFLATE'
+      });
+
+      downloadBlob(zipBlob, 'processed_files.zip');
+    }
+
+    statusEl.textContent = `Done — ${results.length} file(s) processed.`;
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Error: ' + (err.message || err);
+  }finally{
+    btn.disabled = selectedFiles.length === 0;
+  }
+});
+</script>
+</body>
+</html>
