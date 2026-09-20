@@ -67,7 +67,7 @@
 </head>
 <body>
   <main class="app">
-    <h1>Excel Product Mapper</h1>
+    <h1>Dada Group</h1>
     <div class="stack">
       <label class="file-btn" id="priceLabel" for="priceFile">Upload Price File</label>
       <input id="priceFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb" />
