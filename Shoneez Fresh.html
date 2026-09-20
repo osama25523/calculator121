@@ -1,1209 +1,305 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shoneez Fresh</title>
+  <title>Excel Price Formatter</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <style>
-
-    :root {
-      --bg: #111c2e;
-      --bg-2: #172337;
-      --panel: #101829;
-      --panel-2: #162236;
-      --panel-3: #1b2940;
-      --border: rgba(148, 163, 184, 0.18);
-      --border-strong: rgba(148, 163, 184, 0.28);
-      --text: #e8eef8;
-      --muted: #b8c3d4;
-      --muted-2: #7f8da3;
-      --cyan: #39c8f4;
-      --cyan-2: #1fb4e9;
-      --slate-btn: #647086;
-      --green: #22c55e;
-      --red: #ef4444;
-      --orange: #f59e0b;
-      --shadow: 0 28px 80px rgba(0,0,0,0.26);
-      --radius: 26px;
+    *{box-sizing:border-box}
+    :root{
+      --bg:#0b1220;
+      --card:#111827;
+      --line:#263244;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --accent:#3b82f6;
+      --accent2:#2563eb;
+      --danger:#f87171;
     }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      color: var(--text);
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      color:var(--text);
       background:
-        radial-gradient(circle at 20% -10%, rgba(57, 200, 244, 0.10), transparent 36%),
-        radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.10), transparent 28%),
-        linear-gradient(135deg, #0e1728 0%, #162236 44%, #1b2a40 100%);
-      padding: 26px 24px 70px;
+        radial-gradient(circle at 20% 15%,rgba(59,130,246,.18),transparent 28%),
+        radial-gradient(circle at 80% 85%,rgba(37,99,235,.12),transparent 28%),
+        var(--bg);
     }
-
-    .back-link {
-      position: fixed;
-      top: 18px;
-      left: 22px;
-      z-index: 20;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 48px;
-      padding: 0 18px;
-      border: 1px solid var(--border-strong);
-      border-radius: 15px;
-      background: rgba(16, 24, 41, 0.86);
-      color: #f8fafc;
-      text-decoration: none;
-      font-weight: 900;
-      letter-spacing: -0.2px;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.18);
-      backdrop-filter: blur(12px);
+    .wrap{
+      width:min(560px,100%);
     }
-
-    .back-link:hover { border-color: rgba(57, 200, 244, 0.55); }
-
-    .shell {
-      width: min(1320px, calc(100% - 210px));
-      margin: 0 auto;
+    .back{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:14px;
+      padding:9px 13px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#0f172a;
+      color:#cbd5e1;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      transition:.2s;
     }
-
-    .main-panel,
-    .card {
-      background: rgba(16, 24, 41, 0.76);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
+    .back:hover{
+      border-color:var(--accent);
+      color:#fff;
+      transform:translateY(-1px);
     }
-
-    .main-panel {
-      min-height: 420px;
-      padding: 34px;
-      overflow: hidden;
+    .card{
+      width:100%;
+      background:rgba(17,24,39,.96);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:30px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
     }
-
-    .top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 10px;
+    h1{
+      font-size:27px;
+      margin:0 0 8px;
+      text-align:center;
+      letter-spacing:-.4px;
     }
-
-    .brand-chip,
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(27, 41, 64, 0.72);
-      color: var(--muted);
-      padding: 9px 13px;
-      font-size: 13px;
-      font-weight: 900;
+    .subtitle{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin:0 0 24px;
     }
-
-    .quick-tags {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .upload{
+      display:block;
+      border:2px dashed #3a475c;
+      border-radius:16px;
+      padding:34px 20px;
+      text-align:center;
+      cursor:pointer;
+      background:#0b1220;
+      transition:.2s;
     }
-
-    h1 {
-      margin: 6px 0 10px;
-      font-size: clamp(38px, 5vw, 56px);
-      letter-spacing: -1.5px;
-      line-height: 1;
-      color: #eef5ff;
-      text-shadow: 0 10px 28px rgba(0,0,0,0.24);
+    .upload:hover{
+      border-color:var(--accent);
+      background:#101a2d;
+      transform:translateY(-1px);
     }
-
-    .hero-subtitle {
-      margin: 0 0 24px;
-      max-width: 800px;
-      color: var(--muted);
-      line-height: 1.7;
-      font-size: 15px;
+    .upload strong{
+      display:block;
+      font-size:17px;
+      margin-bottom:7px;
+      color:#fff;
     }
-
-    .card { padding: 22px; }
-    .card + .card { margin-top: 18px; }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-      align-items: start;
+    .upload span{
+      font-size:13px;
+      color:var(--muted);
     }
-
-    .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
+    input[type=file]{display:none}
+    .file-name{
+      margin:14px 0 0;
+      font-size:13px;
+      color:#cbd5e1;
+      text-align:center;
+      min-height:18px;
+      word-break:break-word;
     }
-
-    h2, h3 {
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      letter-spacing: -0.2px;
-      color: #f8fafc;
+    button{
+      width:100%;
+      margin-top:24px;
+      padding:14px 16px;
+      border:0;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:white;
+      transition:.2s;
     }
-
-    h2 { font-size: 22px; }
-    h3 { font-size: 18px; }
-
-    .step {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 31px;
-      height: 31px;
-      padding: 0 10px;
-      border-radius: 999px;
-      color: #04111d;
-      background: var(--cyan);
-      box-shadow: 0 14px 28px rgba(57, 200, 244, 0.22);
-      font-size: 13px;
-      font-weight: 1000;
+    button:disabled{
+      background:#334155;
+      color:#94a3b8;
+      cursor:not-allowed;
     }
-
-    .hint {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
+    button:not(:disabled):hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 28px rgba(37,99,235,.28);
     }
-
-    .mode-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 16px;
+    .status{
+      margin-top:14px;
+      text-align:center;
+      font-size:13px;
+      color:var(--muted);
+      min-height:18px;
     }
-
-    .mode-card {
-      position: relative;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 14px;
-      align-items: start;
-      min-height: 140px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: rgba(12, 20, 34, 0.58);
-      cursor: pointer;
-      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    .error{color:var(--danger)}
+    @media(max-width:560px){
+      body{padding:16px}
+      .card{padding:22px}
+      h1{font-size:23px}
     }
-
-    .mode-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(57, 200, 244, 0.48);
-      background: rgba(22, 34, 54, 0.8);
-    }
-
-    .mode-card.active {
-      border-color: rgba(57, 200, 244, 0.72);
-      background: linear-gradient(135deg, rgba(57, 200, 244, 0.15), rgba(100, 112, 134, 0.12));
-      box-shadow: 0 20px 48px rgba(57, 200, 244, 0.10);
-    }
-
-    .mode-card input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .mode-icon {
-      width: 46px;
-      height: 46px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 16px;
-      background: rgba(57, 200, 244, 0.14);
-      color: var(--cyan);
-      font-weight: 1000;
-      font-size: 20px;
-    }
-
-    .mode-copy small {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--cyan);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      font-size: 11px;
-      font-weight: 1000;
-    }
-
-    .mode-copy strong {
-      display: block;
-      color: #f8fafc;
-      margin-bottom: 8px;
-      font-size: 17px;
-    }
-
-    .mode-copy span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .mode-check {
-      width: 28px;
-      height: 28px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1px solid var(--border-strong);
-      color: transparent;
-      font-weight: 1000;
-      background: rgba(15, 23, 42, 0.55);
-    }
-
-    .mode-card.active .mode-check {
-      color: #06121e;
-      border-color: var(--cyan);
-      background: var(--cyan);
-    }
-
-    .section {
-      margin-top: 18px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: rgba(13, 22, 38, 0.52);
-    }
-
-    .hidden { display: none !important; }
-
-    .field { margin-top: 16px; }
-
-    .field label {
-      display: block;
-      font-weight: 1000;
-      color: #edf4ff;
-      margin-bottom: 8px;
-    }
-
-    .file-box {
-      border: 1px solid var(--border-strong);
-      border-radius: 18px;
-      background: rgba(27, 41, 64, 0.76);
-      padding: 14px;
-      transition: border-color 0.18s ease, background 0.18s ease;
-    }
-
-    .file-box:hover {
-      border-color: rgba(57, 200, 244, 0.65);
-      background: rgba(31, 47, 72, 0.9);
-    }
-
-    input[type="file"] {
-      width: 100%;
-      cursor: pointer;
-      color: var(--muted);
-      font-weight: 800;
-    }
-
-    input[type="file"]::file-selector-button {
-      margin-right: 12px;
-      border: 0;
-      border-radius: 14px;
-      padding: 12px 15px;
-      background: var(--cyan);
-      color: #06121e;
-      font-weight: 1000;
-      cursor: pointer;
-      box-shadow: 0 15px 34px rgba(57, 200, 244, 0.22);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 22px;
-    }
-
-    button {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      min-height: 50px;
-      font-size: 14px;
-      font-weight: 1000;
-      cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    .primary {
-      color: #07111d;
-      background: var(--cyan);
-      box-shadow: 0 18px 38px rgba(57, 200, 244, 0.25);
-    }
-
-    .primary:hover { transform: translateY(-1px); background: #4ad1fa; }
-
-    .secondary {
-      color: #f8fafc;
-      background: var(--slate-btn);
-      box-shadow: 0 14px 30px rgba(0,0,0,0.12);
-    }
-
-    .secondary:hover { transform: translateY(-1px); background: #758098; }
-
-    .status {
-      margin-top: 18px;
-      min-height: 68px;
-      padding: 19px 20px;
-      border-radius: 18px;
-      border: 1px solid var(--border-strong);
-      background: rgba(27, 41, 64, 0.76);
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 15px;
-    }
-
-    .status.success { background: rgba(34, 197, 94, 0.12); border-color: rgba(34,197,94,0.42); color: #bbf7d0; }
-    .status.error { background: rgba(239, 68, 68, 0.12); border-color: rgba(239,68,68,0.44); color: #fecaca; }
-    .status.warn { background: rgba(245, 158, 11, 0.11); border-color: rgba(245,158,11,0.44); color: #fde68a; }
-
-    .info-grid,
-    .summary-list {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 24px;
-    }
-
-    .info-card,
-    .stat {
-      min-height: 120px;
-      padding: 18px;
-      border-radius: 21px;
-      border: 1px solid var(--border);
-      background: rgba(13, 22, 38, 0.62);
-    }
-
-    .info-card h3 {
-      display: block;
-      margin: 0 0 12px;
-      font-size: 16px;
-    }
-
-    .info-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 14px;
-    }
-
-    .rules {
-      display: grid;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .rule {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      padding: 12px 13px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: rgba(13, 22, 38, 0.50);
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    .rule strong { color: #f8fafc; }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      flex: 0 0 9px;
-      margin-top: 7px;
-      border-radius: 999px;
-      background: var(--cyan);
-    }
-
-    .preview-card { margin-top: 22px; }
-
-    .summary-list {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      margin-top: 16px;
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted-2);
-      font-size: 12px;
-      font-weight: 1000;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 8px;
-    }
-
-    .stat b {
-      display: block;
-      color: #f8fafc;
-      font-size: 27px;
-      letter-spacing: -0.6px;
-    }
-
-    .files-list {
-      margin: 14px 0 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 9px;
-      max-height: 250px;
-      overflow: auto;
-    }
-
-    .files-list li {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: rgba(13, 22, 38, 0.56);
-      color: #dbeafe;
-      font-size: 13px;
-    }
-
-    .files-list li span:last-child { color: var(--muted-2); text-align: right; }
-
-    .preview-stack {
-      display: grid;
-      gap: 18px;
-      margin-top: 16px;
-    }
-
-    .file-preview {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: rgba(13, 22, 38, 0.62);
-      box-shadow: 0 20px 42px rgba(0,0,0,0.16);
-    }
-
-    .file-preview-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 15px 16px;
-      background: rgba(27, 41, 64, 0.78);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .file-preview-title {
-      min-width: 0;
-      font-weight: 1000;
-      color: #f8fafc;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .file-preview-meta {
-      flex: 0 0 auto;
-      color: var(--cyan);
-      font-size: 12px;
-      font-weight: 1000;
-    }
-
-    .table-scroll {
-      overflow: auto;
-      max-height: 390px;
-    }
-
-    .empty-preview {
-      padding: 32px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(13, 22, 38, 0.56);
-      text-align: center;
-      color: var(--muted-2);
-    }
-
-    table {
-      width: 100%;
-      min-width: 640px;
-      border-collapse: collapse;
-      text-align: left;
-      color: #dbeafe;
-    }
-
-    th, td {
-      padding: 12px 13px;
-      border-bottom: 1px solid rgba(148,163,184,0.14);
-      white-space: nowrap;
-      max-width: 360px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 13px;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #1b2940;
-      color: #eaf2ff;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    tr:hover td { background: rgba(57, 200, 244, 0.06); }
-    td.empty { color: #53647b; }
-
-    .footer-note {
-      margin-top: 16px;
-      color: var(--muted-2);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    @media (max-width: 1120px) {
-      .shell { width: min(100%, 980px); padding-top: 58px; }
-      .back-link { position: absolute; }
-    }
-
-    @media (max-width: 850px) {
-      body { padding: 16px; }
-      .shell { width: 100%; padding-top: 64px; }
-      .main-panel, .card { padding: 22px; border-radius: 22px; }
-      .mode-grid, .info-grid, .summary-list { grid-template-columns: 1fr; }
-      .top-row { align-items: flex-start; flex-direction: column; }
-      .files-list li { grid-template-columns: 1fr; }
-      .files-list li span:last-child { text-align: left; }
-    }
-
   </style>
 </head>
-
 <body>
-  <a class="back-link" href="Market.html">← Market</a>
+  <div class="wrap">
+    <a class="back" href="Market.html">← Back</a>
+    <div class="card">
+      <h1>Excel Price Formatter</h1>
+      <p class="subtitle">Upload your Excel file and download the formatted version.</p>
 
-  <main class="shell">
-    <section class="main-panel">
-      <div class="top-row">
-        
-        <div class="quick-tags">
-        </div>
-      </div>
+    <label class="upload" for="excelFile">
+      <strong>Upload Excel File</strong>
+      <span>.xlsx or .xls</span>
+    </label>
+    <input id="excelFile" type="file" accept=".xlsx,.xls" />
+    <div id="fileName" class="file-name"></div>
 
-      <h1>Shoneez Fresh</h1>
-      <section class="card">
-        <div class="card-head">
-          <h2><span class="step">1</span> Choose Processing Mode</h2>
-        </div>
-        <div class="mode-grid" aria-label="Processing mode">
-          <label class="mode-card" id="exportOption" tabindex="0">
-            <input type="checkbox" id="modeExport" value="export" />
-            <span class="mode-icon" aria-hidden="true">⇄</span>
-            <span class="mode-copy">
-              <small>File 1 + Export</small>
-              <strong>From Export</strong>
-              <span>Compare File 1 column K with Export column J, then place the matching Export column K value into output column C.</span>
-            </span>
-            <span class="mode-check" aria-hidden="true">✓</span>
-          </label>
+    <button id="downloadBtn" disabled>Download File</button>
+    <div id="status" class="status"></div>
+    </div>
+  </div>
 
-          <label class="mode-card" id="sameOption" tabindex="0">
-            <input type="checkbox" id="modeSame" value="same" />
-            <span class="mode-icon" aria-hidden="true">☑</span>
-            <span class="mode-copy">
-              <small>Single source</small>
-              <strong>From the Same Excel</strong>
-              <span>No second file needed. Keep columns K, M, and L from the Excel file or every Excel file inside a ZIP.</span>
-            </span>
-            <span class="mode-check" aria-hidden="true">✓</span>
-          </label>
-        </div>
+<script>
+(() => {
+  const fileInput = document.getElementById('excelFile');
+  const fileName = document.getElementById('fileName');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const status = document.getElementById('status');
 
-        <div id="exportSection" class="section hidden">
-          <h3><span class="step">2</span> From Export Files</h3>
+  let outputWorkbook = null;
+  let outputName = 'processed.xlsx';
 
-          <div class="field">
-            <label for="firstExcel">SKU</label>
-            <div class="file-box">
-              <input id="firstExcel" type="file" accept=".xlsx,.xls,.xlsm,.xlsb" />
-            </div>
-            <p class="hint">From the first file: column K becomes A, and column M becomes B.</p>
-          </div>
+  const col = (row, index) => row[index] ?? '';
 
-          <div class="field">
-            <label for="secondFile">Export xlsx or zip</label>
-            <div class="file-box">
-              <input id="secondFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.zip" />
-            </div>
-            <p class="hint">Match File 1 column K with File 2 column J. If found, File 2 column K becomes output column C. If not found, the row is removed.</p>
-          </div>
-        </div>
+  function toNumber(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (value === null || value === undefined || value === '') return NaN;
+    const cleaned = String(value).replace(/,/g, '').replace(/[^0-9.+-]/g, '').trim();
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : NaN;
+  }
 
-        <div id="sameSection" class="section hidden">
-          <h3><span class="step">2</span> Same Excel / ZIP</h3>
+  // Same result as Excel CEILING(number, 0.05) for normal positive prices.
+  function ceiling005(value) {
+    if (!Number.isFinite(value)) return '';
+    if (value === 0) return 0;
+    const result = Math.ceil((value - 1e-10) / 0.05) * 0.05;
+    return Number(result.toFixed(2));
+  }
 
-          <div class="field">
-            <label for="sameFile">Excel or ZIP File</label>
-            <div class="file-box">
-              <input id="sameFile" type="file" accept=".xlsx,.xls,.xlsm,.xlsb,.zip" />
-            </div>
-          
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="processBtn" class="primary">⚙ Process & Download</button>
-          <button id="resetBtn" class="secondary">Reset</button>
-        </div>
-
-        <div id="status" class="status">Waiting for files... Output keeps Row 1, inserts a blank Row 2, then shifts the rest down.</div>
-      </section>
-      
-
-    <section class="card preview-card">
-      <div class="card-head">
-        <h2><span class="step">3</span> Preview</h2>
-      </div>
-      <p class="hint" id="previewHint">After processing, a preview for each output file will appear here. Row 1 stays in place, Row 2 is blank, and the rest shifts down.</p>
-
-      <div id="summary" class="summary-list hidden"></div>
-      <ul id="filesList" class="files-list hidden"></ul>
-
-      <div id="previewArea" class="preview-stack">
-        <div class="empty-preview">No preview yet.</div>
-      </div>
-
-      
-    </section>
-  </main>
-
-  <script>
-
-    const COL = { J: 9, K: 10, L: 11, M: 12 };
-    const EXCEL_RE = /\.(xlsx|xls|xlsm|xlsb)$/i;
-    const ZIP_RE = /\.zip$/i;
-
-    const els = {
-      modeExport: document.getElementById('modeExport'),
-      modeSame: document.getElementById('modeSame'),
-      exportOption: document.getElementById('exportOption'),
-      sameOption: document.getElementById('sameOption'),
-      exportSection: document.getElementById('exportSection'),
-      sameSection: document.getElementById('sameSection'),
-      firstExcel: document.getElementById('firstExcel'),
-      secondFile: document.getElementById('secondFile'),
-      sameFile: document.getElementById('sameFile'),
-      processBtn: document.getElementById('processBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      status: document.getElementById('status'),
-      previewArea: document.getElementById('previewArea'),
-      previewHint: document.getElementById('previewHint'),
-      summary: document.getElementById('summary'),
-      filesList: document.getElementById('filesList')
-    };
-
-    let latestOutputs = [];
-    let latestMode = '';
-
-    function setStatus(message, type = '') {
-      els.status.className = `status ${type}`.trim();
-      els.status.textContent = message;
-    }
-
-    function isExcelName(name) {
-      return EXCEL_RE.test(name || '');
-    }
-
-    function isZipName(name) {
-      return ZIP_RE.test(name || '');
-    }
-
-    function baseName(name) {
-      return String(name || 'Output')
-        .split(/[\\/]/).pop()
-        .replace(/\.(xlsx|xls|xlsm|xlsb)$/i, '')
-        .replace(/[^a-z0-9_\- .()]/gi, '_') || 'Output';
-    }
-
-    function getMode() {
-      if (els.modeExport.checked) return 'export';
-      if (els.modeSame.checked) return 'same';
-      return '';
-    }
-
-    function updateModeUI() {
-      const mode = getMode();
-      els.exportOption.classList.toggle('active', mode === 'export');
-      els.sameOption.classList.toggle('active', mode === 'same');
-      els.exportSection.classList.toggle('hidden', mode !== 'export');
-      els.sameSection.classList.toggle('hidden', mode !== 'same');
-    }
-
-    function chooseMode(mode) {
-      els.modeExport.checked = mode === 'export';
-      els.modeSame.checked = mode === 'same';
-      latestOutputs = [];
-      clearPreview();
-      updateModeUI();
-      setStatus('Mode selected. Upload the required file(s), then click Process & Download.');
-    }
-
-    els.modeExport.addEventListener('change', () => chooseMode(els.modeExport.checked ? 'export' : ''));
-    els.modeSame.addEventListener('change', () => chooseMode(els.modeSame.checked ? 'same' : ''));
-
-    [els.exportOption, els.sameOption].forEach((card, index) => {
-      card.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          chooseMode(index === 0 ? 'export' : 'same');
-        }
-      });
+  function buildOutput(firstSheet) {
+    // Read displayed/raw cells from the first worksheet only.
+    const rows = XLSX.utils.sheet_to_json(firstSheet, {
+      header: 1,
+      raw: true,
+      defval: ''
     });
 
-    function normalizeKey(value) {
-      return String(value ?? '').trim();
-    }
+    if (!rows.length) throw new Error('The first sheet is empty.');
 
-    function normalizeStockValue(value) {
-      const raw = String(value ?? '').trim();
-      if (raw === '') return '';
-      return Number(raw) === 0 ? 0 : '';
-    }
+    const sourceHeader = rows[0] || [];
 
-    function insertBlankSecondRow(dataRows) {
-      if (!Array.isArray(dataRows) || dataRows.length === 0) return [];
-      return [dataRows[0], [], ...dataRows.slice(1)];
-    }
+    // Final output:
+    // A = source K
+    // B = final price M after moving I -> H. In this workbook M = CEILING(L * H, 0.05),
+    //     so H is treated as the value from I and M is recalculated here.
+    // C = blank
+    // D = 0 for all data rows
+    // Row 2 = inserted blank row
+    // Columns after D do not exist.
+    const out = [];
 
-    function readWorkbookFromFile(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = event => {
-          try {
-            const data = new Uint8Array(event.target.result);
-            resolve(XLSX.read(data, { type: 'array' }));
-          } catch (error) {
-            reject(error);
-          }
-        };
-        reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
-        reader.readAsArrayBuffer(file);
-      });
-    }
+    // Keep mapped headers on row 1. D keeps the original N header while all data below it are 0.
+    out.push([
+      col(sourceHeader, 10),  // K1
+      col(sourceHeader, 12),  // M1
+      '',                     // C1 blank
+      col(sourceHeader, 13)   // N1 header
+    ]);
 
-    function readWorkbookFromArrayBuffer(buffer) {
-      const data = new Uint8Array(buffer);
-      return XLSX.read(data, { type: 'array' });
-    }
+    // Insert a blank row after row 1.
+    out.push(['', '', '', '']);
 
-    function rowsFromWorkbook(workbook) {
-      const sheetName = workbook.SheetNames[0];
-      if (!sheetName) return [];
-      const worksheet = workbook.Sheets[sheetName];
-      return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-    }
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r] || [];
+      const sku = col(row, 10);       // K
+      const priceI = toNumber(col(row, 8));  // I -> H internally
+      const unitL = toNumber(col(row, 11));  // L
 
-    function makeWorkbookBytes(aoa) {
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.aoa_to_sheet(aoa);
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-      return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    }
-
-    function makeOutputName(prefix, sourceName) {
-      return `${prefix}_${baseName(sourceName)}.xlsx`;
-    }
-
-    function buildExportLookup(rows) {
-      const lookup = new Map();
-      let duplicateKeys = 0;
-
-      for (const row of rows) {
-        const key = normalizeKey(row[COL.J]);
-        if (!key) continue;
-        if (lookup.has(key)) duplicateKeys += 1;
-        if (!lookup.has(key)) lookup.set(key, row[COL.K]);
-      }
-
-      return { lookup, duplicateKeys };
-    }
-
-    function buildExportResult(firstRows, exportRows, sourceName) {
-      const { lookup, duplicateKeys } = buildExportLookup(exportRows);
-      const dataRows = [];
-      let matched = 0;
-      let removed = 0;
-
-      for (const row of firstRows) {
-        const item = normalizeKey(row[COL.K]);
-        if (!item) {
-          removed += 1;
-          continue;
-        }
-
-        if (!lookup.has(item)) {
-          removed += 1;
-          continue;
-        }
-
-        matched += 1;
-        dataRows.push([
-          row[COL.K] ?? '',
-          row[COL.M] ?? '',
-          normalizeStockValue(lookup.get(item))
-        ]);
-      }
-
-      const aoa = insertBlankSecondRow(dataRows);
-
-      return {
-        fileName: makeOutputName('Processed_From_Export', sourceName),
-        aoa,
-        bytes: makeWorkbookBytes(aoa),
-        stats: {
-          type: 'From Export',
-          source: sourceName,
-          inputRows: firstRows.length,
-          exportRows: exportRows.length,
-          outputRows: dataRows.length,
-          matched,
-          removed,
-          duplicateKeys
-        }
-      };
-    }
-
-    function buildSameExcelResult(rows, sourceName) {
-      const dataRows = rows.map(row => [
-        row[COL.K] ?? '',
-        row[COL.M] ?? '',
-        normalizeStockValue(row[COL.L])
-      ]);
-
-      const aoa = insertBlankSecondRow(dataRows);
-
-      return {
-        fileName: makeOutputName('Processed_From_Same_Excel', sourceName),
-        aoa,
-        bytes: makeWorkbookBytes(aoa),
-        stats: {
-          type: 'From the Same Excel',
-          source: sourceName,
-          inputRows: rows.length,
-          outputRows: dataRows.length
-        }
-      };
-    }
-
-    async function getExcelEntriesFromZip(file) {
-      const zip = await JSZip.loadAsync(file);
-      return Object.values(zip.files)
-        .filter(entry => !entry.dir && isExcelName(entry.name))
-        .sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    async function processExportMode() {
-      const firstFile = els.firstExcel.files[0];
-      const secondFile = els.secondFile.files[0];
-
-      if (!firstFile) throw new Error('Upload the first Excel file.');
-      if (!secondFile) throw new Error('Upload the second Excel or ZIP file.');
-      if (!isExcelName(firstFile.name)) throw new Error('The first file must be an Excel file.');
-      if (!isExcelName(secondFile.name) && !isZipName(secondFile.name)) throw new Error('The second file must be Excel or ZIP.');
-
-      setStatus('Reading the first Excel file and preparing columns K and M...', 'warn');
-      const firstWorkbook = await readWorkbookFromFile(firstFile);
-      const firstRows = rowsFromWorkbook(firstWorkbook);
-
-      if (!firstRows.length) throw new Error('The first Excel file has no readable rows.');
-
-      const outputs = [];
-
-      if (isZipName(secondFile.name)) {
-        setStatus('Extracting the ZIP and processing each Excel file inside it...', 'warn');
-        const entries = await getExcelEntriesFromZip(secondFile);
-        if (!entries.length) throw new Error('The ZIP file does not contain any Excel files.');
-
-        for (const entry of entries) {
-          const buffer = await entry.async('arraybuffer');
-          const workbook = await readWorkbookFromArrayBuffer(buffer);
-          const exportRows = rowsFromWorkbook(workbook);
-          outputs.push(buildExportResult(firstRows, exportRows, entry.name));
-        }
+      let finalPrice = '';
+      if (Number.isFinite(priceI) && Number.isFinite(unitL)) {
+        finalPrice = ceiling005(priceI * unitL);
       } else {
-        setStatus('Matching File 1 column K with File 2 column J...', 'warn');
-        const secondWorkbook = await readWorkbookFromFile(secondFile);
-        const exportRows = rowsFromWorkbook(secondWorkbook);
-        outputs.push(buildExportResult(firstRows, exportRows, secondFile.name));
+        // Fallback only when the source already contains a usable numeric M value.
+        const existingM = toNumber(col(row, 12));
+        if (Number.isFinite(existingM)) finalPrice = existingM;
       }
 
-      return outputs;
+      // Skip completely empty trailing rows.
+      const hasAnything = row.some(v => v !== '' && v !== null && v !== undefined);
+      if (!hasAnything) continue;
+
+      out.push([sku, finalPrice, '', 0]);
     }
 
-    async function processSameMode() {
-      const sameFile = els.sameFile.files[0];
+    const ws = XLSX.utils.aoa_to_sheet(out);
 
-      if (!sameFile) throw new Error('Upload an Excel or ZIP file.');
-      if (!isExcelName(sameFile.name) && !isZipName(sameFile.name)) throw new Error('The file must be Excel or ZIP.');
+    // Simple practical widths. Only A:D are created.
+    ws['!cols'] = [
+      { wch: 22 },
+      { wch: 16 },
+      { wch: 8 },
+      { wch: 16 }
+    ];
 
-      const outputs = [];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    return wb;
+  }
 
-      if (isZipName(sameFile.name)) {
-        setStatus('Extracting the ZIP and processing K, M, and L for each Excel file...', 'warn');
-        const entries = await getExcelEntriesFromZip(sameFile);
-        if (!entries.length) throw new Error('The ZIP file does not contain any Excel files.');
+  fileInput.addEventListener('change', async () => {
+    downloadBtn.disabled = true;
+    outputWorkbook = null;
+    status.textContent = '';
+    status.className = 'status';
 
-        for (const entry of entries) {
-          const buffer = await entry.async('arraybuffer');
-          const workbook = await readWorkbookFromArrayBuffer(buffer);
-          const rows = rowsFromWorkbook(workbook);
-          outputs.push(buildSameExcelResult(rows, entry.name));
-        }
-      } else {
-        setStatus('Processing K, M, and L from the selected Excel file...', 'warn');
-        const workbook = await readWorkbookFromFile(sameFile);
-        const rows = rowsFromWorkbook(workbook);
-        outputs.push(buildSameExcelResult(rows, sameFile.name));
-      }
-
-      return outputs;
+    const file = fileInput.files?.[0];
+    if (!file) {
+      fileName.textContent = '';
+      return;
     }
 
-    async function downloadOutputs(outputs, mode) {
-      if (!outputs.length) return;
+    fileName.textContent = file.name;
 
-      if (outputs.length === 1) {
-        const blob = new Blob([outputs[0].bytes], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        saveAs(blob, outputs[0].fileName);
-        return;
-      }
+    try {
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array', cellFormula: true, cellNF: true, cellStyles: true });
+      if (!wb.SheetNames.length) throw new Error('No worksheet found.');
 
-      const zip = new JSZip();
-      for (const output of outputs) {
-        zip.file(output.fileName, output.bytes);
-      }
+      const firstSheet = wb.Sheets[wb.SheetNames[0]];
+      outputWorkbook = buildOutput(firstSheet);
 
-      const zipName = mode === 'export'
-        ? 'Processed_From_Export_Results.zip'
-        : 'Processed_From_Same_Excel_Results.zip';
-
-      const blob = await zip.generateAsync({ type: 'blob' });
-      saveAs(blob, zipName);
+      const base = file.name.replace(/\.(xlsx|xls)$/i, '');
+      outputName = `${base}_ready.xlsx`;
+      downloadBtn.disabled = false;
+      status.textContent = 'File is ready.';
+    } catch (err) {
+      status.textContent = err?.message || 'Could not process the file.';
+      status.className = 'status error';
     }
+  });
 
-    function escapeHTML(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function renderSinglePreviewTable(output, outputIndex) {
-      const rows = output?.aoa || [];
-      const maxRows = Math.min(rows.length, 60);
-      const stats = output?.stats || {};
-      const outputRows = stats.outputRows ?? Math.max(rows.length - 2, 0);
-
-      let bodyHTML = '';
-
-      if (!rows.length) {
-        bodyHTML = '<tr><td colspan="4" style="text-align:center; color:#64748b;">No data to preview.</td></tr>';
-      } else {
-        for (let i = 0; i < maxRows; i++) {
-          const row = rows[i] || [];
-          bodyHTML += '<tr>';
-          bodyHTML += `<td>${i + 1}</td>`;
-          for (let c = 0; c < 3; c++) {
-            const value = row[c] ?? '';
-            const isEmpty = String(value).trim() === '';
-            bodyHTML += `<td${isEmpty ? ' class="empty"' : ''}>${isEmpty ? '—' : escapeHTML(value)}</td>`;
-          }
-          bodyHTML += '</tr>';
-        }
-
-        if (rows.length > maxRows) {
-          bodyHTML += `<tr><td colspan="4" style="text-align:center; color:#64748b;">Showing the first ${maxRows} rows out of ${rows.length} rows.</td></tr>`;
-        }
-      }
-
-      return `
-        <section class="file-preview">
-          <div class="file-preview-head">
-            <div class="file-preview-title">${outputIndex + 1}. ${escapeHTML(output.fileName)}</div>
-            <div class="file-preview-meta">${escapeHTML(outputRows)} output rows</div>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:70px;">Row</th>
-                  <th>A</th>
-                  <th>B</th>
-                  <th>C</th>
-                </tr>
-              </thead>
-              <tbody>${bodyHTML}</tbody>
-            </table>
-          </div>
-        </section>
-      `;
-    }
-
-    function renderPreviews(outputs) {
-      const previewLimit = 10;
-      const visibleOutputs = (outputs || []).slice(0, previewLimit);
-
-      if (!visibleOutputs.length) {
-        els.previewArea.innerHTML = '<div class="empty-preview">No data to preview.</div>';
-        return;
-      }
-
-      els.previewArea.innerHTML = visibleOutputs
-        .map((output, index) => renderSinglePreviewTable(output, index))
-        .join('');
-
-      if (outputs.length > previewLimit) {
-        els.previewArea.innerHTML += `<div class="empty-preview">Preview is limited to the first ${previewLimit} files. All ${outputs.length} files were still processed and included in the download.</div>`;
-      }
-    }
-
-    function renderSummary(outputs) {
-      if (!outputs.length) {
-        els.summary.classList.add('hidden');
-        els.filesList.classList.add('hidden');
-        return;
-      }
-
-      const first = outputs[0].stats;
-      const totalOutputRows = outputs.reduce((sum, item) => sum + (item.stats.outputRows || 0), 0);
-      const totalRemoved = outputs.reduce((sum, item) => sum + (item.stats.removed || 0), 0);
-      const totalMatched = outputs.reduce((sum, item) => sum + (item.stats.matched || 0), 0);
-
-      const cards = [
-        ['Output Files', outputs.length],
-        ['Output Rows', totalOutputRows],
-        [first.type === 'From Export' ? 'Matched' : 'Input Rows', first.type === 'From Export' ? totalMatched : totalOutputRows],
-        [first.type === 'From Export' ? 'Removed' : 'Mode', first.type === 'From Export' ? totalRemoved : 'Same Excel']
-      ];
-
-      els.summary.innerHTML = cards.map(([label, value]) => `
-        <div class="stat">
-          <span>${escapeHTML(label)}</span>
-          <b>${escapeHTML(value)}</b>
-        </div>
-      `).join('');
-      els.summary.classList.remove('hidden');
-
-      els.filesList.innerHTML = outputs.map((output, index) => {
-        const s = output.stats;
-        const details = s.type === 'From Export'
-          ? `Matched: ${s.matched} | Removed: ${s.removed} | Duplicate J keys: ${s.duplicateKeys}`
-          : `Rows: ${s.outputRows}`;
-        return `<li><span>${index + 1}. ${escapeHTML(output.fileName)}</span><span>${escapeHTML(details)}</span></li>`;
-      }).join('');
-      els.filesList.classList.remove('hidden');
-
-      els.previewHint.textContent = outputs.length > 1
-        ? `Preview is showing all output files on this page: ${outputs.length} file(s).`
-        : `Preview is showing the output file: ${outputs[0].fileName}`;
-    }
-
-    function clearPreview() {
-      els.previewArea.innerHTML = '<div class="empty-preview">No preview yet.</div>';
-      els.summary.classList.add('hidden');
-      els.filesList.classList.add('hidden');
-      els.summary.innerHTML = '';
-      els.filesList.innerHTML = '';
-      els.previewHint.textContent = 'After processing, a preview for each output file will appear here. Row 1 stays in place, Row 2 is blank, and the rest shifts down.';
-    }
-
-    async function handleProcess() {
-      const mode = getMode();
-      if (!mode) {
-        setStatus('Choose From Export or From the Same Excel first.', 'error');
-        return;
-      }
-
-      latestOutputs = [];
-      latestMode = mode;
-      els.processBtn.disabled = true;
-      clearPreview();
-
-      try {
-        if (typeof XLSX === 'undefined' || typeof JSZip === 'undefined' || typeof saveAs === 'undefined') {
-          throw new Error('Libraries did not load. Make sure you are connected to the internet, then reopen the page.');
-        }
-
-        const outputs = mode === 'export'
-          ? await processExportMode()
-          : await processSameMode();
-
-        if (!outputs.length) throw new Error('No output file was created.');
-
-        latestOutputs = outputs;
-        renderSummary(outputs);
-        renderPreviews(outputs);
-        await downloadOutputs(outputs, mode);
-
-        setStatus(`Done. ${outputs.length} output file(s) prepared and downloaded.`, 'success');
-      } catch (error) {
-        console.error(error);
-        setStatus(error.message || 'An error happened while processing.', 'error');
-      } finally {
-        els.processBtn.disabled = false;
-      }
-    }
-
-    function resetAll() {
-      latestOutputs = [];
-      latestMode = '';
-      els.modeExport.checked = false;
-      els.modeSame.checked = false;
-      els.firstExcel.value = '';
-      els.secondFile.value = '';
-      els.sameFile.value = '';
-      updateModeUI();
-      clearPreview();
-      setStatus('Choose a mode, upload the required files, then click Process & Download.');
-    }
-
-    els.processBtn.addEventListener('click', handleProcess);
-    els.resetBtn.addEventListener('click', resetAll);
-    updateModeUI();
-  
-  </script>
+  downloadBtn.addEventListener('click', () => {
+    if (!outputWorkbook) return;
+    XLSX.writeFile(outputWorkbook, outputName, { bookType: 'xlsx', compression: true });
+  });
+})();
+</script>
 </body>
 </html>
