@@ -1269,6 +1269,15 @@
   $("appRegularBtn").addEventListener("click", () => setViewMode("regular"));
 
   document.addEventListener("keydown", (e) => {
+    const target = e.target;
+    const isTyping = target && (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "SELECT" ||
+      target.isContentEditable
+    );
+    if (isTyping) return;
+
     if (!items.length) return;
 
     if (e.key === "ArrowLeft") {
