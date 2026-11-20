@@ -1,305 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Excel Price Formatter</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    *{box-sizing:border-box}
-    :root{
-      --bg:#0b1220;
-      --card:#111827;
-      --line:#263244;
-      --text:#f8fafc;
-      --muted:#94a3b8;
-      --accent:#3b82f6;
-      --accent2:#2563eb;
-      --danger:#f87171;
-    }
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      font-family:Inter,Segoe UI,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 20% 15%,rgba(59,130,246,.18),transparent 28%),
-        radial-gradient(circle at 80% 85%,rgba(37,99,235,.12),transparent 28%),
-        var(--bg);
-    }
-    .wrap{
-      width:min(560px,100%);
-    }
-    .back{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:14px;
-      padding:9px 13px;
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:#0f172a;
-      color:#cbd5e1;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:700;
-      transition:.2s;
-    }
-    .back:hover{
-      border-color:var(--accent);
-      color:#fff;
-      transform:translateY(-1px);
-    }
-    .card{
-      width:100%;
-      background:rgba(17,24,39,.96);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:30px;
-      box-shadow:0 24px 60px rgba(0,0,0,.35);
-      backdrop-filter:blur(10px);
-    }
-    h1{
-      font-size:27px;
-      margin:0 0 8px;
-      text-align:center;
-      letter-spacing:-.4px;
-    }
-    .subtitle{
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-      margin:0 0 24px;
-    }
-    .upload{
-      display:block;
-      border:2px dashed #3a475c;
-      border-radius:16px;
-      padding:34px 20px;
-      text-align:center;
-      cursor:pointer;
-      background:#0b1220;
-      transition:.2s;
-    }
-    .upload:hover{
-      border-color:var(--accent);
-      background:#101a2d;
-      transform:translateY(-1px);
-    }
-    .upload strong{
-      display:block;
-      font-size:17px;
-      margin-bottom:7px;
-      color:#fff;
-    }
-    .upload span{
-      font-size:13px;
-      color:var(--muted);
-    }
-    input[type=file]{display:none}
-    .file-name{
-      margin:14px 0 0;
-      font-size:13px;
-      color:#cbd5e1;
-      text-align:center;
-      min-height:18px;
-      word-break:break-word;
-    }
-    button{
-      width:100%;
-      margin-top:24px;
-      padding:14px 16px;
-      border:0;
-      border-radius:12px;
-      font-size:16px;
-      font-weight:800;
-      cursor:pointer;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
-      color:white;
-      transition:.2s;
-    }
-    button:disabled{
-      background:#334155;
-      color:#94a3b8;
-      cursor:not-allowed;
-    }
-    button:not(:disabled):hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 28px rgba(37,99,235,.28);
-    }
-    .status{
-      margin-top:14px;
-      text-align:center;
-      font-size:13px;
-      color:var(--muted);
-      min-height:18px;
-    }
-    .error{color:var(--danger)}
-    @media(max-width:560px){
-      body{padding:16px}
-      .card{padding:22px}
-      h1{font-size:23px}
-    }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shoneez</title>
+<style>
+:root{--bg:#080e1d;--panel:#111b31;--panel2:#17233b;--border:#293750;--text:#f2f6ff;--muted:#9aabc4;--primary:#7d75ff;--cyan:#30d2d4;--green:#39dca2;--red:#ff7e98;--shadow:0 20px 70px #0004}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 90% 0,#22245a80,transparent 38%),radial-gradient(ellipse at 3% 78%,#0a555258,transparent 45%),var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Tahoma,Arial,sans-serif;color:var(--text);line-height:1.65}button,input{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.48}.shell{max-width:1240px;margin:auto;padding:34px 22px 65px}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:14px}.logo{display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:linear-gradient(145deg,var(--primary),#3cd5d7);font-size:25px;box-shadow:0 12px 32px #646bff55}.brand h1{font-size:24px;margin:0;letter-spacing:-.5px}.brand p{margin:0;color:var(--muted);font-size:13px}.pill{padding:7px 14px;border:1px solid #395c67;background:#163039aa;color:#80f2da;border-radius:99px;font-size:12px}.hero{display:grid;grid-template-columns:1.45fr .9fr;gap:19px}.card{background:linear-gradient(145deg,#152139eb,#11192de8);border:1px solid var(--border);border-radius:23px;box-shadow:var(--shadow);min-width:0}.upload{padding:26px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}.section-head h2{margin:0;font-size:17px}.number{background:#746cff25;color:#b5b0ff;border:1px solid #746cff66;display:inline-grid;place-items:center;width:31px;height:31px;border-radius:10px;font-size:13px;margin-left:8px}.sub{color:var(--muted);font-size:13px;margin:4px 0 14px}.dropzone{border:2px dashed #55688c;border-radius:20px;background:#1c294158;min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:18px;transition:.2s;cursor:pointer}.dropzone:hover,.dropzone.drag{background:#262c5760;border-color:var(--primary)}.dropzone .symbol{font-size:33px}.dropzone strong{font-size:16px}.dropzone span{color:var(--muted);font-size:12px}.file-info{display:none;align-items:center;gap:10px;margin-top:14px;padding:11px 14px;border-radius:13px;background:#21354a;border:1px solid #42607c;font-size:13px;overflow-wrap:anywhere}.file-info.visible{display:flex}.file-info .check{color:var(--green);font-size:20px}.info{padding:25px}.info h2{margin:0 0 17px;font-size:17px}.steps{display:grid;gap:17px}.step{display:flex;gap:12px}.step-icon{width:36px;height:36px;border-radius:11px;background:#2e335b;display:grid;place-items:center;flex-shrink:0}.step strong{display:block;font-size:13px}.step small{color:var(--muted);display:block;margin-top:2px}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.stat{background:#141f35;border:1px solid var(--border);border-radius:16px;padding:16px 17px}.stat b{display:block;font-size:25px;line-height:1.3;font-variant-numeric:tabular-nums}.stat span{color:var(--muted);font-size:12px}.config{display:grid;grid-template-columns:1fr 1fr;gap:18px}.option{padding:21px;min-width:0}.head-actions{display:flex;gap:7px;flex-wrap:wrap}.small-btn{border:1px solid #405274;background:#24304a;color:#cfd9f1;border-radius:9px;padding:6px 12px;font-size:12px}.small-btn:hover{border-color:#a5a0ff}.filter{width:100%;border:1px solid #3b4b69;background:#0c172a;border-radius:12px;padding:11px 13px;color:var(--text);outline:none;margin-bottom:12px}.filter:focus{border-color:var(--primary)}.cat-list{height:277px;overflow:auto;display:grid;gap:7px;padding-left:4px;scrollbar-color:#465777 transparent}.category{background:#19243c;border:1px solid #2a3a58;border-radius:11px;min-height:42px;padding:9px 12px;display:flex;align-items:center;gap:9px;cursor:pointer}.category:hover{border-color:#747bf7}.category input,.regular input{accent-color:#8b86ff;width:17px;height:17px;cursor:pointer;flex-shrink:0}.cat-title{flex:1;overflow-wrap:anywhere;font-size:13px;direction:auto;text-align:right}.count{font-size:11px;color:#9db3d8;background:#2a3856;padding:2px 8px;border-radius:30px}.regular{display:flex;align-items:center;gap:10px;padding:13px;border:1px solid #3b675a;background:#143c355c;border-radius:12px;margin:0 0 10px;cursor:pointer}.regular strong{font-size:13px}.regular small{display:block;color:#9fd6ca;font-size:11px}.full{grid-column:1/-1}.mode-card{padding:23px}.radio-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mode{cursor:pointer;display:flex;align-items:center;gap:12px;background:#18253c;border:1px solid #354866;border-radius:14px;padding:17px}.mode:has(input:checked){border-color:#857dff;background:#27254d}.mode input{accent-color:var(--primary);width:19px;height:19px}.mode b{font-size:17px}.mode small{font-size:12px;color:var(--muted);display:block}.footer{margin-top:19px;padding:21px;display:flex;justify-content:space-between;gap:20px;align-items:center}.footer p{margin:0;font-size:12px;color:var(--muted)}.process{border:0;background:linear-gradient(105deg,#8a7cff,#4f8cff);color:white;font-size:15px;font-weight:750;border-radius:13px;padding:14px 26px;box-shadow:0 9px 27px #665dff45;white-space:nowrap}.process:not(:disabled):hover{filter:brightness(1.1)}.preview{margin-top:18px;padding:21px}.preview-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.table-holder{overflow:auto;border:1px solid #2b3b56;border-radius:13px;margin-top:13px;max-height:340px}table{width:100%;border-collapse:collapse;text-align:right;font-size:12px}th,td{padding:9px 15px;border-bottom:1px solid #263751;white-space:nowrap}th{background:#21314c;color:#d6e0f3;position:sticky;top:0}td{color:#bbc8de}tr:last-child td{border-bottom:0}.on{color:#4fe6b9}.off{color:#ff9db0}.note{font-size:11px;color:var(--muted)}.alert{display:none;margin-top:12px;padding:12px 14px;background:#4d2638;border:1px solid #934661;border-radius:12px;color:#ffb7c9;font-size:13px}.alert.visible{display:block}.toast{position:fixed;bottom:24px;left:24px;background:#234c40;border:1px solid #478c74;border-radius:12px;padding:13px 18px;color:#c4ffec;box-shadow:0 14px 35px #0006;display:none;z-index:10}.toast.show{display:block}.muted{color:var(--muted)}@media(max-width:790px){.hero,.config{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.top{align-items:flex-start}.footer{flex-direction:column;align-items:stretch}.process{width:100%}.shell{padding:20px 13px 45px}}@media(max-width:420px){.radio-wrap{grid-template-columns:1fr}.brand h1{font-size:18px}.pill{font-size:10px;padding:5px 8px}.stat b{font-size:21px}}
+</style>
 </head>
-<body>
-  <div class="wrap">
-    <a class="back" href="Market.html">← Back</a>
-    <div class="card">
-      <h1>Shoneez Fresh</h1>
-      <p class="subtitle">Upload your Excel file and download the formatted version.</p>
-
-    <label class="upload" for="excelFile">
-      <strong>Upload Excel File</strong>
-      <span>.xlsx or .xls</span>
-    </label>
-    <input id="excelFile" type="file" accept=".xlsx,.xls" />
-    <div id="fileName" class="file-name"></div>
-
-    <button id="downloadBtn" disabled>Download File</button>
-    <div id="status" class="status"></div>
-    </div>
-  </div>
-
+<body><main class="shell">
+<header class="top"><div class="brand"><div class="logo">✦</div><div><h1>Shoneez <span style="color:#9c97ff">Processor</span></h1><p>Daily Excel Processing Dashboard</p></div></div><span class="pill">● Daily Workflow</span></header>
+<section class="hero"><article class="card upload"><div class="section-head"><h2>📁 Upload Product File</h2><span class="pill">Excel .xlsx / .xls</span></div><p class="sub">Upload your daily Excel file. Categories and products are detected automatically. N/A-price products are excluded from this export only and can return in future uploads.</p><div class="dropzone" id="drop" role="button" tabindex="0" aria-label="Choose an Excel file"><div class="symbol">☁️</div><strong>Click to browse or drag an Excel file here</strong><span>First worksheet • SKU, FINAL PRICE, and Category</span></div><input type="file" id="file" accept=".xlsx,.xls,.xlsm" hidden><div id="fileInfo" class="file-info"><span class="check">✓</span><span id="fileName"></span></div><div id="err" class="alert"></div></article><article class="card info"><h2>⚡ How It Works</h2><div class="steps"><div class="step"><div class="step-icon">✂</div><div><strong>Remove Categories & N/A</strong><small>Exclude selected categories and invalid-price rows for this export only. Every upload starts fresh.</small></div></div><div class="step"><div class="step-icon">◉</div><div><strong>Assign ON / OUT</strong><small>The 12 Regular Items stay ON by default; all other items are OUT.</small></div></div><div class="step"><div class="step-icon">↧</div><div><strong>Duplicate Rows & Export</strong><small>Append an identical copy of every final row, changing only the SKU prefix SHO to SHO0.</small></div></div></div></article></section>
+<section class="stats"><div class="stat"><b id="sTotal">—</b><span>Input Products</span></div><div class="stat"><b id="sDelete" style="color:var(--red)">—</b><span>Excluded Rows</span></div><div class="stat"><b id="sOn" style="color:var(--green)">—</b><span>ON (Original)</span></div><div class="stat"><b id="sOff" style="color:#b5acff">—</b><span>OUT (Original)</span></div></section>
+<section class="config"><article class="card option"><div class="section-head"><h2><span class="number">1</span> Delete — Exclude Categories</h2><span class="pill" id="deleteCount">1 selected</span></div><p class="sub">Products in checked categories are removed from the export. <b style="color:#ffb4c3">Meat is selected by default</b> (you can uncheck it).</p><div class="head-actions"><button class="small-btn" id="dAll">Select All</button><button class="small-btn" id="dNone">Clear All</button><button class="small-btn" id="dDefault">Reset</button></div><div style="height:10px"></div><input class="filter" id="dSearch" placeholder="🔎 Search categories..." aria-label="Search categories to exclude"><div class="cat-list" id="deleteList"></div></article>
+<article class="card option"><div class="section-head"><h2><span class="number">2</span> OUT — Select Categories</h2><span class="pill" id="outCount">All</span></div><p class="sub">Checked categories are OUT = 0. Unchecked categories are ON, except for the Regular Items override below.</p><div class="head-actions"><button class="small-btn" id="oAll">Select All</button><button class="small-btn" id="oNone">Clear All</button><button class="small-btn" id="oDefault">Reset</button></div><div style="height:10px"></div><label class="regular"><input id="regularOut" type="checkbox"><span><strong>Regular Items — 12 SKU</strong><small>Unchecked by default: Regular Items stay ON even when their category is OUT.</small></span><span class="count">Override</span></label><input class="filter" id="oSearch" placeholder="🔎 Search categories..." aria-label="Search categories to mark OUT"><div class="cat-list" id="outList"></div></article>
+<article class="card mode-card full"><div class="section-head"><h2><span class="number">3</span> ON — Output Value</h2><span class="pill">Choose One</span></div><p class="sub">OUT items always use <strong>0</strong>. ON items default to <strong>9999</strong>, or you can switch to blank at any time.</p><div class="radio-wrap"><label class="mode"><input type="radio" name="onmode" value="blank"><span><b>Blank</b><small>ON → column D is blank</small></span></label><label class="mode"><input type="radio" name="onmode" value="9999" checked><span><b>9999</b><small>ON → column D contains 9999</small></span></label></div></article></section>
+<section class="card preview" id="previewBox" hidden><div class="preview-head"><h2 style="margin:0;font-size:17px">👁️ Output Preview</h2><span class="note">First 15 rows • Duplicate SHO0 rows are appended after originals</span></div><div class="table-holder"><table><thead><tr><th>A — SKU</th><th>B — FINAL PRICE</th><th>C — Blank</th><th>D — active orNot</th></tr></thead><tbody id="previewBody"></tbody></table></div></section>
+<section class="card footer"><div><strong>✅ Ready to Export</strong><p id="footerHint">Upload a file to see the preview. Processing runs in your browser.</p></div><button class="process" id="process" disabled>⬇ Process & Download Excel</button></section><div style="text-align:center;padding-top:19px;color:#64738e;font-size:12px">SHONEEZ • Daily Excel Processor</div></main><div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-(() => {
-  const fileInput = document.getElementById('excelFile');
-  const fileName = document.getElementById('fileName');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const status = document.getElementById('status');
-
-  let outputWorkbook = null;
-  let outputName = 'processed.xlsx';
-
-  const col = (row, index) => row[index] ?? '';
-
-  function toNumber(value) {
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-    if (value === null || value === undefined || value === '') return NaN;
-    const cleaned = String(value).replace(/,/g, '').replace(/[^0-9.+-]/g, '').trim();
-    const n = Number(cleaned);
-    return Number.isFinite(n) ? n : NaN;
-  }
-
-  // Same result as Excel CEILING(number, 0.05) for normal positive prices.
-  function ceiling005(value) {
-    if (!Number.isFinite(value)) return '';
-    if (value === 0) return 0;
-    const result = Math.ceil((value - 1e-10) / 0.05) * 0.05;
-    return Number(result.toFixed(2));
-  }
-
-  function buildOutput(firstSheet) {
-    // Read displayed/raw cells from the first worksheet only.
-    const rows = XLSX.utils.sheet_to_json(firstSheet, {
-      header: 1,
-      raw: true,
-      defval: ''
-    });
-
-    if (!rows.length) throw new Error('The first sheet is empty.');
-
-    const sourceHeader = rows[0] || [];
-
-    // Final output:
-    // A = source K
-    // B = final price M after moving I -> H. In this workbook M = CEILING(L * H, 0.05),
-    //     so H is treated as the value from I and M is recalculated here.
-    // C = blank
-    // D = 0 for all data rows
-    // Row 2 = inserted blank row
-    // Columns after D do not exist.
-    const out = [];
-
-    // Keep mapped headers on row 1. D keeps the original N header while all data below it are 0.
-    out.push([
-      col(sourceHeader, 10),  // K1
-      col(sourceHeader, 12),  // M1
-      '',                     // C1 blank
-      col(sourceHeader, 13)   // N1 header
-    ]);
-
-    // Insert a blank row after row 1.
-    out.push(['', '', '', '']);
-
-    for (let r = 1; r < rows.length; r++) {
-      const row = rows[r] || [];
-      const sku = col(row, 10);       // K
-      const priceI = toNumber(col(row, 8));  // I -> H internally
-      const unitL = toNumber(col(row, 11));  // L
-
-      let finalPrice = '';
-      if (Number.isFinite(priceI) && Number.isFinite(unitL)) {
-        finalPrice = ceiling005(priceI * unitL);
-      } else {
-        // Fallback only when the source already contains a usable numeric M value.
-        const existingM = toNumber(col(row, 12));
-        if (Number.isFinite(existingM)) finalPrice = existingM;
-      }
-
-      // Skip completely empty trailing rows.
-      const hasAnything = row.some(v => v !== '' && v !== null && v !== undefined);
-      if (!hasAnything) continue;
-
-      out.push([sku, finalPrice, '', 0]);
-    }
-
-    const ws = XLSX.utils.aoa_to_sheet(out);
-
-    // Simple practical widths. Only A:D are created.
-    ws['!cols'] = [
-      { wch: 22 },
-      { wch: 16 },
-      { wch: 8 },
-      { wch: 16 }
-    ];
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    return wb;
-  }
-
-  fileInput.addEventListener('change', async () => {
-    downloadBtn.disabled = true;
-    outputWorkbook = null;
-    status.textContent = '';
-    status.className = 'status';
-
-    const file = fileInput.files?.[0];
-    if (!file) {
-      fileName.textContent = '';
-      return;
-    }
-
-    fileName.textContent = file.name;
-
-    try {
-      const buffer = await file.arrayBuffer();
-      const wb = XLSX.read(buffer, { type: 'array', cellFormula: true, cellNF: true, cellStyles: true });
-      if (!wb.SheetNames.length) throw new Error('No worksheet found.');
-
-      const firstSheet = wb.Sheets[wb.SheetNames[0]];
-      outputWorkbook = buildOutput(firstSheet);
-
-      const base = file.name.replace(/\.(xlsx|xls)$/i, '');
-      outputName = `${base}_ready.xlsx`;
-      downloadBtn.disabled = false;
-      status.textContent = 'File is ready.';
-    } catch (err) {
-      status.textContent = err?.message || 'Could not process the file.';
-      status.className = 'status error';
-    }
-  });
-
-  downloadBtn.addEventListener('click', () => {
-    if (!outputWorkbook) return;
-    XLSX.writeFile(outputWorkbook, outputName, { bookType: 'xlsx', compression: true });
-  });
-})();
-</script>
-</body>
-</html>
+'use strict';
+const REGULAR=new Set(['SHO557','SHO556','SHO555','SHO532','SHO518','SHO501','SHO507','SHO505','SHO513','SHO655','SHO511','SHO568']);
+const FALLBACK=['Meat','Chicken','Vegetable','Fruit','Fresh Herbs','Pulses and Grains','Herbs & Seasoninig','Roastery','Baking ingredients','Raw Nuts','Herbs','Sweets Products','Dates and Dried Fruit','Coffee','Cheese and Labneh','Cold Meat','Olives & Pickles','Cold Salad','Halawa and Tahini','Spreads'];
+let allCategories=[...FALLBACK], rows=[],currentFile=null, categoryCounts={}, deleted=new Set(['Meat']), out=new Set(FALLBACK),regularOut=false;
+const $=id=>document.getElementById(id);
+const isErr=v=> v&&typeof v==='object'&&v.t==='e'|| typeof v==='string'&&/^(?:#N\/A|N\/A|#NAME\?|#VALUE!|#REF!|#DIV\/0!|#NUM!|#NULL!|NA)$/i.test(v.trim());
+const safeCell=c=>{if(!c)return null;if(c.t==='e')return {t:'e',v:c.v,w:c.w};if(c.t==='n'&&Number.isFinite(c.v))return c.v;if(c.t==='b')return c.v;if(c.t==='s'||c.t==='str')return c.v;if(c.t==='f'&&c.v!==undefined)return c.v;return c.v??null};
+const normal=v=>String(v??'').trim().toLowerCase().replace(/[\s_\-]/g,'');
+function indexes(sheet){const hdr=[];for(let c=0;c<Math.min(35,sheet['!ref']?XLSX.utils.decode_range(sheet['!ref']).e.c+1:12);c++)hdr.push(normal(safeCell(sheet[XLSX.utils.encode_cell({r:0,c})])));const find=(names,fallback)=>{let n=hdr.findIndex(x=>names.includes(x));return n>=0?n:fallback};return {sku:find(['sku','skucode','itemsku'],8),price:find(['finalprice','sellingprice','newprice'],10),cat:find(['category','subcategory','subcat'],4)};}
+function categoriesInit(){const keys=Object.keys(categoryCounts);allCategories=[...new Set(keys.length?keys:FALLBACK)].sort((a,b)=>a.localeCompare(b,'en'));deleted=new Set(allCategories.filter(x=>x.toLowerCase()==='meat'));out=new Set(allCategories);regularOut=false;$('regularOut').checked=false;$('dSearch').value='';$('oSearch').value='';render();}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function makeList(target, searchId, set, flag){const text=$(searchId).value.trim().toLocaleLowerCase();$(target).innerHTML='';let matches=allCategories.filter(c=>c.toLowerCase().includes(text));if(!matches.length){$(target).innerHTML='<div class="muted" style="padding:14px">No matching categories</div>';return}const frag=document.createDocumentFragment();matches.forEach(c=>{const label=document.createElement('label');label.className='category';const check=document.createElement('input');check.type='checkbox';check.checked=set.has(c);check.addEventListener('change',()=>{check.checked?set.add(c):set.delete(c);update()});const title=document.createElement('span');title.className='cat-title';title.textContent=c;const n=document.createElement('span');n.className='count';n.textContent=String(categoryCounts[c]??0);label.append(check,title,n);frag.append(label)});$(target).append(frag)}
+function render(){makeList('deleteList','dSearch',deleted,'delete');makeList('outList','oSearch',out,'out');update(false)}
+function outputData(){let stats={total:rows.length,removed:0,on:0,off:0,invalid:0},result=[];for(const r of rows){if(!r.sku||isErr(r.price)||r.price===null||r.price===undefined||typeof r.price==='string'&&['','-','n/a','na','#n/a'].includes(r.price.trim().toLowerCase())||typeof r.price==='number'&&!Number.isFinite(r.price)||typeof r.price==='string'&&!Number.isFinite(Number(r.price.trim().replace(/,/g,'')))){stats.removed++;stats.invalid++;continue}if(deleted.has(r.cat)){stats.removed++;continue}const off=REGULAR.has(r.sku.toUpperCase())?! !regularOut:out.has(r.cat);if(off)stats.off++;else stats.on++;let price= typeof r.price==='string'?Number(r.price.trim().replace(/,/g,'')):r.price;result.push([r.sku,price,null,off?0:null])}return {stats,result}}
+function duplicateRows(result){return [...result,...result.map(r=>[/^SHO/i.test(r[0])?String(r[0]).replace(/^SHO/i,'SHO0'):String(r[0]),r[1],r[2],r[3]])]}
+function mode9999(){return document.querySelector('input[name="onmode"]:checked').value==='9999'}
+function output(){let {stats,result}=outputData();if(mode9999())for(const r of result)if(r[3]===null)r[3]=9999;return {stats,result}}
+function update(refresh=true){if(refresh){makeList('deleteList','dSearch',deleted);makeList('outList','oSearch',out)}$('deleteCount').textContent=deleted.size+' selected';$('outCount').textContent=(out.size+(regularOut?1:0))+' selected';if(!currentFile)return;let {stats,result}=output();const finalRows=duplicateRows(result);$('sTotal').textContent=stats.total.toLocaleString('en-US');$('sDelete').textContent=stats.removed.toLocaleString('en-US');$('sOn').textContent=stats.on.toLocaleString('en-US');$('sOff').textContent=stats.off.toLocaleString('en-US');$('previewBox').hidden=false;$('previewBody').innerHTML=finalRows.slice(0,15).map(r=>`<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td>—</td><td class="${r[3]===0?'off':'on'}">${r[3]===0?'0 (OUT)':r[3]===9999?'9999 (ON)':'Blank (ON)'}</td></tr>`).join('')||'<tr><td colspan="4">No rows remain after filtering</td></tr>';$('footerHint').textContent=`Final output: ${finalRows.length} rows (${result.length} original + ${result.length} SHO0 copies) • ${stats.invalid} rows excluded for an invalid price or missing SKU • ${stats.removed-stats.invalid} rows excluded by category.`;}
+async function library(){if(window.XLSX)return;if(!window.__sheetjsBackup){window.__sheetjsBackup=true;const tag=document.createElement('script');tag.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';document.head.append(tag)}for(let i=0;i<35&&!window.XLSX;i++)await new Promise(r=>setTimeout(r,100));if(!window.XLSX)throw new Error('Could not load the Excel library. Check your internet connection and reopen this page.')}
+async function loadFile(file){if(!file)return;try{$('err').classList.remove('visible');$('fileName').textContent='Reading file: '+file.name;$('fileInfo').classList.add('visible');await library();const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false,cellText:true});const ws=wb.Sheets[wb.SheetNames[0]];if(!ws||!ws['!ref'])throw new Error('This file has no readable worksheets.');const rg=XLSX.utils.decode_range(ws['!ref']);const ix=indexes(ws);const first=[...Array(Math.min(25,rg.e.r+1))].map((_,i)=>String(safeCell(ws[XLSX.utils.encode_cell({r:i,c:ix.sku})])??'')).find(x=>x.toUpperCase().startsWith('SHO'));if(!first)throw new Error('No SKU entries found in column I. Check that your file matches the Shoneez template.');const parsed=[],counts={};for(let r=1;r<=rg.e.r;r++){const val=c=>safeCell(ws[XLSX.utils.encode_cell({r,c})]);const raw=val(ix.sku);const sku=String(raw??'').trim();if(!sku)continue;const cat=String(val(ix.cat)??'').trim()||'Uncategorized';const price=val(ix.price);parsed.push({sku,cat,price});counts[cat]=(counts[cat]||0)+1}if(!parsed.length)throw new Error('No products were found in this file.');rows=parsed;categoryCounts=counts;currentFile=file;categoriesInit();$('fileName').textContent=file.name+' • '+rows.length+' products';$('process').disabled=false;toast('Loaded '+rows.length+' products successfully')}catch(e){currentFile=null;rows=[];$('process').disabled=true;$('previewBox').hidden=true;$('err').textContent=e.message||String(e);$('err').classList.add('visible');$('fileInfo').classList.remove('visible')}}
+function download(){if(!currentFile)return;try{const {result}=output();const finalRows=duplicateRows(result);const ws=XLSX.utils.aoa_to_sheet([['SKU','FINAL PRICE',null,'active orNot'],...finalRows]);ws['!cols']=[{wch:21},{wch:18},{wch:7},{wch:19}];ws['!autofilter']={ref:'A1:D'+(finalRows.length+1)};for(let i=1;i<=finalRows.length;i++){const cell=ws['A'+(i+1)];if(cell){cell.t='s';cell.v=String(cell.v)}const p=ws['B'+(i+1)];if(p)p.z='0.########'}const w=XLSX.utils.book_new();XLSX.utils.book_append_sheet(w,ws,'Processed');let fn=currentFile.name.replace(/\.(xlsx|xlsm|xls)$/i,'').replace(/[\\/:*?"<>|]/g,'_')+'_Processed.xlsx';XLSX.writeFile(w,fn,{compression:true});toast('File downloaded: '+finalRows.length+' rows ('+result.length+' original + '+result.length+' SHO0 copies)')}catch(e){$('err').textContent='Could not generate Excel file: '+(e.message||e);$('err').classList.add('visible')}}
+function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(window._tm);window._tm=setTimeout(()=>$('toast').classList.remove('show'),3200)}
+$('drop').addEventListener('click',()=>$('file').click());$('drop').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}});$('file').addEventListener('change',e=>loadFile(e.target.files[0]));['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('drag')}));['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('drag')}));$('drop').addEventListener('drop',e=>loadFile(e.dataTransfer.files[0]));$('process').addEventListener('click',download);['dSearch','oSearch'].forEach((id,i)=>$(id).addEventListener('input',()=>makeList(i?'outList':'deleteList',id,i?out:deleted)));$('regularOut').addEventListener('change',e=>{regularOut=e.target.checked;update()});document.querySelectorAll('input[name="onmode"]').forEach(r=>r.addEventListener('change',()=>update()));
+$('dAll').onclick=()=>{deleted=new Set(allCategories);render()};$('dNone').onclick=()=>{deleted.clear();render()};$('dDefault').onclick=()=>{deleted=new Set(allCategories.filter(x=>x.toLowerCase()==='meat'));render()};$('oAll').onclick=()=>{out=new Set(allCategories);regularOut=true;$('regularOut').checked=true;render()};$('oNone').onclick=()=>{out.clear();regularOut=false;$('regularOut').checked=false;render()};$('oDefault').onclick=()=>{out=new Set(allCategories);regularOut=false;$('regularOut').checked=false;render()};render();
+</script></body></html>
