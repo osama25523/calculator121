@@ -1,144 +1,469 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>City Store</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Store | Excel Processor</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-      text-align: center;
-      padding-top: 60px;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    .btn {
-      padding: 12px 20px;
-      border-radius: 10px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      margin: 10px;
-    }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .upload {
-      background: #38bdf8;
-    }
+.container {
+  width: min(550px, 94%);
+  background: #1e293b;
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 15px 45px #0005;
+}
 
-    .export {
-      background: #22c55e;
-    }
+h1 {
+  margin: 0;
+  text-align: center;
+}
 
-    .export:disabled {
-      background: gray;
-      cursor: not-allowed;
-    }
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin: 12px 0 28px;
+}
 
-    .top-btn {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      background: #111;
-      padding: 10px 15px;
-      border-radius: 10px;
-      text-decoration: none;
-      color: white;
-    }
-  </style>
+.section {
+  margin: 25px 0;
+}
+
+.section-title {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.choice-group {
+  display: flex;
+  gap: 12px;
+}
+
+.choice {
+  flex: 1;
+  padding: 16px;
+  background: #334155;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  background: #075985;
+  border-color: #38bdf8;
+}
+
+input[type="radio"] {
+  accent-color: #38bdf8;
+}
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.upload {
+  background: #38bdf8;
+  color: #082f49;
+}
+
+.export {
+  background: #22c55e;
+  color: #052e16;
+  margin-top: 10px;
+}
+
+.export:disabled {
+  background: #64748b;
+  color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+#fileList {
+  max-height: 170px;
+  overflow-y: auto;
+  margin-top: 14px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+#status {
+  text-align: center;
+  color: #7dd3fc;
+  margin-bottom: 0;
+}
+
+.info {
+  background: #0f172a;
+  padding: 15px;
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.info strong {
+  color: #38bdf8;
+}
+</style>
 </head>
 
 <body>
 
-<a href="Market.html" class="top-btn">⬅ Market</a>
+<div class="container">
 
-<h1>City Store</h1>
+  <h1>City Store</h1>
+  <p class="subtitle">Batch Excel File Processor</p>
 
-<input type="file" id="file" hidden />
-<button class="btn upload" onclick="document.getElementById('file').click()">Upload Excel</button>
-<button class="btn export" id="exportBtn" disabled>Export</button>
+  <div class="section">
+    <label class="section-title">
+      Replace value 1 in column D with:
+    </label>
 
-<p id="status"></p>
+    <div class="choice-group">
+      <label class="choice">
+        <input
+          type="radio"
+          name="replacement"
+          value=""
+          checked
+        >
+        Blank (Default)
+      </label>
+
+      <label class="choice">
+        <input
+          type="radio"
+          name="replacement"
+          value="9999"
+        >
+        9999
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <label class="section-title">
+      Select Excel Files
+    </label>
+
+    <input
+      type="file"
+      id="files"
+      accept=".xlsx,.xls,.xlsm"
+      multiple
+      hidden
+    >
+
+    <button class="upload" id="uploadBtn">
+      Upload Excel Files
+    </button>
+
+    <div id="fileList">
+      No files selected.
+    </div>
+  </div>
+
+  <div class="info">
+    <strong>Column Mapping</strong>
+    <div>Original L → New A</div>
+    <div>Original J → New B</div>
+    <div>New C → Empty</div>
+    <div>Original B → New D</div>
+    <div>One empty row after header</div>
+  </div>
+
+  <button
+    class="export"
+    id="exportBtn"
+    disabled
+  >
+    Process & Export
+  </button>
+
+  <p id="status"></p>
+
+</div>
 
 <script>
-let fileData = null;
-let fileName = "output.xlsx";
+"use strict";
 
-document.getElementById('file').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
+const fileInput = document.getElementById("files");
+const exportBtn = document.getElementById("exportBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileList = document.getElementById("fileList");
+const statusElement = document.getElementById("status");
 
-  if (!file) return;
-
-  fileData = await file.arrayBuffer();
-  fileName = file.name.replace(".xlsx", "") + "_done.xlsx";
-
-  document.getElementById('status').innerText = "Loaded: " + file.name;
-  document.getElementById('exportBtn').disabled = false;
+uploadBtn.addEventListener("click", () => {
+  fileInput.click();
 });
 
-function processSheet(sheet) {
+fileInput.addEventListener("change", () => {
+  const files = Array.from(fileInput.files);
+
+  fileList.replaceChildren();
+
+  if (!files.length) {
+    fileList.textContent = "No files selected.";
+    exportBtn.disabled = true;
+    statusElement.textContent = "";
+    return;
+  }
+
+  files.forEach((file, index) => {
+    const item = document.createElement("div");
+    item.textContent = `${index + 1}. ${file.name}`;
+    fileList.appendChild(item);
+  });
+
+  exportBtn.disabled = false;
+
+  statusElement.textContent =
+    `${files.length} file(s) ready.`;
+});
+
+function processSheet(sheet, replacement) {
+
   const data = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     raw: true,
-    defval: ''
+    defval: "",
+    blankrows: true
   });
 
-  const result = data.map((row, i) => {
+  const result = data.map((row, index) => {
+
     const r = Array.isArray(row) ? row : [];
 
-    // L J B
+    // Original L, J, Empty, B
     const newRow = [
-      r[11] ?? '',
-      r[9] ?? '',
-      r[1] ?? ''
+      r[11] ?? "",
+      r[9] ?? "",
+      "",
+      r[1] ?? ""
     ];
 
-    // من الصف الثاني فما فوق (ما نلمس الهيدر)
-    if (i !== 0) {
-      const val = String(newRow[2]).trim();
+    // Keep header unchanged
+    if (index !== 0) {
 
-      if (val !== '' && Number(val) === 1) {
-        newRow[2] = '';
+      const value = String(newRow[3]).trim();
+
+      // Replace only value 1
+      if (value !== "" && Number(value) === 1) {
+
+        newRow[3] =
+          replacement === "9999" ? 9999 : "";
+
       }
     }
 
     return newRow;
   });
 
-  // صف ثاني فاضي
-  result.splice(1, 0, ['', '', '']);
+  // Add one empty row after the header
+  result.splice(1, 0, ["", "", "", ""]);
 
-  return XLSX.utils.aoa_to_sheet(result);
+  const newSheet = XLSX.utils.aoa_to_sheet(result);
+
+  return newSheet;
 }
 
-document.getElementById('exportBtn').addEventListener('click', () => {
-  if (!fileData) return;
+async function processFile(file, replacement) {
 
-  const wb = XLSX.read(fileData, { type: 'array' });
-  const newWb = XLSX.utils.book_new();
+  const buffer = await file.arrayBuffer();
 
-  wb.SheetNames.forEach(name => {
-    const newSheet = processSheet(wb.Sheets[name]);
-    XLSX.utils.book_append_sheet(newWb, newSheet, name);
+  const workbook = XLSX.read(buffer, {
+    type: "array"
   });
 
-  const out = XLSX.write(newWb, { type: 'array', bookType: 'xlsx' });
+  const newWorkbook = XLSX.utils.book_new();
 
-  const blob = new Blob([out], { type: 'application/octet-stream' });
+  workbook.SheetNames.forEach(sheetName => {
+
+    const sheet = workbook.Sheets[sheetName];
+
+    const processedSheet = processSheet(
+      sheet,
+      replacement
+    );
+
+    XLSX.utils.book_append_sheet(
+      newWorkbook,
+      processedSheet,
+      sheetName
+    );
+
+  });
+
+  return XLSX.write(newWorkbook, {
+    bookType: "xlsx",
+    type: "array"
+  });
+}
+
+function downloadBlob(blob, filename) {
+
   const url = URL.createObjectURL(blob);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  a.click();
+  const link = document.createElement("a");
 
-  URL.revokeObjectURL(url);
+  link.href = url;
+  link.download = filename;
 
-  document.getElementById('status').innerText = "Done ✅";
+  document.body.appendChild(link);
+
+  link.click();
+  link.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 10000);
+}
+
+exportBtn.addEventListener("click", async () => {
+
+  const files = Array.from(fileInput.files);
+
+  if (!files.length) return;
+
+  if (
+    typeof XLSX === "undefined" ||
+    typeof JSZip === "undefined"
+  ) {
+    statusElement.textContent =
+      "Error: Required libraries could not be loaded.";
+    return;
+  }
+
+  const replacement = document.querySelector(
+    'input[name="replacement"]:checked'
+  ).value;
+
+  exportBtn.disabled = true;
+  uploadBtn.disabled = true;
+
+  try {
+
+    const zip = new JSZip();
+
+    const usedNames = new Set();
+
+    let singleFileName = "";
+
+    for (let i = 0; i < files.length; i++) {
+
+      const file = files[i];
+
+      statusElement.textContent =
+        `Processing ${i + 1} / ${files.length}: ${file.name}`;
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 0)
+      );
+
+      const processedData = await processFile(
+        file,
+        replacement
+      );
+
+      const baseName = file.name.replace(
+        /\.(xlsx|xls|xlsm)$/i,
+        ""
+      );
+
+      let outputName = `${baseName}_done.xlsx`;
+
+      let counter = 2;
+
+      while (
+        usedNames.has(outputName.toLowerCase())
+      ) {
+
+        outputName =
+          `${baseName}_done_${counter}.xlsx`;
+
+        counter++;
+
+      }
+
+      usedNames.add(outputName.toLowerCase());
+
+      zip.file(outputName, processedData);
+
+      singleFileName = outputName;
+
+    }
+
+    if (files.length === 1) {
+
+      const blob = await zip.file(
+        singleFileName
+      ).async("blob");
+
+      downloadBlob(blob, singleFileName);
+
+    } else {
+
+      statusElement.textContent =
+        "Creating ZIP archive...";
+
+      const blob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE"
+      });
+
+      downloadBlob(
+        blob,
+        "City_Store_Processed.zip"
+      );
+
+    }
+
+    statusElement.textContent =
+      `Done! ${files.length} file(s) processed successfully.`;
+
+  } catch (error) {
+
+    console.error(error);
+
+    statusElement.textContent =
+      `Error: ${error.message}`;
+
+  } finally {
+
+    exportBtn.disabled = false;
+    uploadBtn.disabled = false;
+
+  }
+
 });
 </script>
 
